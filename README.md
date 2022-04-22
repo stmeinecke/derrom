@@ -1,3 +1,3 @@
 # ELPH-ML
 
-An AI/ML approach to interpolate Phonon-Electron dynamics
+An AI/ML approach to solve Phonon-Electron dynamics.
