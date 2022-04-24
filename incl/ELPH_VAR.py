@@ -36,14 +36,19 @@ class SVDVAR:
     def __init__(self, runs, rdim = 1, n_VAR_steps = 1):
         self.runs = runs
         self.n_runs = len(runs)
+        
         self.n_VAR_steps = n_VAR_steps
         self.rdim = rdim
-        
+    
+    def load_runs(self,runs):
+        self.runs = runs
+        self.n_runs = len(runs)
+    
     def __calc_reduced_coef_runs(self): 
-        U,S = ELPH_utils.get_SVD_from_runs(self.runs)
-        self.Uhat = U[:,:self.rdim]
+        self.U, self.S = ELPH_utils.get_SVD_from_runs(self.runs)
+        self.Uhat = self.U[:,:self.rdim]
 
-        cmat = ELPH_utils.get_reduced_coef_matrix(self.runs, U, self.rdim)
+        cmat = ELPH_utils.get_reduced_coef_matrix(self.runs, self.U, self.rdim)
     
         scmat, self.coef_mean, self.coef_std = ELPH_utils.standardize_data_matrix(cmat)
 
@@ -112,6 +117,15 @@ class SVDVAR:
         print('target shape: ', self.target.shape)
         print('weights shape: ', self.w.shape)
         
+    def score_multiple_runs(self,runs, **kwargs):
+        scores = []
+        for k in range(len(runs)):
+            scores.append(self.get_error(runs[k], **kwargs))
+        
+        mean = np.mean(scores)
+        return mean, scores
+        
+  
  
 class VAR:
     

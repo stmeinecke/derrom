@@ -213,7 +213,6 @@ def get_el_dynamics(init_cond, kmax= 2.0, n_kmax = 20, tmax = 10000.0, n_tmax = 
     
   in_scattering_matrix_em, out_scattering_matrix_em, in_scattering_matrix_abs, out_scattering_matrix_abs, absorption_matrix, emission_matrix, einer = build_boltzmann_mats(kmax,n_kmax)
     
-    
   def boltzmann_equation(t,y):
     y = np.reshape(y,(5,n_kmax))
     right_ele = y[0]
