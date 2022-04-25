@@ -11,7 +11,7 @@ def get_runs_gaussian_init(kmax, n_kmax, gaussian_paras, tmax = 5000.0, n_tmax =
 
   for k in range(gaussian_paras.shape[0]):
     
-    print('run ', k, ' from ', gaussian_paras.shape[0])
+    print('run ', k+1, ' from ', gaussian_paras.shape[0])
  
     p = gaussian_paras[k]
     init = ELPH_dyn.get_init_cond_gauss(kmax = kmax, n_kmax = n_kmax, max_pos = p[0], width = p[1], density = p[2])
