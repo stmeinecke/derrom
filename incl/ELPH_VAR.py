@@ -4,32 +4,6 @@ import sys
 sys.path.append("incl/")
 import ELPH_utils
 
-def build_VAR_training_matrices(coef_runs, n_Var_steps):
-    
-    state = []
-    target = []
-    
-    for r in range(len(coef_runs)):
-        
-        nCols = coef_runs[r].shape[1]-n_Var_steps
-        nRows = coef_runs[r].shape[0]*n_Var_steps
-        
-        rVarMat = np.zeros((nRows,nCols))
-        for j in range(nCols):
-            VARcol = []
-            for k in range(n_Var_steps):
-                VARcol.append( coef_runs[r][:,j+k] )
-            rVarMat[:,j] = np.concatenate(VARcol, axis=0)
-        
-        state.append(rVarMat)
-        target.append(coef_runs[r][:,n_Var_steps:])
-
-    state = np.concatenate(state, axis=1)
-    target = np.concatenate(target, axis=1)
-    
-    return state,target
-
-
     
 class SVDVAR:
     
@@ -55,8 +29,31 @@ class SVDVAR:
         self.coef_runs = ELPH_utils.get_coef_runs(scmat, self.n_runs)
     
     def __build_VAR_training_matrices(self):
-        self.state, self.target = build_VAR_training_matrices(self.coef_runs, self.n_VAR_steps)
-        
+    
+        state = []
+        target = []
+
+        for r in range(len(self.coef_runs)):
+
+            nCols = self.coef_runs[r].shape[1]-self.n_VAR_steps
+            nRows = self.coef_runs[r].shape[0]*self.n_VAR_steps
+
+            rVarMat = np.zeros((nRows,nCols))
+            for j in range(nCols):
+                VARcol = []
+                for k in range(self.n_VAR_steps):
+                    VARcol.append( self.coef_runs[r][:,j+k] )
+                rVarMat[:,j] = np.concatenate(VARcol, axis=0)
+
+            state.append(rVarMat)
+            target.append(self.coef_runs[r][:,self.n_VAR_steps:])
+
+        state = np.concatenate(state, axis=1)
+        target = np.concatenate(target, axis=1)
+
+        return state,target
+    
+    
     def train(self, alpha=1e-6, rdim = 0, n_VAR_steps = 0, method='ridge'):
         
         if rdim != 0:
@@ -66,7 +63,7 @@ class SVDVAR:
         
         self.__calc_reduced_coef_runs()
         
-        self.__build_VAR_training_matrices()
+        self.state, self.target = self.__build_VAR_training_matrices()
         
         if method == 'ridge':
             self.w = ELPH_utils.get_ridge_regression_weights(self.state, self.target, alpha)
