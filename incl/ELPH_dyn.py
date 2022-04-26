@@ -102,7 +102,7 @@ def build_boltzmann_mats(kmax, n_kmax):
 
         if True:
           def delta_fun_phon(x):
-            helper1 = np.sqrt(x*x+get_k(dk,n_k)*get_k(dk,n_k) - 2.*x*get_k(dk,n_k)*np.cos(phi_diff))
+            helper1 = np.sqrt(x*x+get_k(dk,n_k)*get_k(dk,n_k) - 2.*x*get_k(dk,n_k)*np.cos(phi_diff) + 1e-15)
             result = electron_dispersion(get_k(dk,n_k),0) - electron_dispersion(x,0)+phonon_dispersion(helper1,0,beta)
             return result
           sol = scpy_root(delta_fun_phon, get_k(dk,n_k+1), args=(), method='hybr', jac=None, tol=None, callback=None, options=None)

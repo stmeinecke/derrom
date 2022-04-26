@@ -5,6 +5,9 @@ sys.path.append("incl/")
 import ELPH_utils
 from ELPH_VAR import SVDVAR
 
+from sklearn.linear_model import MultiTaskElasticNet
+from sklearn.linear_model import MultiTaskLasso
+from sklearn.linear_model import Lasso
 
 class SVDNVAR(SVDVAR):
   
@@ -64,7 +67,7 @@ class SVDNVAR(SVDVAR):
     return NVAR_state
   
   
-  def train(self, alpha=1e-6, rdim = 0, n_VAR_steps = 0, NVAR_p = 0, method='ridge'):
+  def train(self, alpha=1e-6, rdim = 0, n_VAR_steps = 0, NVAR_p = 0, method='ridge', **kwargs):
         
     if rdim != 0:
         self.rdim = rdim
@@ -83,6 +86,18 @@ class SVDNVAR(SVDVAR):
         self.w = ELPH_utils.get_ridge_regression_weights(self.NVAR_state, self.target, alpha)
     elif method == 'lstsq':
         self.w = np.asarray( np.linalg.lstsq(self.NVAR_state.T, self.target.T, rcond = -1)[0] )
+    elif method == 'mten':
+        MTEN = MultiTaskElasticNet(alpha=alpha, **kwargs)
+        MTEN.fit(self.NVAR_state.T,self.target.T)
+        self.w = MTEN.coef_.T
+    elif method == 'mtl':
+        MTL = MultiTaskLasso(alpha=alpha, **kwargs)
+        MTL.fit(self.NVAR_state.T,self.target.T)
+        self.w = MTL.coef_.T
+    elif method == 'lasso':
+        L = Lasso(alpha=alpha, **kwargs)
+        L.fit(self.NVAR_state.T,self.target.T)
+        self.w = L.coef_.T
     else:
         print('unknown training method') 
                           
