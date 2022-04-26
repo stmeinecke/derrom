@@ -9,6 +9,9 @@ from sklearn.linear_model import MultiTaskElasticNet
 from sklearn.linear_model import MultiTaskLasso
 from sklearn.linear_model import Lasso
 
+from pysindy.optimizers import STLSQ
+
+
 class SVDNVAR(SVDVAR):
   
   def __init__(self, runs, rdim = 1, n_VAR_steps = 1, NVAR_p = 1):
@@ -67,7 +70,7 @@ class SVDNVAR(SVDVAR):
     return NVAR_state
   
   
-  def train(self, alpha=1e-6, rdim = 0, n_VAR_steps = 0, NVAR_p = 0, method='ridge', **kwargs):
+  def train(self, rdim = 0, n_VAR_steps = 0, NVAR_p = 0, method='ridge', **kwargs):
         
     if rdim != 0:
         self.rdim = rdim
@@ -83,7 +86,7 @@ class SVDNVAR(SVDVAR):
     self.NVAR_state = self.__build_NVAR_training_matrices()
 
     if method == 'ridge':
-        self.w = ELPH_utils.get_ridge_regression_weights(self.NVAR_state, self.target, alpha)
+        self.w = ELPH_utils.get_ridge_regression_weights(self.NVAR_state, self.target, **kwargs)
     elif method == 'lstsq':
         self.w = np.asarray( np.linalg.lstsq(self.NVAR_state.T, self.target.T, rcond = -1)[0] )
     elif method == 'mten':
@@ -98,6 +101,10 @@ class SVDNVAR(SVDVAR):
         L = Lasso(alpha=alpha, **kwargs)
         L.fit(self.NVAR_state.T,self.target.T)
         self.w = L.coef_.T
+    elif method == 'stlsq':
+        opt = STLSQ(**kwargs)
+        opt.fit(self.NVAR_state.T, self.target.T)
+        self.w = opt.coef_.T
     else:
         print('unknown training method') 
                           
