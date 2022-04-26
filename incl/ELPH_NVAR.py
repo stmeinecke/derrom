@@ -13,17 +13,39 @@ class SVDNVAR(SVDVAR):
     self.NVAR_p = NVAR_p
   
   
+  #def build_VAR_p_Vec(self, VAR_vec, order=2):
+    #VAR_p_Vec = [VAR_vec]
+    #VARp = VAR_vec
+    #for p in range(1,order):
+      #VARp = np.outer(VARp,VAR_vec)
+##         print('p: ', p+1, " VARp shape: ", VARp.shape)
+##         print(VARp)
+##         print(np.tril(VARp))
+      #VARp = VARp[ np.tril_indices(VARp.shape[0], m=VARp.shape[1]) ]
+      #VAR_p_Vec.append(VARp)
+    #return np.concatenate(VAR_p_Vec, axis=0)
+    
+    
   def build_VAR_p_Vec(self, VAR_vec, order=2):
     VAR_p_Vec = [VAR_vec]
     VARp = VAR_vec
     for p in range(1,order):
-      VARp = np.outer(VARp,VAR_vec)
+      VARp = np.outer(VAR_vec,VARp)
 #         print('p: ', p+1, " VARp shape: ", VARp.shape)
 #         print(VARp)
 #         print(np.tril(VARp))
-      VARp = VARp[ np.tril_indices(VARp.shape[0], m=VARp.shape[1]) ]
+      VARp = VARp[ np.triu_indices(VARp.shape[0], m=VARp.shape[1]) ]
       VAR_p_Vec.append(VARp)
     return np.concatenate(VAR_p_Vec, axis=0)
+  
+  
+  #def build_VAR_p_Vec(self, VAR_vec, order=2):
+    #VAR_p_Vec = [VAR_vec]
+    #VARp = VAR_vec
+    #for p in range(1,order):
+      #VARp = np.multiply(VARp,VAR_vec)
+      #VAR_p_Vec.append(VARp)
+    #return np.concatenate(VAR_p_Vec, axis=0)
   
     
   def __build_NVAR_training_matrices(self):

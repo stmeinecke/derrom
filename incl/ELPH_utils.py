@@ -36,15 +36,15 @@ def get_reduced_coef_matrix(runs, U, rdim):
   return U[:,:rdim].T @ data_matrix
   
   
-def standardize_data_matrix(matrix):
+def standardize_data_matrix(matrix, axis=1):
   mean = np.mean(matrix, axis = 1)
   std = np.std(matrix, axis = 1)
 
-  new = ((matrix.T - mean.T)/std.T).T
+  new = ((matrix.T - mean)/std).T
 
   return new, mean, std
 
-def destandardize_data_matrix(matrix, mean, std):    
+def destandardize_data_matrix(matrix, mean, std, axis=1):    
   return ( (matrix.T * std) + mean ).T
 
 

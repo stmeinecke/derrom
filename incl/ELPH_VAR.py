@@ -22,11 +22,11 @@ class SVDVAR:
         self.U, self.S = ELPH_utils.get_SVD_from_runs(self.runs)
         self.Uhat = self.U[:,:self.rdim]
 
-        cmat = ELPH_utils.get_reduced_coef_matrix(self.runs, self.U, self.rdim)
+        self.red_coef_matrix = ELPH_utils.get_reduced_coef_matrix(self.runs, self.U, self.rdim)
     
-        scmat, self.coef_mean, self.coef_std = ELPH_utils.standardize_data_matrix(cmat)
+        stdrdzd_red_coef_matrix, self.coef_mean, self.coef_std = ELPH_utils.standardize_data_matrix(self.red_coef_matrix)
 
-        self.coef_runs = ELPH_utils.get_coef_runs(scmat, self.n_runs)
+        self.coef_runs = ELPH_utils.get_coef_runs(stdrdzd_red_coef_matrix, self.n_runs)
     
     def __build_VAR_training_matrices(self):
     
