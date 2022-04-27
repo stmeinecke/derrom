@@ -7,12 +7,15 @@ import ELPH_utils
     
 class SVDVAR:
     
-    def __init__(self, runs, rdim = 1, n_VAR_steps = 1):
+    def __init__(self, runs, rdim = 1, n_VAR_steps = 1, intercept = False, standardize=True):
         self.runs = runs
         self.n_runs = len(runs)
         
         self.n_VAR_steps = n_VAR_steps
         self.rdim = rdim
+        
+        self.intercept = intercept
+        self.standardize = standardize
     
     def load_runs(self,runs):
         self.runs = runs
@@ -24,9 +27,10 @@ class SVDVAR:
 
         self.red_coef_matrix = ELPH_utils.get_reduced_coef_matrix(self.runs, self.U, self.rdim)
     
-        stdrdzd_red_coef_matrix, self.coef_mean, self.coef_std = ELPH_utils.standardize_data_matrix(self.red_coef_matrix)
+        if self.standardize:
+            self.red_coef_matrix, self.coef_mean, self.coef_std = ELPH_utils.standardize_data_matrix(self.red_coef_matrix)
 
-        self.coef_runs = ELPH_utils.get_coef_runs(stdrdzd_red_coef_matrix, self.n_runs)
+        self.coef_runs = ELPH_utils.get_coef_runs(self.red_coef_matrix, self.n_runs)
     
     def __build_VAR_training_matrices(self):
     
@@ -76,7 +80,8 @@ class SVDVAR:
     def predict_single_run(self, run):
         
         coef_run = self.Uhat.T @ run
-        coef_run = (((coef_run.T - self.coef_mean)/self.coef_std)).T
+        if self.standardize:
+          coef_run = (((coef_run.T - self.coef_mean)/self.coef_std)).T
         
         pred = np.zeros(coef_run.shape)
 
@@ -89,7 +94,8 @@ class SVDVAR:
                 VARpredList.append( pred[:,j-self.n_VAR_steps+l] )
             pred[:,j] = self.w.T @ np.concatenate( VARpredList, axis=0 )
         
-        pred = ELPH_utils.destandardize_data_matrix(pred, self.coef_mean, self.coef_std)
+        if self.standardize:
+            pred = ELPH_utils.destandardize_data_matrix(pred, self.coef_mean, self.coef_std)
         pred = self.Uhat @ pred 
         
         return pred

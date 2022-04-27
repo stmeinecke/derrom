@@ -17,6 +17,7 @@ class SVDNVAR(SVDVAR):
   def __init__(self, runs, rdim = 1, n_VAR_steps = 1, NVAR_p = 1):
     super().__init__(runs, rdim, n_VAR_steps) 
     self.NVAR_p = NVAR_p
+
   
   
   #def build_VAR_p_Vec(self, VAR_vec, order=2):
@@ -70,20 +71,28 @@ class SVDNVAR(SVDVAR):
     return NVAR_state
   
   
-  def train(self, rdim = 0, n_VAR_steps = 0, NVAR_p = 0, method='ridge', **kwargs):
+  def train(self, rdim = None, n_VAR_steps = None, NVAR_p = None, intercept=None, standardize=None, method='ridge', **kwargs):
         
-    if rdim != 0:
+    if rdim != None:
         self.rdim = rdim
-    if n_VAR_steps != 0:
+    if n_VAR_steps != None:
         self.n_VAR_steps = n_VAR_steps
-    if NVAR_p != 0:
+    if NVAR_p != None:
         self.NVAR_p = NVAR_p
+    if intercept != None:
+        self.intercept = intercept
+    if standardize != None:
+        self.standardize = standardize
 
     self._SVDVAR__calc_reduced_coef_runs()
 
     self.VAR_state, self.target = self._SVDVAR__build_VAR_training_matrices()
                           
     self.NVAR_state = self.__build_NVAR_training_matrices()
+
+    
+    if intercept:
+      self.NVAR_state = np.concatenate( [self.NVAR_state, np.ones((1,self.NVAR_state.shape[1]))], axis=0 )
 
     if method == 'ridge':
         self.w = ELPH_utils.get_ridge_regression_weights(self.NVAR_state, self.target, **kwargs)
@@ -112,7 +121,8 @@ class SVDNVAR(SVDVAR):
   def predict_single_run(self, run):
 
       coef_run = self.Uhat.T @ run
-      coef_run = (((coef_run.T - self.coef_mean)/self.coef_std)).T
+      if self.standardize:
+          coef_run = (((coef_run.T - self.coef_mean)/self.coef_std)).T
 
       pred = np.zeros(coef_run.shape)
 
@@ -125,10 +135,14 @@ class SVDNVAR(SVDVAR):
               VARpredList.append( pred[:,j-self.n_VAR_steps+l] )
           
           VAR_vec = np.concatenate( VARpredList, axis=0 )
+          NVAR_vec = self.build_VAR_p_Vec(VAR_vec, order=self.NVAR_p)
+          if self.intercept:
+            NVAR_vec = np.append(NVAR_vec, 1.0)
                           
-          pred[:,j] = self.w.T @ self.build_VAR_p_Vec(VAR_vec, order=self.NVAR_p)
+          pred[:,j] = self.w.T @ NVAR_vec
 
-      pred = ELPH_utils.destandardize_data_matrix(pred, self.coef_mean, self.coef_std)
+      if self.standardize:
+          pred = ELPH_utils.destandardize_data_matrix(pred, self.coef_mean, self.coef_std)
       pred = self.Uhat @ pred 
 
       return pred
