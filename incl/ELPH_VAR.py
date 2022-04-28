@@ -87,6 +87,7 @@ class SVDVAR:
 
         for l in range(self.n_VAR_steps):
             pred[:,l] = coef_run[:,l]
+            #pred[:,l] = coef_run[:,0]
 
         for j in range(self.n_VAR_steps,pred.shape[1]):
             VARpredList = []
