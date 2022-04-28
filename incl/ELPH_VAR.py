@@ -100,9 +100,12 @@ class SVDVAR:
         
         return pred
     
-    def get_error(self, run, pred=np.zeros(1), norm='fro'):
+    def get_error(self, run, pred=np.zeros(1), norm='fro', errSVD = False):
         if pred.size == 1:
             pred = self.predict_single_run(run)
+        
+        if errSVD == True:
+          run = self.Uhat @ self.Uhat.T @ run
         
         if norm == 'fro': #Frobenius norm
             err = np.linalg.norm(run-pred, ord='fro')
