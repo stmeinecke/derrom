@@ -112,6 +112,8 @@ class SVDVAR:
             err = np.linalg.norm(run-pred, ord='fro')
         elif norm == 'var2': # mean of dynamical variable wise 2-norms
             err = np.mean( np.sum( np.square(run-pred), axis = 1 ) )
+        elif norm =='max':
+            err = np.abs(run-pred).max()
         else:
             print('unknown norm')
         
