@@ -61,7 +61,7 @@ def get_KFold_runs(runs, folds=5):
     KFold_runs = [list(array) for array in KFold_runs] #covert ndarrays back to list such that KFold_runs is a list of lists of ndarrays (the individual runs)
     return KFold_runs
 
-def get_KFold_CV_scores(model, runs, folds=5, seed=817, norm='fro', errSVD=False, **kwargs):
+def get_KFold_CV_scores(model, runs, folds=5, seed=817, score_kwargs = {}, train_kwargs={}):
     
     #create shuffled copy of the runs
     rng = np.random.default_rng(seed=seed)
@@ -80,8 +80,8 @@ def get_KFold_CV_scores(model, runs, folds=5, seed=817, norm='fro', errSVD=False
 
         #train the model on the training runs and get scores from the testing runs
         model.load_runs(train_runs) 
-        model.train(**kwargs)
-        mean_score = model.score_multiple_runs(test_runs, norm=norm, errSVD=errSVD)[0]
+        model.train(**train_kwargs)
+        mean_score = model.score_multiple_runs(test_runs, **score_kwargs)[0]
         
         scores.append(mean_score)
     
