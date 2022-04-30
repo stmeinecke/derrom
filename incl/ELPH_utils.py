@@ -86,3 +86,27 @@ def get_KFold_CV_scores(model, runs, folds=5, seed=817, score_kwargs = {}, train
         scores.append(mean_score)
     
     return np.mean(scores), scores
+
+def save_runs(runs, filename='../runs'):
+    np.savez(filename, runs)
+    
+def load_runs(filename='../runs.npz'):
+    
+    from os.path import exists
+
+    if not exists(filename):
+        print('runs file ot found')
+        return None
+    else:
+        npz_runs = np.load(filename)
+    #     print(npz_runs.files)
+    #     print(type(npz_runs['arr_0']))
+    #     print(npz_runs['arr_0'].shape)
+        runs = np.split(npz_runs['arr_0'], npz_runs['arr_0'].shape[0], axis=0)
+
+        for k in range(len(runs)):
+            runs[k] = np.reshape(runs[k], runs[k].shape[1:])
+    #     print(type(runs))
+    #     print(type(runs[1]))
+    #     print(runs[1].shape)
+        return runs
