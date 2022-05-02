@@ -17,20 +17,6 @@ class SVDNVAR(SVDVAR):
   def __init__(self, runs, rdim = 1, n_VAR_steps = 1, NVAR_p = 1):
     super().__init__(runs, rdim, n_VAR_steps) 
     self.NVAR_p = NVAR_p
-
-  
-  
-  #def build_VAR_p_Vec(self, VAR_vec, order=2):
-    #VAR_p_Vec = [VAR_vec]
-    #VARp = VAR_vec
-    #for p in range(1,order):
-      #VARp = np.outer(VARp,VAR_vec)
-##         print('p: ', p+1, " VARp shape: ", VARp.shape)
-##         print(VARp)
-##         print(np.tril(VARp))
-      #VARp = VARp[ np.tril_indices(VARp.shape[0], m=VARp.shape[1]) ]
-      #VAR_p_Vec.append(VARp)
-    #return np.concatenate(VAR_p_Vec, axis=0)
     
     
   def build_VAR_p_Vec(self, VAR_vec, order=2):
@@ -71,7 +57,7 @@ class SVDNVAR(SVDVAR):
     return NVAR_state
   
   
-  def train(self, rdim = None, n_VAR_steps = None, NVAR_p = None, intercept=None, standardize=None, method='ridge', **kwargs):
+  def train(self, rdim = None, n_VAR_steps = None, NVAR_p = None, intercept=None, standardize=None, full_hist=None, method='ridge', **kwargs):
         
     if rdim != None:
         self.rdim = rdim
@@ -83,6 +69,8 @@ class SVDNVAR(SVDVAR):
         self.intercept = intercept
     if standardize != None:
         self.standardize = standardize
+    if full_hist != None:
+        self.full_hist = full_hist
 
     self._SVDVAR__calc_reduced_coef_runs()
 
@@ -117,7 +105,7 @@ class SVDNVAR(SVDVAR):
     else:
         print('unknown training method') 
                           
-                          
+
   def predict_single_run(self, run):
 
       coef_run = self.Uhat.T @ run
@@ -126,16 +114,20 @@ class SVDNVAR(SVDVAR):
 
       pred = np.zeros(coef_run.shape)
 
-      for l in range(self.n_VAR_steps):
-          pred[:,l] = coef_run[:,l]
-
-      for j in range(self.n_VAR_steps,pred.shape[1]):
-          VARpredList = []
+      if (self.full_hist == False):
+          j_start = 1
+          pred[:,0] = coef_run[:,0]
+      else:
+          j_start = self.n_VAR_steps
           for l in range(self.n_VAR_steps):
-              VARpredList.append( pred[:,j-self.n_VAR_steps+l] )
+              pred[:,l] = coef_run[:,l]
+
+      for j in range(j_start,pred.shape[1]):
+        
+          VAR_vec = self._SVDVAR__build_VAR_vec(pred, j-self.n_VAR_steps, self.n_VAR_steps)
           
-          VAR_vec = np.concatenate( VARpredList, axis=0 )
           NVAR_vec = self.build_VAR_p_Vec(VAR_vec, order=self.NVAR_p)
+          
           if self.intercept:
             NVAR_vec = np.append(NVAR_vec, 1.0)
                           
@@ -146,37 +138,6 @@ class SVDNVAR(SVDVAR):
       pred = self.Uhat @ pred 
 
       return pred
-    
-  #def predict_single_run(self, run):
-
-      #coef_run = self.Uhat.T @ run
-      #if self.standardize:
-          #coef_run = (((coef_run.T - self.coef_mean)/self.coef_std)).T
-
-      #pred = np.zeros(coef_run.shape)
-
-      #pred[:,0] = coef_run[:,0]
-
-      #for j in range(1,pred.shape[1]):
-          #VARpredList = []
-          #for l in range(self.n_VAR_steps):
-              #if (j-self.n_VAR_steps+l < 0):
-                  #VARpredList.append(coef_run[:,0])
-              #else:
-                  #VARpredList.append( pred[:,j-self.n_VAR_steps+l] )
-          
-          #VAR_vec = np.concatenate( VARpredList, axis=0 )
-          #NVAR_vec = self.build_VAR_p_Vec(VAR_vec, order=self.NVAR_p)
-          #if self.intercept:
-            #NVAR_vec = np.append(NVAR_vec, 1.0)
-                          
-          #pred[:,j] = self.w.T @ NVAR_vec
-
-      #if self.standardize:
-          #pred = ELPH_utils.destandardize_data_matrix(pred, self.coef_mean, self.coef_std)
-      #pred = self.Uhat @ pred 
-
-      #return pred
                           
                           
   def print_status(self):
