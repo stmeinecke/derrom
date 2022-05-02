@@ -3,6 +3,7 @@ import sys
 
 sys.path.append("incl/")
 import ELPH_utils
+import ELPH_Scaler
 
     
 class SVDVAR:
@@ -23,16 +24,16 @@ class SVDVAR:
         self.runs = runs
         self.n_runs = len(runs)
     
-    def __calc_reduced_coef_runs(self): 
-        self.U, self.S = ELPH_utils.get_SVD_from_runs(self.runs)
-        self.Uhat = self.U[:,:self.rdim]
+#     def __calc_reduced_coef_runs(self): 
+#         self.U, self.S = ELPH_utils.get_SVD_from_runs(self.runs)
+#         self.Uhat = self.U[:,:self.rdim]
 
-        self.red_coef_matrix = ELPH_utils.get_reduced_coef_matrix(self.runs, self.U, self.rdim)
+#         self.red_coef_matrix = ELPH_utils.get_reduced_coef_matrix(self.runs, self.U, self.rdim)
     
-        if self.standardize:
-            self.red_coef_matrix, self.coef_mean, self.coef_std = ELPH_utils.standardize_data_matrix(self.red_coef_matrix)
+#         if self.standardize:
+#             self.red_coef_matrix, self.coef_mean, self.coef_std = ELPH_utils.standardize_data_matrix(self.red_coef_matrix)
 
-        self.coef_runs = ELPH_utils.get_coef_runs(self.red_coef_matrix, self.n_runs)
+#         self.coef_runs = ELPH_utils.get_coef_runs(self.red_coef_matrix, self.n_runs)
     
     
     def __build_VAR_vec(self, matrix, col, n_VAR_steps):
@@ -77,16 +78,31 @@ class SVDVAR:
         return state,target
     
     
-    def train(self, alpha=1e-6, rdim = None, n_VAR_steps = None, full_hist = None, method='ridge'):
+    def train(self, alpha=1e-6, rdim = None, n_VAR_steps = None, intercept=None, standardize=None, full_hist = None, method='ridge'):
         
         if rdim != None:
             self.rdim = rdim
         if n_VAR_steps != None:
             self.n_VAR_steps = n_VAR_steps
+        if intercept != None:
+            self.intercept = intercept
+        if standardize != None:
+            self.standardize = standardize
         if full_hist != None:
             self.full_hist = full_hist
-        
-        self.__calc_reduced_coef_runs()
+
+
+        self.U, self.S = ELPH_utils.get_SVD_from_runs(self.runs)
+        self.Uhat = self.U[:,:self.rdim]
+
+        self.red_coef_matrix = ELPH_utils.get_reduced_coef_matrix(self.runs, self.U, self.rdim)
+
+        if self.standardize:
+            self.scaler = ELPH_Scaler.standardize_scaler(self.red_coef_matrix)
+            self.scaler.train()
+            self.red_coef_matrix = self.scaler.transform(self.red_coef_matrix)
+
+        self.coef_runs = ELPH_utils.get_coef_runs(self.red_coef_matrix, self.n_runs)
         
         self.state, self.target = self.__build_VAR_training_matrices()
         
@@ -102,7 +118,8 @@ class SVDVAR:
         
         coef_run = self.Uhat.T @ run
         if self.standardize:
-          coef_run = (((coef_run.T - self.coef_mean)/self.coef_std)).T
+#             coef_run = (((coef_run.T - self.coef_mean)/self.coef_std)).T
+            coef_run = self.scaler.transform(coef_run)
         
         pred = np.zeros(coef_run.shape)
   
@@ -119,7 +136,8 @@ class SVDVAR:
         
         
         if self.standardize:
-            pred = ELPH_utils.destandardize_data_matrix(pred, self.coef_mean, self.coef_std)
+#             pred = ELPH_utils.destandardize_data_matrix(pred, self.coef_mean, self.coef_std)
+            pred = self.scaler.inverse_transform(pred)
         pred = self.Uhat @ pred 
         
         return pred
@@ -129,7 +147,7 @@ class SVDVAR:
             pred = self.predict_single_run(run)
         
         if errSVD == True:
-          run = self.Uhat @ self.Uhat.T @ run
+            run = self.Uhat @ self.Uhat.T @ run
         
         if norm == 'fro': #Frobenius norm
             err = np.linalg.norm(run-pred, ord='fro')
