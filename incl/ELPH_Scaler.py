@@ -41,3 +41,23 @@ class normalize_scaler(data_scaler):
     
     def inverse_transform(self, data_matrix):
         return ( ( (data_matrix.T + 0.5*self.rel_scale) * self.scale)+self.min ).T
+      
+      
+class tanh_scaler(data_scaler):
+    def __init__(self, arg_scale=1.0, out_scale=1.0):
+        super().__init__()
+        self.arg_scale = arg_scale
+        self.out_scale = out_scale
+   
+    def train(self, data_matrix):
+        self.data_matrix = data_matrix
+        
+        self.max = np.amax(self.data_matrix, axis=1)
+        self.min = np.amin(self.data_matrix, axis=1)
+        self.scale = (self.max - self.min)/self.arg_scale
+        
+    def transform(self, data_matrix):
+        return np.tanh( (data_matrix.T - self.min)/self.scale - 0.5*self.arg_scale ).T * self.out_scale
+    
+    def inverse_transform(self, data_matrix):
+        return ( ( (np.arctanh(data_matrix.T/self.out_scale) + 0.5*self.arg_scale) * self.scale)+self.min ).T

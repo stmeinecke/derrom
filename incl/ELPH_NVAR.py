@@ -140,6 +140,7 @@ class SVDNVAR(SVDVAR):
                 NVAR_vec = np.append(NVAR_vec, 1.0)
                           
             pred[:,j] = self.w.T @ NVAR_vec
+            #pred[:,j] = pred[:,j-1] + self.w.T @ NVAR_vec
 
         if self.standardize:
             pred = self.scaler.inverse_transform(pred)

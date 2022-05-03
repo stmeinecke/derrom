@@ -29,17 +29,6 @@ class SVDVAR:
         self.runs = runs
         self.n_runs = len(runs)
     
-#     def __calc_reduced_coef_runs(self): 
-#         self.U, self.S = ELPH_utils.get_SVD_from_runs(self.runs)
-#         self.Uhat = self.U[:,:self.rdim]
-
-#         self.red_coef_matrix = ELPH_utils.get_reduced_coef_matrix(self.runs, self.U, self.rdim)
-    
-#         if self.standardize:
-#             self.red_coef_matrix, self.coef_mean, self.coef_std = ELPH_utils.standardize_data_matrix(self.red_coef_matrix)
-
-#         self.coef_runs = ELPH_utils.get_coef_runs(self.red_coef_matrix, self.n_runs)
-    
     
     def __build_VAR_vec(self, matrix, col, n_VAR_steps):
         VAR_vec = []
@@ -74,8 +63,10 @@ class SVDVAR:
             state.append(run_VAR_matrix)
             if self.full_hist == False:
                 target.append(self.coef_runs[r][:,1:])
+                #target.append(self.coef_runs[r][:,1:]-self.coef_runs[r][:,:-1])
             else:
                 target.append(self.coef_runs[r][:,self.n_VAR_steps:])
+                #target.append(self.coef_runs[r][:,self.n_VAR_steps:]-self.coef_runs[r][:,self.n_VAR_steps-1:-1])
 
         state = np.concatenate(state, axis=1)
         target = np.concatenate(target, axis=1)
@@ -137,7 +128,7 @@ class SVDVAR:
             
         for j in range(j_start,pred.shape[1]):
             pred[:,j] = self.w.T @ self.__build_VAR_vec(pred, j-self.n_VAR_steps, self.n_VAR_steps)
-        
+            #pred[:,j] = pred[:,j-1] + self.w.T @ self.__build_VAR_vec(pred, j-self.n_VAR_steps, self.n_VAR_steps)
         
         if self.standardize:
             pred = self.scaler.inverse_transform(pred)
