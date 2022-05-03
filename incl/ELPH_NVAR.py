@@ -3,7 +3,6 @@ import sys
 
 sys.path.append("incl/")
 import ELPH_utils
-import ELPH_Scaler
 from ELPH_VAR import SVDVAR
 
 from sklearn.linear_model import MultiTaskElasticNet
@@ -53,7 +52,7 @@ class SVDNVAR(SVDVAR):
         return NVAR_state
   
   
-    def train(self, rdim = None, n_VAR_steps = None, NVAR_p = None, intercept=None, standardize=None, full_hist=None, method='ridge', **kwargs):
+    def train(self, rdim = None, n_VAR_steps = None, NVAR_p = None, intercept=None, full_hist=None, scaler = None, method='ridge', **kwargs):
         
         if rdim != None:
             self.rdim = rdim
@@ -63,10 +62,13 @@ class SVDNVAR(SVDVAR):
             self.NVAR_p = NVAR_p
         if intercept != None:
             self.intercept = intercept
-        if standardize != None:
-            self.standardize = standardize
         if full_hist != None:
             self.full_hist = full_hist
+        if scaler != None:
+            self.scaler = scaler
+            self.standardize = True
+        else:
+            self.standardize = False
 
 
         self.U, self.S = ELPH_utils.get_SVD_from_runs(self.runs)
@@ -75,9 +77,7 @@ class SVDNVAR(SVDVAR):
         self.red_coef_matrix = ELPH_utils.get_reduced_coef_matrix(self.runs, self.U, self.rdim)
 
         if self.standardize:
-#             self.scaler = ELPH_Scaler.standardize_scaler(self.red_coef_matrix)
-            self.scaler = ELPH_Scaler.normalize_scaler(self.red_coef_matrix)
-            self.scaler.train()
+            self.scaler.train(self.red_coef_matrix)
             self.red_coef_matrix = self.scaler.transform(self.red_coef_matrix)
 
         self.coef_runs = ELPH_utils.get_coef_runs(self.red_coef_matrix, self.n_runs)
@@ -118,7 +118,6 @@ class SVDNVAR(SVDVAR):
 
         coef_run = self.Uhat.T @ run
         if self.standardize:
-#             coef_run = (((coef_run.T - self.coef_mean)/self.coef_std)).T
             coef_run = self.scaler.transform(coef_run)
 
         pred = np.zeros(coef_run.shape)

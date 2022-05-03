@@ -8,7 +8,7 @@ import ELPH_Scaler
     
 class SVDVAR:
     
-    def __init__(self, runs, rdim = 1, n_VAR_steps = 1, intercept = False, standardize=True, full_hist=False):
+    def __init__(self, runs, rdim = 1, n_VAR_steps = 1, intercept = False, scaler = None, full_hist=False):
         self.runs = runs
         self.n_runs = len(runs)
         
@@ -16,7 +16,12 @@ class SVDVAR:
         self.rdim = rdim
         
         self.intercept = intercept
-        self.standardize = standardize
+        
+        if scaler != None:
+            self.scaler = scaler
+            self.standardize = True
+        else:
+            self.standardize = False
         
         self.full_hist = full_hist
     
@@ -78,7 +83,7 @@ class SVDVAR:
         return state,target
     
     
-    def train(self, alpha=1e-6, rdim = None, n_VAR_steps = None, intercept=None, standardize=None, full_hist = None, method='ridge'):
+    def train(self, alpha=1e-6, rdim = None, n_VAR_steps = None, intercept=None, scaler = None, full_hist = None, method='ridge'):
         
         if rdim != None:
             self.rdim = rdim
@@ -86,10 +91,11 @@ class SVDVAR:
             self.n_VAR_steps = n_VAR_steps
         if intercept != None:
             self.intercept = intercept
-        if standardize != None:
-            self.standardize = standardize
         if full_hist != None:
             self.full_hist = full_hist
+        if scaler != None:
+            self.scaler = scaler
+            self.standardize = True
 
 
         self.U, self.S = ELPH_utils.get_SVD_from_runs(self.runs)
@@ -98,8 +104,7 @@ class SVDVAR:
         self.red_coef_matrix = ELPH_utils.get_reduced_coef_matrix(self.runs, self.U, self.rdim)
 
         if self.standardize:
-            self.scaler = ELPH_Scaler.standardize_scaler(self.red_coef_matrix)
-            self.scaler.train()
+            self.scaler.train(self.red_coef_matrix)
             self.red_coef_matrix = self.scaler.transform(self.red_coef_matrix)
 
         self.coef_runs = ELPH_utils.get_coef_runs(self.red_coef_matrix, self.n_runs)
@@ -118,7 +123,6 @@ class SVDVAR:
         
         coef_run = self.Uhat.T @ run
         if self.standardize:
-#             coef_run = (((coef_run.T - self.coef_mean)/self.coef_std)).T
             coef_run = self.scaler.transform(coef_run)
         
         pred = np.zeros(coef_run.shape)
@@ -136,7 +140,6 @@ class SVDVAR:
         
         
         if self.standardize:
-#             pred = ELPH_utils.destandardize_data_matrix(pred, self.coef_mean, self.coef_std)
             pred = self.scaler.inverse_transform(pred)
         pred = self.Uhat @ pred 
         
