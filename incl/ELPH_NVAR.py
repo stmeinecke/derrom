@@ -10,6 +10,7 @@ from sklearn.linear_model import MultiTaskLasso
 from sklearn.linear_model import Lasso
 
 from pysindy.optimizers import STLSQ
+import ELPH_Optimizer
 
 
 class SVDNVAR(SVDVAR):
@@ -110,6 +111,8 @@ class SVDNVAR(SVDVAR):
             opt = STLSQ(**kwargs)
             opt.fit(self.NVAR_state.T, self.target.T)
             self.w = opt.coef_.T
+        elif method == 'scpmin':
+            self.w = ELPH_Optimizer.scpmin(self.NVAR_state, self.target)
         else:
             print('unknown training method') 
                           
