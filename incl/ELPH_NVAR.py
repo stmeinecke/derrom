@@ -91,6 +91,7 @@ class SVDNVAR(SVDVAR):
         if intercept:
             self.NVAR_state = np.concatenate( [self.NVAR_state, np.ones((1,self.NVAR_state.shape[1]))], axis=0 )
 
+
         if method == 'ridge':
             self.w = ELPH_utils.get_ridge_regression_weights(self.NVAR_state, self.target, **kwargs)
         elif method == 'lstsq':
@@ -113,6 +114,10 @@ class SVDNVAR(SVDVAR):
             self.w = opt.coef_.T
         elif method == 'scpmin':
             self.w = ELPH_Optimizer.scpmin(self.NVAR_state, self.target)
+        elif method == 'gd':
+            self.w = ELPH_Optimizer.grddcnt(self.NVAR_state, self.target, **kwargs)
+        elif method == 'sgd':
+            self.w = ELPH_Optimizer.sgd(self.NVAR_state, self.target, **kwargs)
         else:
             print('unknown training method') 
                           
