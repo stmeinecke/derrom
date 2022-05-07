@@ -6,7 +6,17 @@ import ELPH_utils
 
 class data_scaler:
     def __init__(self):
-      self.is_trained = False
+        self.is_trained = False
+        
+    def train(self):
+        raise NotImplementedError
+        
+    def transform(self):
+        raise NotImplementedError
+        
+    def inverse_transform(self):
+        raise NotImplementedError
+        
 
 class standardize_scaler(data_scaler):
     def __init__(self):

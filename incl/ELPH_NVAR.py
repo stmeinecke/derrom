@@ -53,7 +53,7 @@ class SVDNVAR(SVDVAR):
         return NVAR_state
   
   
-    def train(self, rdim = None, n_VAR_steps = None, NVAR_p = None, intercept=None, full_hist=None, scaler = None, method='ridge', **kwargs):
+    def train(self, rdim = None, n_VAR_steps = None, NVAR_p = None, intercept=None, full_hist=None, scaler = None, optimizer = None, **kwargs):
         
         if rdim != None:
             self.rdim = rdim
@@ -65,71 +65,59 @@ class SVDNVAR(SVDVAR):
             self.intercept = intercept
         if full_hist != None:
             self.full_hist = full_hist
+        
         if scaler != None:
             self.scaler = scaler
             self.standardize = True
         else:
             self.standardize = False
+        
+        if optimizer != None:
+            self.optimizer = optimizer
+        else:
+            self.optimizer = ELPH_Optimizer.lstsqrs()
 
 
+        #calculate SVD decomposition of the training runs
         self.U, self.S = ELPH_utils.get_SVD_from_runs(self.runs)
         self.Uhat = self.U[:,:self.rdim]
 
+        #project training data onto the first rdim columns of the SVD U-Matrix
         self.red_coef_matrix = ELPH_utils.get_reduced_coef_matrix(self.runs, self.U, self.rdim)
 
+        #apply data/feature scaling via scaler object
         if self.standardize:
             self.scaler.train(self.red_coef_matrix)
             self.red_coef_matrix = self.scaler.transform(self.red_coef_matrix)
 
+        #transform coeffiecient matrix back to a list of the individual coefficient runs
         self.coef_runs = ELPH_utils.get_coef_runs(self.red_coef_matrix, self.n_runs)
 
+        #create training data matrices
         self.VAR_state, self.target = self._SVDVAR__build_VAR_training_matrices()
 
         self.NVAR_state = self.__build_NVAR_training_matrices()
 
-
+        #add bias/intercept
         if intercept:
             self.NVAR_state = np.concatenate( [self.NVAR_state, np.ones((1,self.NVAR_state.shape[1]))], axis=0 )
 
-
-        if method == 'ridge':
-            self.w = ELPH_utils.get_ridge_regression_weights(self.NVAR_state, self.target, **kwargs)
-        elif method == 'lstsq':
-            self.w = np.asarray( np.linalg.lstsq(self.NVAR_state.T, self.target.T, rcond = -1)[0] )
-        elif method == 'mten':
-            MTEN = MultiTaskElasticNet(alpha=alpha, **kwargs)
-            MTEN.fit(self.NVAR_state.T,self.target.T)
-            self.w = MTEN.coef_.T
-        elif method == 'mtl':
-            MTL = MultiTaskLasso(alpha=alpha, **kwargs)
-            MTL.fit(self.NVAR_state.T,self.target.T)
-            self.w = MTL.coef_.T
-        elif method == 'lasso':
-            L = Lasso(alpha=alpha, **kwargs)
-            L.fit(self.NVAR_state.T,self.target.T)
-            self.w = L.coef_.T
-        elif method == 'stlsq':
-            opt = STLSQ(**kwargs)
-            opt.fit(self.NVAR_state.T, self.target.T)
-            self.w = opt.coef_.T
-        elif method == 'scpmin':
-            self.w = ELPH_Optimizer.scpmin(self.NVAR_state, self.target)
-        elif method == 'gd':
-            self.w = ELPH_Optimizer.grddcnt(self.NVAR_state, self.target, **kwargs)
-        elif method == 'sgd':
-            self.w = ELPH_Optimizer.sgd(self.NVAR_state, self.target, **kwargs)
-        else:
-            print('unknown training method') 
+        #calculate weight matrix via optimizer object
+        self.w = self.optimizer.solve(self.NVAR_state, self.target)
                           
 
     def predict_single_run(self, run):
 
+        #project run onto the first rdim SVD components, i.e. the first rdim columns of the SVD U-matrix
         coef_run = self.Uhat.T @ run
+        #apply data/feature scaling
         if self.standardize:
             coef_run = self.scaler.transform(coef_run)
 
+        #setup numpy array for the auto prediction
         pred = np.zeros(coef_run.shape)
 
+        #build initial condition for the auto predictions
         if (self.full_hist == False):
             j_start = 1
             pred[:,0] = coef_run[:,0]
@@ -138,20 +126,27 @@ class SVDNVAR(SVDVAR):
             for l in range(self.n_VAR_steps):
                 pred[:,l] = coef_run[:,l]
 
+        #let the machine predict the electron dynamics
         for j in range(j_start,pred.shape[1]):
         
+            #build the VAR vector from the past steps
             VAR_vec = self._SVDVAR__build_VAR_vec(pred, j-self.n_VAR_steps, self.n_VAR_steps)
 
+            #build the NVAR vector to the specified order from the VAR vector
             NVAR_vec = self.build_VAR_p_Vec(VAR_vec, order=self.NVAR_p)
 
+            #add intercept/bias
             if self.intercept:
                 NVAR_vec = np.append(NVAR_vec, 1.0)
                           
+            #predict the next step
             pred[:,j] = self.w.T @ NVAR_vec
             #pred[:,j] = pred[:,j-1] + self.w.T @ NVAR_vec
 
+        #undo the data/feature scaling
         if self.standardize:
             pred = self.scaler.inverse_transform(pred)
+        #project back onto the k space of the electron distribution
         pred = self.Uhat @ pred 
 
         return pred
