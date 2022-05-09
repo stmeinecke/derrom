@@ -49,10 +49,13 @@ class PIML_adam(base_optimizer):
             pred = state.T @ beta
             res = pred - target.T 
 
-            err_lstsqs = jnp.linalg.norm(res, 'fro')**2
+            #err_lstsqs = jnp.linalg.norm(res, 'fro')**2
+            err_lstsqs = jnp.sum(jnp.square(res))
+            #err_lstsqs = jnp.amax(jnp.abs(res))
             error = err_lstsqs
 
-            err_reg = self.alpha * jnp.linalg.norm(beta, 'fro')**2
+            #err_reg = self.alpha * jnp.linalg.norm(beta, 'fro')**2
+            err_reg = self.alpha * jnp.sum(jnp.square(beta))
             error +=  err_reg 
 
             ones = jnp.ones(target.T.shape[1])
@@ -101,7 +104,7 @@ class PIML_adam(base_optimizer):
 #                     if i % 100 == 0:
 #                         print(f'step {i}, loss: {loss_value}')
                         
-                print('epoch:', k, 'loss:', loss(params, state, target) )
+                print('epoch:', k+1, 'loss:', loss(params, state, target) )
 
             return params
 

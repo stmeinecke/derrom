@@ -76,6 +76,15 @@ def phonon_coupling(k,phi,alpha):
   return sau
 
 
+def get_density(run, dk):
+    Narr = np.zeros(run.shape[1])
+    for t in range(run.shape[1]):
+        N = 0
+        for k in range(run.shape[0]):
+            N += run[k,t] * get_k(dk,k)*dk/2./np.pi
+        Narr[t] = N
+    return Narr
+
 
 def phonon_occupation(k,phi,alpha,T):
   help = 1/(np.exp(phonon_dispersion(k,phi,alpha)/kB/T)-1.)
