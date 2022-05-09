@@ -16,17 +16,32 @@ class SVDAPPRX:
         self.runs = runs
         self.n_runs = len(runs)
     
-    def train(self, rdim=None):
+    def train(self, rdim=None, wcols=np.zeros(1)):
         
         if rdim != None:
             self.rdim = rdim
+        if wcols.size != 1:
+            self.wcols = wcols
+        else:
+            self.wcols = np.ones(self.runs[0].shape[1])
             
-        self.U, self.S = ELPH_utils.get_SVD_from_runs(self.runs)
+#         self.U, self.S = ELPH_utils.get_SVD_from_runs(self.runs)
+
+        data_matrix = np.concatenate(self.runs,axis=1)
+    
+        n_cols = self.runs[0].shape[1]
+        for r in range(len(self.runs)):
+            for t in range(n_cols):
+                data_matrix[:,r*n_cols+t] *= self.wcols[t]
+
+        self.U,self.S,V = np.linalg.svd(data_matrix, full_matrices=False)
+
         self.Uhat = self.U[:,:self.rdim]
         
     def approx_single_run(self, run, rdim=None):
         if rdim == None:
             rdim = self.rdim
+                
         return self.U[:,:rdim] @ self.U[:,:rdim].T @ run
     
     def get_error(self, run, approx=np.zeros(1), rdim=None, norm='fro'):
