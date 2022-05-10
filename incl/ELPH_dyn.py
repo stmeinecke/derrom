@@ -85,6 +85,12 @@ def get_density(run, dk):
         Narr[t] = N
     return Narr
 
+def get_density_from_state(state, dk):
+    N = 0
+    for k in range(state.size):
+        N += state[k] * get_k(dk,k)*dk/2./np.pi
+    return N
+
 
 def phonon_occupation(k,phi,alpha,T):
   help = 1/(np.exp(phonon_dispersion(k,phi,alpha)/kB/T)-1.)
