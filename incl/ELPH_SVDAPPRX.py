@@ -31,8 +31,9 @@ class SVDAPPRX:
     
         n_cols = self.runs[0].shape[1]
         for r in range(len(self.runs)):
-            for t in range(n_cols):
-                data_matrix[:,r*n_cols+t] *= self.wcols[t]
+            data_matrix[:,r*n_cols:(r+1)*n_cols] *= self.wcols
+            #for t in range(n_cols):
+                #data_matrix[:,r*n_cols+t] *= self.wcols[t]
 
         self.U,self.S,V = np.linalg.svd(data_matrix, full_matrices=False)
 
@@ -61,8 +62,6 @@ class SVDAPPRX:
         else:
             print('unknown norm') 
 
-    
-          
         return err
     
     def score_multiple_runs(self,runs, **kwargs):

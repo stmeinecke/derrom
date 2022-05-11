@@ -79,7 +79,7 @@ class SVDNVAR(SVDVAR):
         n_cols = self.runs[0].shape[1]
         #apply column_weights
         for r in range(len(self.runs)):
-            data_matrix[:,r*n_cols:(r+1)*n_cols] /= self.column_weights
+            data_matrix[:,r*n_cols:(r+1)*n_cols] *= self.column_weights
         self.U,self.S = np.linalg.svd(data_matrix, full_matrices=False)[:2]
         self.Uhat = self.U[:,:self.rdim]
 
