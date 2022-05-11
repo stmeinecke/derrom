@@ -2,16 +2,7 @@ import numpy as np
 import sys
 
 sys.path.append("incl/")
-import ELPH_utils
 from ELPH_VAR import SVDVAR
-
-from sklearn.linear_model import MultiTaskElasticNet
-from sklearn.linear_model import MultiTaskLasso
-from sklearn.linear_model import Lasso
-
-from pysindy.optimizers import STLSQ
-import ELPH_Optimizer
-
 
 class SVDNVAR(SVDVAR):
   
@@ -53,7 +44,7 @@ class SVDNVAR(SVDVAR):
         return NVAR_state
   
   
-    def train(self, rdim = None, n_VAR_steps = None, NVAR_p = None, intercept=None, full_hist=None, scaler = None, optimizer = None, **kwargs):
+    def train(self, rdim = None, n_VAR_steps = None, NVAR_p = None, intercept=None, full_hist=None, scaler = None, optimizer = None, column_weights = np.zeros(1),  **kwargs):
         
         if rdim != None:
             self.rdim = rdim
@@ -76,22 +67,32 @@ class SVDNVAR(SVDVAR):
             self.optimizer = optimizer
         else:
             self.optimizer = ELPH_Optimizer.lstsqrs()
+            
+        if column_weights.size != 1:
+            self.column_weights = column_weights
+        else:
+            self.column_weights = np.ones(self.runs[0].shape[1])
 
 
         #calculate SVD decomposition of the training runs
-        self.U, self.S = ELPH_utils.get_SVD_from_runs(self.runs)
+        data_matrix = np.concatenate(self.runs,axis=1)
+        n_cols = self.runs[0].shape[1]
+        #apply column_weights
+        for r in range(len(self.runs)):
+            data_matrix[:,r*n_cols:(r+1)*n_cols] /= self.column_weights
+        self.U,self.S = np.linalg.svd(data_matrix, full_matrices=False)[:2]
         self.Uhat = self.U[:,:self.rdim]
 
         #project training data onto the first rdim columns of the SVD U-Matrix
-        self.red_coef_matrix = ELPH_utils.get_reduced_coef_matrix(self.runs, self.U, self.rdim)
-
+        self.red_coef_matrix = self.Uhat.T @ data_matrix
+        
         #apply data/feature scaling via scaler object
         if self.standardize:
             self.scaler.train(self.red_coef_matrix)
             self.red_coef_matrix = self.scaler.transform(self.red_coef_matrix)
 
-        #transform coeffiecient matrix back to a list of the individual coefficient runs
-        self.coef_runs = ELPH_utils.get_coef_runs(self.red_coef_matrix, self.n_runs)
+        #transform coeffiecient matrix back to an ndarray of the individual coefficient runs
+        self.coef_runs = np.asarray(np.split(self.red_coef_matrix, self.n_runs, axis=1))
 
         #create training data matrices
         self.VAR_state, self.target = self._SVDVAR__build_VAR_training_matrices()
