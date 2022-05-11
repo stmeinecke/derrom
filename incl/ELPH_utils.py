@@ -2,8 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-import ELPH_dyn
+#######################################
+### get initial conditions and and calc runs
+#######################################
 
+import ELPH_dyn
 
 def get_runs(kmax, n_kmax, inits, tmax = 5000.0, n_tmax = 1000):
   runs = []
@@ -41,6 +44,74 @@ def get_gaussian_inits(kmax, n_kmax, gaussian_paras):
 
   return inits
 
+#######################################
+### KFold cross validation
+#######################################
+
+def get_KFold_runs(runs, folds=5):
+    KFold_runs = np.array_split(runs, folds) #numpy returns list of ndarrays
+    KFold_runs = [list(array) for array in KFold_runs] #covert ndarrays back to list such that KFold_runs is a list of lists of ndarrays (the individual runs)
+    return KFold_runs
+
+def get_KFold_CV_scores(model, runs, folds=5, seed=817, score_kwargs = {}, train_kwargs={}):
+    
+    #create shuffled copy of the runs
+    rng = np.random.default_rng(seed=seed)
+    sruns = runs.copy()
+    rng.shuffle(sruns)
+    
+    #split runs into folds
+    KFold_runs = get_KFold_runs(sruns, folds=folds)
+    
+    scores = [] #of the individual folds
+    for k in range(folds):
+        train_runs = KFold_runs.copy()
+        test_runs = train_runs.pop(k) #test_runs = the kth fold, train_runs to remaining folds
+
+        train_runs = [item for sublist in train_runs for item in sublist] #unpack the training folds into one flattened list
+
+        #train the model on the training runs and get scores from the testing runs
+        model.load_runs(train_runs) 
+        model.train(**train_kwargs)
+        mean_score = model.score_multiple_runs(test_runs, **score_kwargs)[0]
+        
+        scores.append(mean_score)
+    
+    return np.mean(scores), scores
+
+
+#######################################
+### save and load runs
+#######################################
+
+def save_runs(runs, filename='../runs'):
+    np.savez(filename, runs)
+    
+def load_runs(filename='../runs.npz'):
+    
+    from os.path import exists
+
+    if not exists(filename):
+        print('runs file ot found')
+        return None
+    else:
+        npz_runs = np.load(filename)
+    #     print(npz_runs.files)
+    #     print(type(npz_runs['arr_0']))
+    #     print(npz_runs['arr_0'].shape)
+        runs = np.split(npz_runs['arr_0'], npz_runs['arr_0'].shape[0], axis=0)
+
+        for k in range(len(runs)):
+            runs[k] = np.reshape(runs[k], runs[k].shape[1:])
+    #     print(type(runs))
+    #     print(type(runs[1]))
+    #     print(runs[1].shape)
+        return runs
+
+
+#######################################
+### legacy functions for SVDVAR class
+#######################################
 
 def get_SVD_from_runs(runs):
   
@@ -74,59 +145,3 @@ def get_coef_runs(coef_data_matrix, n_splits):
 
 def get_ridge_regression_weights(state, target, alpha):
   return np.linalg.inv(state @ state.T + alpha * np.identity(state.shape[0])) @ state @ target.T
-
-
-def get_KFold_runs(runs, folds=5):
-    KFold_runs = np.array_split(runs, folds) #numpy returns list of ndarrays
-    KFold_runs = [list(array) for array in KFold_runs] #covert ndarrays back to list such that KFold_runs is a list of lists of ndarrays (the individual runs)
-    return KFold_runs
-
-def get_KFold_CV_scores(model, runs, folds=5, seed=817, score_kwargs = {}, train_kwargs={}):
-    
-    #create shuffled copy of the runs
-    rng = np.random.default_rng(seed=seed)
-    sruns = runs.copy()
-    rng.shuffle(sruns)
-    
-    #split runs into folds
-    KFold_runs = get_KFold_runs(sruns, folds=folds)
-    
-    scores = [] #of the individual folds
-    for k in range(folds):
-        train_runs = KFold_runs.copy()
-        test_runs = train_runs.pop(k) #test_runs = the kth fold, train_runs to remaining folds
-
-        train_runs = [item for sublist in train_runs for item in sublist] #unpack the training folds into one flattened list
-
-        #train the model on the training runs and get scores from the testing runs
-        model.load_runs(train_runs) 
-        model.train(**train_kwargs)
-        mean_score = model.score_multiple_runs(test_runs, **score_kwargs)[0]
-        
-        scores.append(mean_score)
-    
-    return np.mean(scores), scores
-
-def save_runs(runs, filename='../runs'):
-    np.savez(filename, runs)
-    
-def load_runs(filename='../runs.npz'):
-    
-    from os.path import exists
-
-    if not exists(filename):
-        print('runs file ot found')
-        return None
-    else:
-        npz_runs = np.load(filename)
-    #     print(npz_runs.files)
-    #     print(type(npz_runs['arr_0']))
-    #     print(npz_runs['arr_0'].shape)
-        runs = np.split(npz_runs['arr_0'], npz_runs['arr_0'].shape[0], axis=0)
-
-        for k in range(len(runs)):
-            runs[k] = np.reshape(runs[k], runs[k].shape[1:])
-    #     print(type(runs))
-    #     print(type(runs[1]))
-    #     print(runs[1].shape)
-        return runs
