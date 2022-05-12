@@ -45,28 +45,28 @@ class SVDVAR:
         state = []
         target = []
 
-        for r in range(len(self.coef_runs)):
+        for r in range(len(self.red_coef_runs)):
 
             if(self.full_hist == False):
-                nCols = self.coef_runs[r].shape[1]-1
+                nCols = self.red_coef_runs[r].shape[1]-1
                 Delta_j = self.n_VAR_steps-1
             else:
-                nCols = self.coef_runs[r].shape[1]-self.n_VAR_steps
+                nCols = self.red_coef_runs[r].shape[1]-self.n_VAR_steps
                 Delta_j = 0
                 
-            nRows = self.coef_runs[r].shape[0]*self.n_VAR_steps
+            nRows = self.red_coef_runs[r].shape[0]*self.n_VAR_steps
 
             run_VAR_matrix = np.zeros((nRows,nCols))
             for j in range(nCols):
-                run_VAR_matrix[:,j] =self. __build_VAR_vec(self.coef_runs[r], j-Delta_j, self.n_VAR_steps)
+                run_VAR_matrix[:,j] =self. __build_VAR_vec(self.red_coef_runs[r], j-Delta_j, self.n_VAR_steps)
 
             state.append(run_VAR_matrix)
             if self.full_hist == False:
-                target.append(self.coef_runs[r][:,1:])
-                #target.append(self.coef_runs[r][:,1:]-self.coef_runs[r][:,:-1])
+                target.append(self.red_coef_runs[r][:,1:])
+                #target.append(self.red_coef_runs[r][:,1:]-self.red_coef_runs[r][:,:-1])
             else:
-                target.append(self.coef_runs[r][:,self.n_VAR_steps:])
-                #target.append(self.coef_runs[r][:,self.n_VAR_steps:]-self.coef_runs[r][:,self.n_VAR_steps-1:-1])
+                target.append(self.red_coef_runs[r][:,self.n_VAR_steps:])
+                #target.append(self.red_coef_runs[r][:,self.n_VAR_steps:]-self.red_coef_runs[r][:,self.n_VAR_steps-1:-1])
 
         state = np.concatenate(state, axis=1)
         target = np.concatenate(target, axis=1)
@@ -98,7 +98,7 @@ class SVDVAR:
             self.scaler.train(self.red_coef_matrix)
             self.red_coef_matrix = self.scaler.transform(self.red_coef_matrix)
 
-        self.coef_runs = ELPH_utils.get_coef_runs(self.red_coef_matrix, self.n_runs)
+        self.red_coef_runs = ELPH_utils.get_coef_runs(self.red_coef_matrix, self.n_runs)
         
         self.state, self.target = self.__build_VAR_training_matrices()
         
@@ -149,6 +149,8 @@ class SVDVAR:
             err = np.mean( np.sum( np.square(run-pred), axis = 1 ) )
         elif norm =='max':
             err = np.abs(run-pred).max()
+        elif norm =='std':
+            err = np.sqrt( np.mean( np.square(run-pred) ) )
         else:
             print('unknown norm')
         
