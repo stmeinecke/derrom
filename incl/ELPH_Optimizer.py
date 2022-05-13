@@ -44,22 +44,23 @@ class PIML_adam(base_optimizer):
         
     def solve(self, state, target):
         
+        
         def loss(beta, state, target):
     
-            pred = state.T @ beta
-            res = pred - target.T 
+            pred = beta.T @ state
+            res = pred - target
 
-            #err_lstsqs = jnp.linalg.norm(res, 'fro')**2
             err_lstsqs = jnp.sum(jnp.square(res))
             #err_lstsqs = jnp.amax(jnp.abs(res))
             error = err_lstsqs
 
-            #err_reg = self.alpha * jnp.linalg.norm(beta, 'fro')**2
             err_reg = self.alpha * jnp.sum(jnp.square(beta))
             error +=  err_reg 
 
-            ones = jnp.ones(target.T.shape[1])
-            err_density = self.lambda1 * np.sum( jnp.square( (pred - target.T) @ ones ) ) 
+            ones = jnp.ones(target.shape[0])
+            err_density = self.lambda1 * np.sum( jnp.square( ones @ (pred - target) ) ) 
+            
+            
             error += err_density
 
             return error

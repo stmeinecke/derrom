@@ -177,6 +177,8 @@ class SVDNVAR:
             self.NVAR_state = np.concatenate( [self.NVAR_state, np.ones((1,self.NVAR_state.shape[1]))], axis=0 )
 
         #calculate weight matrix via optimizer object
+        #self.w = self.optimizer.solve(self.NVAR_state, self.target)
+        
         self.w = self.optimizer.solve(self.NVAR_state, self.target)
                           
 
@@ -242,8 +244,6 @@ class SVDNVAR:
         
         if norm == 'fro': #Frobenius norm
             err = np.linalg.norm(run-pred, ord='fro')
-        elif norm == 'var2': # mean of dynamical variable wise 2-norms
-            err = np.mean( np.sum( np.square(run-pred), axis = 1 ) )
         elif norm =='max':
             err = np.abs(run-pred).max()
         elif norm =='std':
