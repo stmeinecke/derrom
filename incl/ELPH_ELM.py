@@ -27,6 +27,9 @@ class SVDELM:
         self.intercept = intercept
         self.full_hist = full_hist
         
+        self.projection_matrix = None
+        self.bias_matrix = None
+        
         if scaler != None:
             self.scaler = scaler
             self.standardize = True
@@ -85,14 +88,8 @@ class SVDELM:
 
         return state,target
   
-    def __build_VAR_p_Vec(self, VAR_vec, order=2):
-        VAR_p_Vec = [VAR_vec]
-        VARp = VAR_vec
-        for p in range(1,order):
-            VARp = np.outer(VAR_vec,VARp)
-            VARp = VARp[ np.triu_indices(VARp.shape[0], m=VARp.shape[1]) ]
-            VAR_p_Vec.append(VARp)
-        return np.concatenate(VAR_p_Vec, axis=0)
+    def __build_ELM_Vec(self, VAR_vec):
+        return np.tanh(VAR_vec.T @ self.projection_matrix + self.bias_matrix)
   
   
   #def build_VAR_p_Vec(self, VAR_vec, order=2):
@@ -106,9 +103,9 @@ class SVDELM:
     
     def __build_ELM_training_matrices(self):
         
-        projection_matrix = np.random.uniform(self.ELM_weights_mean, self.ELM_weights_std, (np.shape(self.VAR_state)[0], self.ELM_nodes))
-        bis_matrix = np.random.uniform(self.ELM_weights_mean, self.ELM_weights_std, self.ELM_nodes)
-        projected_data = np.tanh(self.VAR_state.T @ projection_matrix + bis_matrix)
+        self.projection_matrix = np.random.uniform(self.ELM_weights_mean, self.ELM_weights_std, (np.shape(self.VAR_state)[0], self.ELM_nodes))
+        self.bias_matrix = np.random.uniform(self.ELM_weights_mean, self.ELM_weights_std, self.ELM_nodes)
+        projected_data = np.tanh(self.VAR_state.T @ self.projection_matrix + self.bias_matrix)
 
         return projected_data.T
 
@@ -217,14 +214,14 @@ class SVDELM:
             VAR_vec = self.__build_VAR_vec(pred[:self.rdim], j-self.n_VAR_steps, self.n_VAR_steps)
 
             #build the NVAR vector to the specified order from the VAR vector
-            NVAR_vec = self.__build_VAR_p_Vec(VAR_vec, order=self.NVAR_p)
+            ELM_vec = self.__build_ELM_Vec(VAR_vec)
 
             #add intercept/bias
             if self.intercept:
-                NVAR_vec = np.append(NVAR_vec, 1.0)
+                ELM_vec = np.append(ELM_vec, 1.0)
                           
             #predict the next step
-            pred[:,j] = self.w.T @ NVAR_vec
+            pred[:,j] = self.w.T @ ELM_vec
             #pred[:,j] = pred[:,j-1] + self.w.T @ NVAR_vec
 
         #undo the data/feature scaling
