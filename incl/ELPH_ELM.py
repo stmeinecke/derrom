@@ -89,7 +89,9 @@ class SVDELM:
         return state,target
   
     def __build_ELM_Vec(self, VAR_vec):
-        return np.tanh(VAR_vec.T @ self.projection_matrix + self.bias_matrix)
+        projected_data = np.tanh(VAR_vec.T @ self.projection_matrix + self.bias_matrix)
+        state = np.concatenate([projected_data.T, VAR_vec])
+        return state
   
   
   #def build_VAR_p_Vec(self, VAR_vec, order=2):
@@ -106,12 +108,14 @@ class SVDELM:
         self.projection_matrix = np.random.uniform(self.ELM_weights_mean, self.ELM_weights_std, (np.shape(self.VAR_state)[0], self.ELM_nodes))
         self.bias_matrix = np.random.uniform(self.ELM_weights_mean, self.ELM_weights_std, self.ELM_nodes)
         projected_data = np.tanh(self.VAR_state.T @ self.projection_matrix + self.bias_matrix)
+        state = np.concatenate([projected_data.T, self.VAR_state])
 
-        return projected_data.T
+        return state
 
   
     def train(self, rdim = None, prdim = None, n_VAR_steps = None, ELM_nodes = None, ELM_weights_mean = None, ELM_weights_std = None, intercept=None, full_hist=None, scaler = None, optimizer = None, column_weights = np.zeros(1),  **kwargs):
         
+      
         if rdim != None:
             self.rdim = rdim
         if prdim != None:
@@ -124,9 +128,9 @@ class SVDELM:
         if ELM_nodes != None:
             self.ELM_nodes = ELM_nodes
         if ELM_weights_mean != None:
-            self.ELM_nodes = ELM_weights_mean
+            self.ELM_weights_mean = ELM_weights_mean
         if ELM_weights_std != None:
-            self.ELM_nodes = ELM_weights_std
+            self.ELM_weights_std = ELM_weights_std
         if intercept != None:
             self.intercept = intercept
         if full_hist != None:
