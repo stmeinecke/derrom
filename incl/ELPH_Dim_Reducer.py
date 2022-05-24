@@ -42,10 +42,10 @@ class FFT(base_dim_reducer):
         
     def reduce(self, data_matrix, prdim):
         
-        FT = np.fft.rfft(data_matrix, axis=0)[:prdim]
+        FT = np.fft.rfft(data_matrix, axis=0)[:prdim//2]
         
         real_matrix = np.concatenate((np.real(FT),np.imag(FT)[1:]), axis=0)
-        
+
         return real_matrix
     
     def expand(self, coef_matrix):
