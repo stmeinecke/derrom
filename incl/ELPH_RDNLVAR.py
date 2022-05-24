@@ -31,8 +31,6 @@ class RDNLVAR:
         self.reduce_dim = False
 
         
-    
-    
     def load_runs(self,runs):
         self.runs = runs
         self.n_runs = len(runs)
@@ -196,7 +194,6 @@ class RDNLVAR:
                           
             #predict the next step
             pred[:,j] = self.w.T @ transform
-            #pred[:,j] = pred[:,j-1] + self.w.T @ NVAR_vec
 
         #undo the data/feature scaling
         if self.standardize:
@@ -209,12 +206,9 @@ class RDNLVAR:
         return pred
           
           
-    def get_error(self, run, pred=np.zeros(1), norm='fro', errSVD = False):
+    def get_error(self, run, pred=np.zeros(1), norm='fro'):
         if pred.size == 1:
             pred = self.predict_single_run(run)
-        
-        if errSVD == True:
-            run = self.U_rdim @ self.U_rdim.T @ run
         
         if norm == 'fro': #Frobenius norm
             err = np.linalg.norm(run-pred, ord='fro')
