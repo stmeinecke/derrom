@@ -4,9 +4,9 @@ import sys
 sys.path.append("incl/")
 
 
-class RDNLregr:
+class RDNLVAR:
   
-    def __init__(self, runs, rdim = 1, prdim=None, n_VAR_steps = 1, intercept = False, scaler = None, full_hist=False, NVAR_p = 1):
+    def __init__(self, runs, rdim = 1, prdim=None, n_VAR_steps = 1, intercept = False, scaler = None, full_hist=False):
         
         self.runs = runs
         self.n_runs = len(runs)
@@ -17,7 +17,6 @@ class RDNLregr:
         else:
             self.prdim = prdim
         self.n_VAR_steps = n_VAR_steps
-        self.NVAR_p = NVAR_p
         
         self.intercept = intercept
         self.full_hist = full_hist
@@ -27,6 +26,9 @@ class RDNLregr:
             self.standardize = True
         else:
             self.standardize = False
+            
+        self.transform_VAR = False
+        self.reduce_dim = False
 
         
     
@@ -48,8 +50,8 @@ class RDNLregr:
     
     def __build_VAR_training_matrices(self):
     
-        state = []
-        target = []
+        training_matrix = []
+        target_matrix = []
         
         #transform coeffiecient matrix back to an ndarray of the individual coefficient runs
         coef_runs = np.asarray(np.split(self.coef_matrix, self.n_runs, axis=1))
@@ -69,51 +71,20 @@ class RDNLregr:
             for j in range(nCols):
                 run_VAR_matrix[:,j] =self. __build_VAR_vec(coef_runs[r][:self.rdim,:], j-Delta_j, self.n_VAR_steps)
 
-            state.append(run_VAR_matrix)
+            training_matrix.append(run_VAR_matrix)
             if self.full_hist == False:
-                target.append(coef_runs[r][:,1:])
+                target_matrix.append(coef_runs[r][:,1:])
             else:
-                target.append(coef_runs[r][:,self.n_VAR_steps:])
+                target_matrix.append(coef_runs[r][:,self.n_VAR_steps:])
 
-        state = np.concatenate(state, axis=1)
-        target = np.concatenate(target, axis=1)
+        training_matrix = np.concatenate(training_matrix, axis=1)
+        target_matrix = np.concatenate(target_matrix, axis=1)
 
-        return state,target
-  
-    def __build_VAR_p_Vec(self, VAR_vec, order=2):
-        VAR_p_Vec = [VAR_vec]
-        VARp = VAR_vec
-        for p in range(1,order):
-            VARp = np.outer(VAR_vec,VARp)
-            VARp = VARp[ np.triu_indices(VARp.shape[0], m=VARp.shape[1]) ]
-            VAR_p_Vec.append(VARp)
-        return np.concatenate(VAR_p_Vec, axis=0)
-  
-  
-  #def build_VAR_p_Vec(self, VAR_vec, order=2):
-    #VAR_p_Vec = [VAR_vec]
-    #VARp = VAR_vec
-    #for p in range(1,order):
-      #VARp = np.multiply(VARp,VAR_vec)
-      #VAR_p_Vec.append(VARp)
-    #return np.concatenate(VAR_p_Vec, axis=0)
-  
-    
-    def __build_NVAR_training_matrices(self):
-    
-        nRows = self.__build_VAR_p_Vec(self.VAR_state[:,0], order=self.NVAR_p).size
-        nCols = self.VAR_state.shape[1]
-
-        NVAR_state = np.zeros((nRows,nCols)) 
-        #print(NVAR_state.shape)
-
-        for k in range( NVAR_state.shape[1] ):
-            NVAR_state[:,k] = self.__build_VAR_p_Vec(self.VAR_state[:,k], order=self.NVAR_p)
-
-        return NVAR_state
+        return training_matrix,target_matrix
+      
 
   
-    def train(self, rdim = None, prdim = None, n_VAR_steps = None, NVAR_p = None, intercept=None, full_hist=None, scaler = None, optimizer = None, dim_reducer = None, VAR_transformer = None,  **kwargs):
+    def train(self, rdim = None, prdim = None, n_VAR_steps = None, intercept=None, full_hist=None, scaler = None, optimizer = None, dim_reducer = None, VAR_transformer = None,  **kwargs):
         
         if rdim != None:
             self.rdim = rdim
@@ -124,8 +95,6 @@ class RDNLregr:
                 self.prdim = rdim
         if n_VAR_steps != None:
             self.n_VAR_steps = n_VAR_steps
-        if NVAR_p != None:
-            self.NVAR_p = NVAR_p
         if intercept != None:
             self.intercept = intercept
         if full_hist != None:
@@ -144,15 +113,26 @@ class RDNLregr:
             
         if dim_reducer != None:
             self.dim_reducer = dim_reducer
+            self.reduce_dim = True
+        else:
+            self.reduce_dim = False
             
         if VAR_transformer != None:
             self.VAR_transformer = VAR_transformer
+            self.transform_VAR = True
+        else:
+            self.transform_VAR = False
 
 
         #apply the dimensionality reduction to get the reduced coefficient matrix with prdim features via the dim_reducer object
         data_matrix = np.concatenate(self.runs,axis=1)
-        self.dim_reducer.train(data_matrix)
-        self.coef_matrix = self.dim_reducer.reduce(data_matrix,self.prdim)
+        if self.reduce_dim == True:
+            self.dim_reducer.train(data_matrix)
+            self.coef_matrix = self.dim_reducer.reduce(data_matrix,self.prdim)
+        else:
+            self.coef_matrix = data_matrix
+            self.rdim = data_matrix.shape[0]
+            self.prdim = data_matrix.shape[0]
 
         
         #apply data/feature scaling via scaler object
@@ -161,24 +141,27 @@ class RDNLregr:
             self.coef_matrix = self.scaler.transform(self.coef_matrix)
 
         #create training data matrices
-        self.training_matrix, self.target = self.__build_VAR_training_matrices()
+        self.training_matrix, self.target_matrix = self.__build_VAR_training_matrices()
         
-        self.training_matrix = self.VAR_transformer.transform(self.training_matrix)
-
-#         self.NVAR_state = self.__build_NVAR_training_matrices()
+        #apply transformation to the VAR state
+        if self.transform_VAR == True:
+            self.training_matrix = self.VAR_transformer.transform(self.training_matrix)
 
         #add bias/intercept
         if intercept:
             self.training_matrix = np.concatenate( [self.training_matrix, np.ones((1,self.training_matrix.shape[1]))], axis=0 )
 
         #calculate weight matrix via optimizer object
-        self.w = self.optimizer.solve(self.training_matrix, self.target)
+        self.w = self.optimizer.solve(self.training_matrix, self.target_matrix)
                           
 
     def predict_single_run(self, run):
         
         #apply the dimensionality reduction to the run
-        coef_run = self.dim_reducer.reduce(run,self.prdim)
+        if self.reduce_dim == True:
+            coef_run = self.dim_reducer.reduce(run,self.prdim)
+        else:
+            coef_run = run
 
         #apply data/feature scaling
         if self.standardize:
@@ -203,8 +186,9 @@ class RDNLregr:
             VAR_vec = self.__build_VAR_vec(pred[:self.rdim], j-self.n_VAR_steps, self.n_VAR_steps)
             VAR_vec = VAR_vec.reshape((self.rdim*self.n_VAR_steps,1))
 
-            #build the NVAR vector to the specified order from the VAR vector
-            transform = self.VAR_transformer.transform(VAR_vec)
+            #apply transformation to the VAR state
+            if self.transform_VAR == True:
+                transform = self.VAR_transformer.transform(VAR_vec)
 
             #add intercept/bias
             if self.intercept:
@@ -219,7 +203,8 @@ class RDNLregr:
             pred = self.scaler.inverse_transform(pred)
         
         #expand the reduced representation to full dimension
-        pred = self.dim_reducer.expand(pred)
+        if self.reduce_dim == True:
+            pred = self.dim_reducer.expand(pred)
 
         return pred
           
@@ -253,9 +238,8 @@ class RDNLregr:
                 
     def print_status(self):
         print('rdim: ', self.rdim)
+        print('prdim: ', self.prdim)
         print('n_VAR_steps: ', self.n_VAR_steps)
-#         print('NVAR_p: ', self.NVAR_p)
-#         print('VAR state shape: ', self.VAR_state.shape)
         print('train shape: ', self.training_matrix.shape)
-        print('target shape: ', self.target.shape)
+        print('target shape: ', self.target_matrix.shape)
         print('weights shape: ', self.w.shape)
