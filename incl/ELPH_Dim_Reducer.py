@@ -42,18 +42,20 @@ class FFT(base_dim_reducer):
         
     def reduce(self, data_matrix, prdim):
         
-        FT = np.fft.rfft(data_matrix, axis=0)[:prdim//2]
+        assert prdim%2==0, "prdim must be an even number for the FFT dim reducer"
         
-        real_matrix = np.concatenate((np.real(FT),np.imag(FT)[1:]), axis=0)
+        FT = np.fft.rfft(data_matrix, axis=0)
+  
+        real_matrix = np.zeros((FT.shape[0]*2,FT.shape[1]))
+        
+        real_matrix[::2] = np.real(FT)
+        real_matrix[1::2] = np.imag(FT)
 
-        return real_matrix
+        return real_matrix[:prdim]
     
     def expand(self, coef_matrix):
         
-        ind_split = (coef_matrix.shape[0]+1)//2
-        
-        complex_matrix = coef_matrix[:ind_split] + 1.j*np.concatenate( (np.zeros((1,coef_matrix.shape[1])), coef_matrix[ind_split:]), axis=0) 
-        
+        complex_matrix = coef_matrix[::2] + 1.j*coef_matrix[1::2]
         iFT = np.fft.irfft(complex_matrix, n=self.full_dim, axis=0)
         
         return iFT

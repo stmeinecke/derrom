@@ -28,6 +28,11 @@ class standardize_scaler(data_scaler):
         self.mean = np.mean(self.data_matrix, axis=1)
         self.std = np.std(self.data_matrix, axis=1)
         
+        #do not scale constant features
+        for k in range(self.std.size):
+            if np.abs(self.std[k]) < 1e-8:
+                self.std[k] = 1.0
+        
     def transform(self, data_matrix):
         return ((data_matrix.T - self.mean)/self.std).T
     
@@ -45,6 +50,11 @@ class normalize_scaler(data_scaler):
         self.max = np.amax(self.data_matrix, axis=1)
         self.min = np.amin(self.data_matrix, axis=1)
         self.scale = (self.max - self.min)/self.rel_scale
+        
+        #do not scale constant features
+        for k in range(self.scale.size):
+            if np.abs(self.scale[k]) < 1e-8:
+                self.scale[k] = 1.0
         
     def transform(self, data_matrix):
         n_features = data_matrix.shape[0]
@@ -67,6 +77,11 @@ class tanh_scaler(data_scaler):
         self.max = np.amax(self.data_matrix, axis=1)
         self.min = np.amin(self.data_matrix, axis=1)
         self.scale = (self.max - self.min)/self.arg_scale
+        
+        #do not scale constant features
+        for k in range(self.std.size):
+            if np.abs(self.std[k]) < 1e-8:
+                self.std[k] = 1.0
         
     def transform(self, data_matrix):
         return np.tanh( (data_matrix.T - self.min)/self.scale - 0.5*self.arg_scale ).T * self.out_scale
