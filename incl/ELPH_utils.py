@@ -107,6 +107,11 @@ def load_runs(filename='../runs.npz'):
     #     print(type(runs[1]))
     #     print(runs[1].shape)
         return runs
+    
+    
+def load_MG(filename='../MG.txt'):
+    first_row = np.fromfile(filename, count=3, dtype=int, sep='\n')
+    return np.loadtxt(filename,skiprows=1), first_row[0], first_row[1], first_row[2]
 
 
 #######################################
