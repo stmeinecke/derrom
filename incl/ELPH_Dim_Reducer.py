@@ -34,11 +34,26 @@ class SVD(base_dim_reducer):
       
       
 class FFT(base_dim_reducer):
-    def __init__(self):
+    def __init__(self, sorted=False):
+        self.sorted = sorted
         pass
     
     def train(self, data_matrix):
         self.full_dim = data_matrix.shape[0]
+        
+        if self.sorted:
+            FT = np.fft.rfft(data_matrix, axis=0)
+
+            real_matrix = np.zeros((FT.shape[0]*2,FT.shape[1]))
+
+            real_matrix[::2] = np.real(FT)
+            real_matrix[1::2] = np.imag(FT)
+
+            self.mean_coefs = np.mean(real_matrix, axis=1)
+
+            self.sort_inds = np.flip(np.argsort(np.abs(self.mean_coefs)))
+            self.unsort_inds = np.argsort(self.sort_inds)
+        
         
     def reduce(self, data_matrix, prdim):
         
@@ -50,12 +65,23 @@ class FFT(base_dim_reducer):
         
         real_matrix[::2] = np.real(FT)
         real_matrix[1::2] = np.imag(FT)
-
-        return real_matrix[:prdim]
+        
+        if self.sorted:
+            return real_matrix[self.sort_inds][:prdim]
+        else:
+            return real_matrix[:prdim]
     
     def expand(self, coef_matrix):
         
-        complex_matrix = coef_matrix[::2] + 1.j*coef_matrix[1::2]
+        if self.sorted:
+            real_matrix = np.zeros((2 * self.full_dim, coef_matrix.shape[1]))
+            real_matrix[:coef_matrix.shape[0]] = coef_matrix
+            real_matrix = real_matrix[self.unsort_inds]
+          
+            complex_matrix = real_matrix[::2] + 1.j*real_matrix[1::2]  
+        else:
+            complex_matrix = coef_matrix[::2] + 1.j*coef_matrix[1::2]
+            
         iFT = np.fft.irfft(complex_matrix, n=self.full_dim, axis=0)
         
         return iFT
