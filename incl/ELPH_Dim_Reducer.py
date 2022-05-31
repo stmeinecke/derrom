@@ -85,3 +85,34 @@ class FFT(base_dim_reducer):
         iFT = np.fft.irfft(complex_matrix, n=self.full_dim, axis=0)
         
         return iFT
+
+
+from scipy.special import eval_hermite
+class Hermite(base_dim_reducer):
+    def __init__(self, x):
+        self.x = x
+        pass
+      
+    def train(self, data_matrix):
+        self.full_dim = data_matrix.shape[0]
+        
+        self.H_matrix = np.zeros((self.full_dim, self.full_dim))
+        for k in range(self.full_dim):
+            self.H_matrix[k]  = eval_hermite(k,self.x)*np.exp(-self.x**2)
+            
+    def reduce(self,data_matrix,prdim):
+        
+        return self.H_matrix[:prdim] @ data_matrix
+        
+    def expand(self, coef_matrix):
+        
+        dim = coef_matrix.shape[0]
+      
+        return np.linalg.pinv(self.H_matrix[:dim]) @ coef_matrix
+        
+            
+        
+        
+        
+    
+  
