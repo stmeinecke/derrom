@@ -101,24 +101,24 @@ class Hermite(base_dim_reducer):
         for k in range(self.full_dim):
             self.H_matrix[k]  = eval_hermite(k,self.x) * np.exp(-0.5*self.x**2) / np.sqrt(np.sqrt(np.pi)*(2**k)*np.math.factorial(k))
           
-        def loss(x_max):
-            x_test = np.linspace(0,x_max,self.full_dim)
-            for k in range(self.full_dim):
-                self.H_matrix[k] = eval_hermite(k,x_test) * np.exp(-0.5*x_test**2) / np.sqrt(np.sqrt(np.pi)*(2**k)*np.math.factorial(k))
+        #def loss(x_max):
+            #x_test = np.linspace(0,x_max,self.full_dim)
+            #for k in range(self.full_dim):
+                #self.H_matrix[k] = eval_hermite(k,x_test) * np.exp(-0.5*x_test**2) / np.sqrt(np.sqrt(np.pi)*(2**k)*np.math.factorial(k))
                 
-            apprx = self.expand(self.reduce(data_matrix,self.full_dim))
+            #apprx = self.expand(self.reduce(data_matrix,self.full_dim))
             
-            #return np.linalg.norm(data_matrix-apprx, ord='fro')
-            return np.abs(np.ravel(data_matrix-apprx)).max()
+            ##return np.linalg.norm(data_matrix-apprx, ord='fro')
+            #return np.abs(np.ravel(data_matrix-apprx)).max()
           
-        res = minimize_scalar(loss, bounds=(0,40))
-        res.x
-        print(res.x)
+        #res = minimize_scalar(loss, bounds=(0,40))
+        #res.x
+        #print(res.x)
         
-        self.x = np.linspace(0,res.x,self.full_dim)
-        #self.H_matrix = np.zeros((self.full_dim, self.full_dim))
-        for k in range(self.full_dim):
-            self.H_matrix[k]  = eval_hermite(k,self.x) * np.exp(-0.5*self.x**2) / np.sqrt(np.sqrt(np.pi)*(2**k)*np.math.factorial(k))
+        #self.x = np.linspace(0,res.x,self.full_dim)
+        ##self.H_matrix = np.zeros((self.full_dim, self.full_dim))
+        #for k in range(self.full_dim):
+            #self.H_matrix[k]  = eval_hermite(k,self.x) * np.exp(-0.5*self.x**2) / np.sqrt(np.sqrt(np.pi)*(2**k)*np.math.factorial(k))
         
         
     def reduce(self,data_matrix,prdim):
