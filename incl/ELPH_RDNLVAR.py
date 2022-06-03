@@ -139,10 +139,11 @@ class RDNLVAR:
             self.coef_matrix = self.scaler.transform(self.coef_matrix)
 
         #create training data matrices
-        self.training_matrix, self.target_matrix = self.__build_VAR_training_matrices()
+        self.training_matrix, self.target_matrix = self.__build_VAR_training_matrices()    
         
         #apply transformation to the VAR state
         if self.transform_VAR == True:
+            self.VAR_transformer.setup(self.training_matrix.shape[0])
             self.training_matrix = self.VAR_transformer.transform(self.training_matrix)
 
         #add bias/intercept

@@ -11,6 +11,9 @@ class base_VAR_transformer:
     def transform(self):
         raise NotImplementedError
         
+    def setup(self):
+        raise NotImplementedError
+        
         
 class polynomial_features(base_VAR_transformer):
     
@@ -38,5 +41,28 @@ class polynomial_features(base_VAR_transformer):
 
         return poly_features
         
+    def setup(self, n_VAR_features):
+        pass
         
         
+        
+class ELM_features(base_VAR_transformer):
+    
+    def __init__(self, ELM_nodes = 1000, ELM_weights_mean = 0.0, ELM_weights_std = 1.0, seed=817, activation_function=np.tanh):
+        self.rng = np.random.default_rng(seed=seed)
+        self.ELM_nodes = ELM_nodes
+        self.ELM_weights_mean = ELM_weights_mean
+        self.ELM_weights_std = ELM_weights_std
+        self.projection_matrix = None
+        self.bias_matrix = None
+        self.activation_function = activation_function
+        
+    def setup(self, n_VAR_features):
+        self.projection_matrix = self.rng.uniform(self.ELM_weights_mean, self.ELM_weights_std, (n_VAR_features, self.ELM_nodes))
+        self.bias_matrix = self.rng.uniform(self.ELM_weights_mean, self.ELM_weights_std, self.ELM_nodes)
+    
+    def transform(self,data_matrix):
+        projected_data = self.activation_function(data_matrix.T @ self.projection_matrix + self.bias_matrix)
+        state = np.concatenate([projected_data.T, data_matrix])
+
+        return state
