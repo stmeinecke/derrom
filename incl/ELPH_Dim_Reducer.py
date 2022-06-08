@@ -25,8 +25,8 @@ class SVD(base_dim_reducer):
     def train(self, data_matrix):
         self.U,self.S = np.linalg.svd(data_matrix, full_matrices=False)[:2]
         
-    def reduce(self, data_matrix, prdim):
-        return self.U[:,:prdim].T @ data_matrix
+    def reduce(self, data_matrix, rdim):
+        return self.U[:,:rdim].T @ data_matrix
     
     def expand(self, coef_matrix):
         dim = coef_matrix.shape[0]
@@ -55,9 +55,9 @@ class FFT(base_dim_reducer):
             self.unsort_inds = np.argsort(self.sort_inds)
         
         
-    def reduce(self, data_matrix, prdim):
+    def reduce(self, data_matrix, rdim):
         
-        assert prdim%2==0, "prdim must be an even number for the FFT dim reducer"
+        assert rdim%2==0, "rdim must be an even number for the FFT dim reducer"
         
         FT = np.fft.rfft(data_matrix, axis=0)
   
@@ -67,9 +67,9 @@ class FFT(base_dim_reducer):
         real_matrix[1::2] = np.imag(FT)
         
         if self.sorted:
-            return real_matrix[self.sort_inds][:prdim]
+            return real_matrix[self.sort_inds][:rdim]
         else:
-            return real_matrix[:prdim]
+            return real_matrix[:rdim]
     
     def expand(self, coef_matrix):
         
@@ -90,46 +90,59 @@ class FFT(base_dim_reducer):
 from scipy.special import eval_hermite
 from scipy.optimize import minimize_scalar
 class Hermite(base_dim_reducer):
-    def __init__(self, x):
-        self.x = x
+    def __init__(self, sample_max = 1.0, sorted=False, optimize=False):
+        self.sample_max = sample_max
+        self.sorted = sorted
+        self.optimize = optimize
         pass
       
     def train(self, data_matrix):
         self.full_dim = data_matrix.shape[0]
+        self.x = np.linspace(0,self.sample_max,self.full_dim)
         
         self.H_matrix = np.zeros((self.full_dim, self.full_dim))
         for k in range(self.full_dim):
             self.H_matrix[k]  = eval_hermite(k,self.x) * np.exp(-0.5*self.x**2) / np.sqrt(np.sqrt(np.pi)*(2**k)*np.math.factorial(k))
-          
-        #def loss(x_max):
-            #x_test = np.linspace(0,x_max,self.full_dim)
-            #for k in range(self.full_dim):
-                #self.H_matrix[k] = eval_hermite(k,x_test) * np.exp(-0.5*x_test**2) / np.sqrt(np.sqrt(np.pi)*(2**k)*np.math.factorial(k))
+        
+        if self.optimize == True:
+            def loss(sample_max):
+                x_test = np.linspace(0,sample_max,self.full_dim)
+                for k in range(self.full_dim):
+                    self.H_matrix[k] = eval_hermite(k,x_test) * np.exp(-0.5*x_test**2) / np.sqrt(np.sqrt(np.pi)*(2**k)*np.math.factorial(k))
+                    
+                apprx = np.linalg.pinv(self.H_matrix) @ (self.H_matrix @ data_matrix)
                 
-            #apprx = self.expand(self.reduce(data_matrix,self.full_dim))
+                #return np.linalg.norm(data_matrix-apprx, ord='fro')
+                #return np.abs(np.ravel(data_matrix-apprx)).max()
+                return np.std(np.ravel(data_matrix-apprx))
+              
+            res = minimize_scalar(loss, bounds=(0,40))
+            print(res.x)
             
-            ##return np.linalg.norm(data_matrix-apprx, ord='fro')
-            #return np.abs(np.ravel(data_matrix-apprx)).max()
-          
-        #res = minimize_scalar(loss, bounds=(0,40))
-        #res.x
-        #print(res.x)
+            self.x = np.linspace(0,res.x,self.full_dim)
+            for k in range(self.full_dim):
+                self.H_matrix[k]  = eval_hermite(k,self.x) * np.exp(-0.5*self.x**2) / np.sqrt(np.sqrt(np.pi)*(2**k)*np.math.factorial(k))
+            
+            
+        if self.sorted:
+            train_coefs = self.H_matrix @ data_matrix 
+            self.mean_coefs = np.mean(train_coefs, axis=1)
+            self.sort_inds = np.flip(np.argsort(np.abs(self.mean_coefs)))
+            self.sorted_H_matrix = self.H_matrix[self.sort_inds]
         
-        #self.x = np.linspace(0,res.x,self.full_dim)
-        ##self.H_matrix = np.zeros((self.full_dim, self.full_dim))
-        #for k in range(self.full_dim):
-            #self.H_matrix[k]  = eval_hermite(k,self.x) * np.exp(-0.5*self.x**2) / np.sqrt(np.sqrt(np.pi)*(2**k)*np.math.factorial(k))
         
-        
-    def reduce(self,data_matrix,prdim):
-        
-        return self.H_matrix[:prdim] @ data_matrix
+    def reduce(self,data_matrix,rdim):
+        if self.sorted:
+            return self.sorted_H_matrix[:rdim] @ data_matrix
+        else:
+            return self.H_matrix[:rdim] @ data_matrix
         
     def expand(self, coef_matrix):
-        
         dim = coef_matrix.shape[0]
-      
-        return np.linalg.pinv(self.H_matrix[:dim]) @ coef_matrix
+        if self.sorted:
+            return np.linalg.pinv(self.sorted_H_matrix[:dim]) @ coef_matrix
+        else:
+            return np.linalg.pinv(self.H_matrix[:dim]) @ coef_matrix
         
             
         
