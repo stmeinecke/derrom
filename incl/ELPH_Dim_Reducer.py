@@ -57,8 +57,6 @@ class FFT(base_dim_reducer):
         
     def reduce(self, data_matrix, rdim):
         
-        assert rdim%2==0, "rdim must be an even number for the FFT dim reducer"
-        
         FT = np.fft.rfft(data_matrix, axis=0)
   
         real_matrix = np.zeros((FT.shape[0]*2,FT.shape[1]))
