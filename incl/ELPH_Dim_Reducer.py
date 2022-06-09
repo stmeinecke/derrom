@@ -115,7 +115,7 @@ class Hermite(base_dim_reducer):
                 return np.std(np.ravel(data_matrix-apprx))
               
             res = minimize_scalar(loss, bounds=(0,40))
-            print(res.x)
+            #print(res.x)
             
             self.x = np.linspace(0,res.x,self.full_dim)
             for k in range(self.full_dim):
