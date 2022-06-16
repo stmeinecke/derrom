@@ -88,12 +88,36 @@ class FFT(base_dim_reducer):
 from scipy.special import eval_hermite
 from scipy.optimize import minimize_scalar
 class Hermite(base_dim_reducer):
-    def __init__(self, sample_max = 1.0, sorted=False, optimize=False):
+    def __init__(self, sample_max = 1.0, sorted=False, optimize=False, orthogonalize=False):
         self.sample_max = sample_max
         self.sorted = sorted
         self.optimize = optimize
+        self.orthogonalize = orthogonalize
         pass
-      
+    
+    def __GramSchmidt_Rows(self, A, eps=0.0):
+        M = A.shape[0]
+        N = A.shape[1]
+        assert(M <= N)
+        Q = np.zeros((M,N))
+        for k in range(0,M):
+            Q[k] = A[k]
+            for j in range(k):
+                Q[k] = Q[k] - np.dot(Q[j],A[k])*Q[j]
+
+            if (Q[k] > eps).any():
+                Q[k] = Q[k] / np.linalg.norm(Q[k])
+            else:
+                Q[k] = 0.0
+        return Q
+    
+    def __nGramSchmidt_Rows(self, matrix, n=1, eps=0.0):
+        o_matrix = matrix
+        for k in range(n):
+            o_matrix =  self.__GramSchmidt_Rows(o_matrix, eps)
+        return o_matrix
+    
+    
     def train(self, data_matrix):
         self.full_dim = data_matrix.shape[0]
         self.x = np.linspace(0,self.sample_max,self.full_dim)
@@ -121,7 +145,9 @@ class Hermite(base_dim_reducer):
             for k in range(self.full_dim):
                 self.H_matrix[k]  = eval_hermite(k,self.x) * np.exp(-0.5*self.x**2) / np.sqrt(np.sqrt(np.pi)*(2**k)*np.math.factorial(k))
             
-            
+        if self.orthogonalize:
+            self.H_matrix = self.__nGramSchmidt_Rows(self.H_matrix,10)
+        
         if self.sorted:
             train_coefs = self.H_matrix @ data_matrix 
             self.mean_coefs = np.mean(train_coefs, axis=1)
