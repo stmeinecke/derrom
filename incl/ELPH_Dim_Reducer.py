@@ -88,11 +88,12 @@ class FFT(base_dim_reducer):
 from scipy.special import eval_hermite
 from scipy.optimize import minimize_scalar
 class Hermite(base_dim_reducer):
-    def __init__(self, sample_max = 1.0, sorted=False, optimize=False, orthogonalize=False):
+    def __init__(self, sample_max = 1.0, sorted=False, optimize=False, orthogonalize=False, train_rdim=None):
         self.sample_max = sample_max
         self.sorted = sorted
         self.optimize = optimize
         self.orthogonalize = orthogonalize
+        self.train_rdim = train_rdim
         pass
     
     def __GramSchmidt_Rows(self, A, eps=0.0):
@@ -120,6 +121,12 @@ class Hermite(base_dim_reducer):
     
     def train(self, data_matrix):
         self.full_dim = data_matrix.shape[0]
+        
+        if self.train_rdim == None:
+            rdim = self.full_dim
+        else:
+            rdim = self.train_rdim
+            
         self.x = np.linspace(0,self.sample_max,self.full_dim)
         
         self.H_matrix = np.zeros((self.full_dim, self.full_dim))
@@ -131,17 +138,27 @@ class Hermite(base_dim_reducer):
                 x_test = np.linspace(0,sample_max,self.full_dim)
                 for k in range(self.full_dim):
                     self.H_matrix[k] = eval_hermite(k,x_test) * np.exp(-0.5*x_test**2) / np.sqrt(np.sqrt(np.pi)*(2**k)*np.math.factorial(k))
-                    
-                apprx = np.linalg.pinv(self.H_matrix) @ (self.H_matrix @ data_matrix)
+                
+                if self.orthogonalize:
+                    self.H_matrix = self.__nGramSchmidt_Rows(self.H_matrix,10)
+                
+                if self.sorted:
+                    train_coefs = self.H_matrix @ data_matrix 
+                    self.mean_coefs = np.mean(train_coefs, axis=1)
+                    self.sort_inds = np.flip(np.argsort(np.abs(self.mean_coefs)))
+                    self.sorted_H_matrix = self.H_matrix[self.sort_inds]
+                        
+                apprx = np.linalg.pinv(self.H_matrix[:rdim]) @ (self.H_matrix[:rdim] @ data_matrix)
                 
                 #return np.linalg.norm(data_matrix-apprx, ord='fro')
                 #return np.abs(np.ravel(data_matrix-apprx)).max()
                 return np.std(np.ravel(data_matrix-apprx))
               
             res = minimize_scalar(loss, bounds=(0,40))
+            self.sample_max = res.x
             #print(res.x)
             
-            self.x = np.linspace(0,res.x,self.full_dim)
+            self.x = np.linspace(0,self.sample_max,self.full_dim)
             for k in range(self.full_dim):
                 self.H_matrix[k]  = eval_hermite(k,self.x) * np.exp(-0.5*self.x**2) / np.sqrt(np.sqrt(np.pi)*(2**k)*np.math.factorial(k))
             
