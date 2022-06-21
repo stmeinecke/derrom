@@ -168,8 +168,6 @@ def get_init_cond_gauss(kmax, n_kmax, max_pos=0.2, width=0.05, density = 0.1):
   
   initial_ele = np.full(n_kmax,0.)
   initial_phon = np.full((4,n_kmax),0.)
-#   helper_max = max_pos
-#   helper_width = width
   for n_k in range(n_kmax):
     helper_expo = electron_dispersion(get_k(dk,n_k),0) - max_pos
     helper = np.exp(-helper_expo*helper_expo/width/width/2.)
@@ -192,35 +190,60 @@ def get_init_cond_gauss(kmax, n_kmax, max_pos=0.2, width=0.05, density = 0.1):
   return initial_state
 
 
-# def get_init_cond_gauss(kmax, n_kmax, max_pos=0.2, width=0.05):
-#   dk = kmax/n_kmax
-  
-#   print(max_pos)
-#   print(width)
-  
-#   initial_ele = np.full(n_kmax,0.)
-#   initial_phon = np.full((4,n_kmax),0.)
-#   for n_k in range(n_kmax):
-#     helper_expo = electron_dispersion(get_k(dk,n_k),0) - max_pos
-#     helper = np.exp(-helper_expo*helper_expo/width/width/2.)
-#     initial_ele[n_k] = helper
-#   helper = 0.
-#   for n_k in range(n_kmax):
-#     helper += dk*get_k(dk,n_k)/2./pi*initial_ele[n_k]
-#   initial_ele = initial_ele/helper*density
 
-#   for n_k in range(n_kmax):
-#     for a in range(4):
-#       initial_phon[a][n_k] = phonon_occupation(get_k(dk,n_k),0.,a,T_cryo)
+def get_full_dynamics(init_cond, kmax= 2.0, n_kmax = 20, tmax = 10000.0, n_tmax = 2000):
+    
+  in_scattering_matrix_em, out_scattering_matrix_em, in_scattering_matrix_abs, out_scattering_matrix_abs, absorption_matrix, emission_matrix, einer = build_boltzmann_mats(kmax,n_kmax)
+    
+  def boltzmann_equation(t,y):
+    y = np.reshape(y,(5,n_kmax))
+    right_ele = y[0]
+    right_phon = y[1:]
 
-#   # print(np.shape(initial_phon))
-#   initial_ele = np.reshape(initial_ele,(1,n_kmax))
-#   # print(np.shape(initial_ele))
+    temp_phon_abs = np.full((4,n_kmax),0.)
+    temp_phon_em = np.full((4,n_kmax),0.)
+    temp_ele_in = np.full(n_kmax,0.)
+    temp_ele_out = np.full(n_kmax,0.)
 
-#   initial_state = np.concatenate((initial_ele,initial_phon),axis = 0 )
-#   initial_state = np.reshape(initial_state,5*n_kmax)
+    block_ele = einer - right_ele
+    stim_phon = einer + right_phon
 
-#   return initial_state
+    help_phonon_weg = np.tensordot(in_scattering_matrix_em,stim_phon,axes = ([2,3],[0,1])) + np.tensordot(in_scattering_matrix_abs,right_phon,axes = ([2,3],[0,1]))
+    help_source_weg = np.tensordot(help_phonon_weg,right_ele,axes = (1,0))
+    temp_ele_in = np.multiply(help_source_weg,block_ele)
+
+    help_phonon_weg = np.tensordot(out_scattering_matrix_em,stim_phon,axes = ([2,3],[0,1])) + np.tensordot(out_scattering_matrix_abs,right_phon,axes = ([2,3],[0,1]))
+    help_source_weg = np.tensordot(help_phonon_weg,block_ele,axes = (1,0))
+    temp_ele_out = np.multiply(help_source_weg,right_ele)
+
+
+
+    block_weg = np.tensordot(absorption_matrix,block_ele,axes = (1,0))
+    temp_phon_abs = np.tensordot(block_weg,right_ele,axes = (0,0))
+    temp_phon_abs = np.multiply(temp_phon_abs,right_phon)
+
+    block_weg = np.tensordot(emission_matrix,right_ele,axes = (1,0))
+    block_weg_2 = np.tensordot(block_weg,block_ele,axes = (0,0))
+    temp_phon_em = np.multiply(block_weg_2,stim_phon)
+
+    left_phon = np.full((4,n_kmax),0.)
+    left_phon = temp_phon_abs + temp_phon_em
+
+    left_ele = np.full(n_kmax,0.)
+    left_ele = temp_ele_in + temp_ele_out
+
+    left_ele = np.reshape(left_ele,(1,n_kmax))
+
+    result = np.concatenate((left_ele,left_phon))
+    result = np.reshape(result,5*n_kmax)
+    return result
+
+
+  t_values = np.linspace(0.0, tmax, n_tmax)
+  sol = scpy_solve_ivp(boltzmann_equation, [t_values[0],t_values[-1]], init_cond, t_eval=t_values)
+  y_values = np.reshape(np.asarray(sol.y).T,(n_tmax,5,n_kmax))
+
+  return y_values[:,:,:]
 
 
 
