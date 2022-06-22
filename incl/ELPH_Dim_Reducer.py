@@ -129,15 +129,23 @@ class Hermite(base_dim_reducer):
             
         self.x = np.linspace(0,self.sample_max,self.full_dim)
         
+        def get_N(n): # normalization
+            if n < 100:
+                return 1./np.sqrt( np.sqrt(np.pi) * (2**n) * np.math.factorial(n))
+            else:
+                return np.exp( -0.5 * ( n*np.log(2.) + n*np.log(n) - n + 0.5*np.log(2.*np.pi*n) + 0.5*np.log(np.pi) ) )
+        
+        
         self.H_matrix = np.zeros((self.full_dim, self.full_dim))
         for k in range(self.full_dim):
-            self.H_matrix[k]  = eval_hermite(k,self.x) * np.exp(-0.5*self.x**2) / np.sqrt(np.sqrt(np.pi)*(2**k)*np.math.factorial(k))
+            self.H_matrix[k]  = eval_hermite(k,self.x) * np.exp(-0.5*self.x**2) * get_N(k)
+            
         
         if self.optimize == True:
             def loss(sample_max):
                 x_test = np.linspace(0,sample_max,self.full_dim)
                 for k in range(self.full_dim):
-                    self.H_matrix[k] = eval_hermite(k,x_test) * np.exp(-0.5*x_test**2) / np.sqrt(np.sqrt(np.pi)*(2**k)*np.math.factorial(k))
+                    self.H_matrix[k] = eval_hermite(k,x_test) * np.exp(-0.5*x_test**2) * get_N(k)
                 
                 if self.orthogonalize:
                     self.H_matrix = self.__nGramSchmidt_Rows(self.H_matrix,10)
@@ -160,7 +168,7 @@ class Hermite(base_dim_reducer):
             
             self.x = np.linspace(0,self.sample_max,self.full_dim)
             for k in range(self.full_dim):
-                self.H_matrix[k]  = eval_hermite(k,self.x) * np.exp(-0.5*self.x**2) / np.sqrt(np.sqrt(np.pi)*(2**k)*np.math.factorial(k))
+                self.H_matrix[k]  = eval_hermite(k,self.x) * np.exp(-0.5*self.x**2) * get_N(k)
             
         if self.orthogonalize:
             self.H_matrix = self.__nGramSchmidt_Rows(self.H_matrix,10)
