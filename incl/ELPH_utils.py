@@ -80,6 +80,78 @@ def get_KFold_CV_scores(model, runs, folds=5, seed=817, score_kwargs = {}, train
     return np.mean(scores), scores
 
 
+
+def get_KFold_CV_scores_std_max(model, runs, folds=5, seed=817, train_kwargs={}):
+    
+    #create shuffled copy of the runs
+    rng = np.random.default_rng(seed=seed)
+    sruns = runs.copy()
+    rng.shuffle(sruns)
+    
+    #split runs into folds
+    KFold_runs = get_KFold_runs(sruns, folds=folds)
+    
+    scores_std = [] #of the individual folds
+    scores_max = [] #of the individual folds
+    for k in range(folds):
+        train_runs = KFold_runs.copy()
+        test_runs = train_runs.pop(k) #test_runs = the kth fold, train_runs to remaining folds
+
+        train_runs = [item for sublist in train_runs for item in sublist] #unpack the training folds into one flattened list
+
+        #train the model on the training runs and get scores from the testing runs
+        model.load_runs(train_runs) 
+        model.train(**train_kwargs)
+        
+        mean_std_score = model.score_multiple_runs(test_runs, norm='std')[0]
+        scores_std.append(mean_std_score)
+        
+        mean_max_score = model.score_multiple_runs(test_runs, norm='max')[0]
+        scores_max.append(mean_max_score)
+    
+    return scores_std, scores_max
+
+
+def get_KFold_CV_scores_all_scores(model, runs, folds=5, seed=817, score_kwargs = {}, train_kwargs={}):
+    
+    #create shuffled copy of the runs
+    rng = np.random.default_rng(seed=seed)
+    sruns = runs.copy()
+    rng.shuffle(sruns)
+    
+    #split runs into folds
+    KFold_runs = get_KFold_runs(sruns, folds=folds)
+    
+    mean_scores_std = [] #of the individual folds
+    mean_scores_max = [] #of the individual folds
+    
+    all_scores_std = []
+    all_scores_max = []
+    for k in range(folds):
+        train_runs = KFold_runs.copy()
+        test_runs = train_runs.pop(k) #test_runs = the kth fold, train_runs to remaining folds
+
+        train_runs = [item for sublist in train_runs for item in sublist] #unpack the training folds into one flattened list
+
+        #train the model on the training runs and get scores from the testing runs
+        model.load_runs(train_runs) 
+        model.train(**train_kwargs)
+        
+        mean_std_score, scores_std = model.score_multiple_runs(test_runs, norm='std')
+        mean_scores_std.append(mean_std_score)
+        all_scores_std.append(scores_std)
+        
+        
+        mean_max_score, scores_max = model.score_multiple_runs(test_runs, norm='max')
+        mean_scores_max.append(mean_max_score)
+        all_scores_max.append(scores_max)
+    
+    
+    all_scores_std = [item for sublist in all_scores_std for item in sublist]
+    all_scores_max = [item for sublist in all_scores_max for item in sublist]
+    
+    return mean_scores_std, mean_scores_max, all_scores_std, all_scores_max
+
 #######################################
 ### save and load runs
 #######################################

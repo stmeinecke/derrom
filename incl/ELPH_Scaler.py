@@ -19,25 +19,26 @@ class data_scaler:
         
 
 class standardize_scaler(data_scaler):
-    def __init__(self):
+    def __init__(self, rel_scale=1.0):
         super().__init__() 
+        self.rel_scale = rel_scale
    
     def train(self, data_matrix):
         data_matrix = data_matrix
       
         self.mean = np.mean(data_matrix, axis=1)
-        self.std = np.std(data_matrix, axis=1)
+        self.scale = np.std(data_matrix, axis=1) / self.rel_scale
         
         #do not scale constant features
-        for k in range(self.std.size):
-            if np.abs(self.std[k]) < 1e-8:
-                self.std[k] = 1.0
+        for k in range(self.scale.size):
+            if np.abs(self.scale[k]) < 1e-8:
+                self.scale[k] = 1.0
         
     def transform(self, data_matrix):
-        return ((data_matrix.T - self.mean)/self.std).T
+        return ((data_matrix.T - self.mean)/self.scale).T
     
     def inverse_transform(self, data_matrix):
-        return ( (data_matrix.T * self.std)+self.mean ).T
+        return ( (data_matrix.T * self.scale)+self.mean ).T
     
 class normalize_scaler(data_scaler):
     def __init__(self, rel_scale=1.0):

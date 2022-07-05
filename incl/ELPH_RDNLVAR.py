@@ -6,10 +6,11 @@ sys.path.append("incl/")
 
 class RDNLVAR:
   
-    def __init__(self, runs, rdim = 1, prdim=None, n_VAR_steps = 1, intercept = False, scaler = None, full_hist=False):
+    def __init__(self, runs = None, rdim = 1, prdim=None, n_VAR_steps = 1, intercept = False, scaler = None, full_hist=False):
         
-        self.runs = runs
-        self.n_runs = len(runs)
+        if runs != None:
+            self.runs = runs
+            self.n_runs = len(runs)
         
         self.rdim = rdim
         if prdim == None:
@@ -83,6 +84,8 @@ class RDNLVAR:
 
   
     def train(self, rdim = None, prdim = None, n_VAR_steps = None, intercept=None, full_hist=None, scaler = None, optimizer = None, dim_reducer = None, VAR_transformer = None,  **kwargs):
+        
+        assert self.runs != None
         
         if rdim != None:
             self.rdim = rdim
