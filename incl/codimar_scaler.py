@@ -1,8 +1,5 @@
 import numpy as np
-import sys
 
-sys.path.append("incl/")
-import ELPH_utils
 
 class data_scaler:
     def __init__(self):

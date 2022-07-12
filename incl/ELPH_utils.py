@@ -52,8 +52,9 @@ def get_KFold_runs(runs, folds=5):
     KFold_runs = np.array_split(runs, folds) #numpy returns list of ndarrays
     KFold_runs = [list(array) for array in KFold_runs] #covert ndarrays back to list such that KFold_runs is a list of lists of ndarrays (the individual runs)
     return KFold_runs
-
-def get_KFold_CV_scores(model, runs, folds=5, seed=817, score_kwargs = {}, train_kwargs={}):
+  
+  
+def get_KFold_CV_scores(model, runs, folds=5, seed=817, norms = ['std'], train_kwargs={}):
     
     #create shuffled copy of the runs
     rng = np.random.default_rng(seed=seed)
@@ -63,7 +64,8 @@ def get_KFold_CV_scores(model, runs, folds=5, seed=817, score_kwargs = {}, train
     #split runs into folds
     KFold_runs = get_KFold_runs(sruns, folds=folds)
     
-    scores = [] #of the individual folds
+    scores = [[] for n in range(len(norms))]  #of the individual folds - for each error norm in the norms list
+    
     for k in range(folds):
         train_runs = KFold_runs.copy()
         test_runs = train_runs.pop(k) #test_runs = the kth fold, train_runs to remaining folds
@@ -73,11 +75,16 @@ def get_KFold_CV_scores(model, runs, folds=5, seed=817, score_kwargs = {}, train
         #train the model on the training runs and get scores from the testing runs
         model.load_runs(train_runs) 
         model.train(**train_kwargs)
-        mean_score = model.score_multiple_runs(test_runs, **score_kwargs)[0]
         
-        scores.append(mean_score)
+        #score the test runs for each error norm in the norms list
+        for l,norm in enumerate(norms): 
+            fold_mean_score, fold_all_scores = model.score_multiple_runs(test_runs, norm=norm)
+            scores[l].append(fold_all_scores)
+            
+    for n in range(len(norms)):
+        scores[n] = [item for sublist in scores[n] for item in sublist] #unpack the training folds into one flattened list
     
-    return np.mean(scores), scores
+    return scores
 
 
 def get_KFold_CV_scores_std_max(model, runs, folds=5, seed=817, score_kwargs = {}, train_kwargs={}):
@@ -153,40 +160,3 @@ def load_MG(filename='../MG.txt'):
     first_row = np.fromfile(filename, count=3, dtype=int, sep='\n')
     return np.loadtxt(filename,skiprows=1), first_row[0], first_row[1], first_row[2]
 
-
-#######################################
-### legacy functions for SVDVAR class
-#######################################
-
-def get_SVD_from_runs(runs):
-  
-  data_matrix = np.concatenate(runs,axis=1)
-
-  U,S,V = np.linalg.svd(data_matrix, full_matrices=False)
-
-  return U,S
-
-
-def get_reduced_coef_matrix(runs, U, rdim):
-  data_matrix = np.concatenate(runs,axis=1)
-  return U[:,:rdim].T @ data_matrix
-  
-  
-def standardize_data_matrix(matrix, axis=1):
-  mean = np.mean(matrix, axis = 1)
-  std = np.std(matrix, axis = 1)
-
-  new = ((matrix.T - mean)/std).T
-
-  return new, mean, std
-
-def destandardize_data_matrix(matrix, mean, std, axis=1):    
-  return ( (matrix.T * std) + mean ).T
-
-
-def get_coef_runs(coef_data_matrix, n_splits):
-  return np.asarray(np.split(coef_data_matrix, n_splits, axis=1))
-
-
-def get_ridge_regression_weights(state, target, alpha):
-  return np.linalg.inv(state @ state.T + alpha * np.identity(state.shape[0])) @ state @ target.T

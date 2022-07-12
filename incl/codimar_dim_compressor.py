@@ -1,8 +1,5 @@
 import numpy as np
-import sys
 
-sys.path.append("incl/")
-import ELPH_utils 
 
 class base_dim_reducer:
     def __init__(self):

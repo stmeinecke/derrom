@@ -1,12 +1,14 @@
 import numpy as np
-import sys
 
-sys.path.append("incl/")
+import codimar_dim_compressor as dim_compressor
+import codimar_optimizer as optimizer
+import codimar_scaler as scaler
+import codimar_transformer as transformer
 
 
-class RDNLVAR:
+class codimar:
   
-    def __init__(self, runs = None, rdim = 1, prdim=None, n_VAR_steps = 1, intercept = False, scaler = None, full_hist=False):
+    def __init__(self, runs = None, rdim = 1, prdim=None, n_VAR_steps = 1, full_hist=False, intercept = False, dim_reducer = None, scaler = None, VAR_transformer = None, optimizer = None):
         
         if runs != None:
             self.runs = runs
@@ -17,10 +19,17 @@ class RDNLVAR:
             self.prdim = self.rdim
         else:
             self.prdim = prdim
+        
         self.n_VAR_steps = n_VAR_steps
         
         self.intercept = intercept
         self.full_hist = full_hist
+        
+        if dim_reducer != None:
+            self.dim_reducer = dim_reducer
+            self.reduce_dim = True
+        else:
+            self.reduce_dim = False
         
         if scaler != None:
             self.scaler = scaler
@@ -28,9 +37,17 @@ class RDNLVAR:
         else:
             self.standardize = False
             
-        self.transform_VAR = False
-        self.reduce_dim = False
-
+        if VAR_transformer != None:
+            self.VAR_transformer = VAR_transformer
+            self.transform_VAR = True
+        else:
+            self.transform_VAR = False
+            
+        if optimizer != None:
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer.lstsqrs()
+        
         
     def load_runs(self,runs):
         self.runs = runs
@@ -83,7 +100,7 @@ class RDNLVAR:
       
 
   
-    def train(self, rdim = None, prdim = None, n_VAR_steps = None, intercept=None, full_hist=None, scaler = None, optimizer = None, dim_reducer = None, VAR_transformer = None,  **kwargs):
+    def train(self, rdim = None, prdim = None, n_VAR_steps = None, intercept=None, full_hist=None, dim_reducer = None, scaler = None, VAR_transformer = None, optimizer = None):
         
         assert self.runs != None
         
@@ -94,6 +111,7 @@ class RDNLVAR:
         else:
             if rdim != None:
                 self.prdim = rdim
+        
         if n_VAR_steps != None:
             self.n_VAR_steps = n_VAR_steps
         if intercept != None:
@@ -101,30 +119,21 @@ class RDNLVAR:
         if full_hist != None:
             self.full_hist = full_hist
         
-        if scaler != None:
-            self.scaler = scaler
-            self.standardize = True
-        else:
-            self.standardize = False
-        
-        if optimizer != None:
-            self.optimizer = optimizer
-        else:
-            self.optimizer = ELPH_Optimizer.lstsqrs()
-            
         if dim_reducer != None:
             self.dim_reducer = dim_reducer
             self.reduce_dim = True
-        else:
-            self.reduce_dim = False
+        
+        if scaler != None:
+            self.scaler = scaler
+            self.standardize = True
             
         if VAR_transformer != None:
             self.VAR_transformer = VAR_transformer
             self.transform_VAR = True
-        else:
-            self.transform_VAR = False
-
-
+            
+        if optimizer != None:
+            self.optimizer = optimizer
+        
         #apply the dimensionality reduction to get the reduced coefficient matrix with prdim features via the dim_reducer object
         data_matrix = np.concatenate(self.runs,axis=1)
         if self.reduce_dim == True:
@@ -150,7 +159,7 @@ class RDNLVAR:
             self.training_matrix = self.VAR_transformer.transform(self.training_matrix)
 
         #add bias/intercept
-        if intercept:
+        if self.intercept:
             self.training_matrix = np.concatenate( [self.training_matrix, np.ones((1,self.training_matrix.shape[1]))], axis=0 )
 
         #calculate weight matrix via optimizer object
@@ -235,6 +244,9 @@ class RDNLVAR:
         return mean, scores
                 
     def print_status(self):
+        print('full_hist: ', self.full_hist)
+        print('intercept: ', self.intercept)
+        print('standardize: ', self.standardize)
         print('rdim: ', self.rdim)
         print('prdim: ', self.prdim)
         print('n_VAR_steps: ', self.n_VAR_steps)

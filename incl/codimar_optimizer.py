@@ -1,14 +1,4 @@
 import numpy as np
-import sys
-
-sys.path.append("incl/")
-import ELPH_utils 
-
-import jax
-import jax.numpy as jnp
-import optax as opt
-
-import matplotlib.pyplot as plt
 
 
 class base_optimizer:
@@ -48,6 +38,11 @@ class stlsq(base_optimizer):
         return opt.coef_.T
 
 
+
+import jax
+import jax.numpy as jnp
+import optax as opt
+import matplotlib.pyplot as plt
 
         
 class PIML_adam(base_optimizer):

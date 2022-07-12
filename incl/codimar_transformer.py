@@ -1,10 +1,7 @@
 import numpy as np
-import sys
 
-sys.path.append("incl/")
-import ELPH_utils 
 
-class base_VAR_transformer:
+class base_transformer:
     def __init__(self):
         pass
     
@@ -15,7 +12,7 @@ class base_VAR_transformer:
         raise NotImplementedError
         
         
-class polynomial_features(base_VAR_transformer):
+class polynomial_features(base_transformer):
     
     def __init__(self, order=2):
         self.order = order
@@ -46,7 +43,7 @@ class polynomial_features(base_VAR_transformer):
         
         
         
-class ELM_features(base_VAR_transformer):
+class ELM_features(base_transformer):
     
     def __init__(self, ELM_nodes = 1000, ELM_weights_mean = 0.0, ELM_weights_std = 1.0, seed=817, activation_function=np.tanh):
         self.rng = np.random.default_rng(seed=seed)
@@ -63,6 +60,6 @@ class ELM_features(base_VAR_transformer):
     
     def transform(self,data_matrix):
         projected_data = self.activation_function(data_matrix.T @ self.projection_matrix + self.bias_matrix)
-        state = np.concatenate([projected_data.T, data_matrix])
+        state = np.concatenate([data_matrix,projected_data.T])
 
         return state
