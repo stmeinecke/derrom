@@ -28,6 +28,9 @@ class RedDimApprox:
             
         if self.dim_reducer == None:
             raise ValueError('no dim reducer object as been passed')
+            
+        if rdim != None:
+            self.rdim = rdim
 
         data_matrix = np.concatenate(self.runs,axis=1)
         
