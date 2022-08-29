@@ -217,7 +217,60 @@ class codimar:
             pred = self.dim_reducer.expand(pred)
 
         return pred
-          
+    
+    def predict(self,init,n_steps):
+        #apply the dimensionality reduction to the initital conditions
+        if self.reduce_dim == True:
+            coef_init = self.dim_reducer.reduce(init,self.prdim)
+        else:
+            coef_init = init
+        
+        #apply data/feature scaling
+        if self.standardize:
+            coef_init = self.scaler.transform(coef_init)
+
+        #setup numpy array for the auto prediction
+        pred = np.zeros((coef_init.shape[0],n_steps))
+
+        #build initial condition for the auto predictions
+        if (self.full_hist == False):
+            j_start = 1
+            pred[:,0] = coef_init[:,0]
+        else:
+            j_start = self.n_VAR_steps
+            for l in range(self.n_VAR_steps):
+                pred[:,l] = coef_init[:,l]
+
+        #let the machine predict the dynamics
+        for j in range(j_start,pred.shape[1]):
+        
+            #build the VAR vector from the past steps
+            VAR_vec = self.__build_VAR_vec(pred[:self.rdim], j-self.n_VAR_steps, self.n_VAR_steps)
+            VAR_vec = VAR_vec.reshape((self.rdim*self.n_VAR_steps,1))
+
+            #apply transformation to the VAR state
+            if self.transform_VAR == True:
+                transform = self.VAR_transformer.transform(VAR_vec)
+
+            #add intercept/bias
+            if self.intercept:
+                transform = np.append(transform, 1.0)
+                          
+            #predict the next step
+            pred[:,j] = self.w.T @ transform
+
+        #undo the data/feature scaling
+        if self.standardize:
+            pred = self.scaler.inverse_transform(pred)
+        
+        #expand the reduced representation to full dimension
+        if self.reduce_dim == True:
+            pred = self.dim_reducer.expand(pred)
+
+        return pred
+        
+        
+        
           
     def get_error(self, run, pred=np.zeros(1), norm='fro'):
         if pred.size == 1:
