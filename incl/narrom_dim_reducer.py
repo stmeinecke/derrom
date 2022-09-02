@@ -20,14 +20,18 @@ class SVD(base_dim_reducer):
         pass
     
     def train(self, data_matrix):
-        self.U,self.S = np.linalg.svd(data_matrix, full_matrices=False)[:2]
+        self.U,self.S = np.linalg.svd(data_matrix.T, full_matrices=False)[:2]
         
     def reduce(self, data_matrix, rdim):
-        return self.U[:,:rdim].T @ data_matrix
+        #return self.U[:,:rdim].T @ data_matrix.T
+        return data_matrix @ self.U[:,:rdim]
     
     def expand(self, coef_matrix):
-        dim = coef_matrix.shape[0]
-        return self.U[:,:dim] @ coef_matrix 
+        dim = coef_matrix.shape[1]
+        #return (self.U[:,:dim] @ coef_matrix).T
+        #print(coef_matrix.shape)
+        #print(self.U[:,:rdim].T.shape)
+        return coef_matrix @ self.U[:,:dim].T
       
       
 class DFT(base_dim_reducer):

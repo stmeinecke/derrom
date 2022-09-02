@@ -21,8 +21,8 @@ class ridge(base_optimizer):
     def __init__(self, alpha = 0.0):
         self.alpha = alpha
         
-    def solve(self, state, target):
-        return np.linalg.inv(state @ state.T + self.alpha * np.identity(state.shape[0])) @ state @ target.T
+    def solve(self, features, target):
+        return np.linalg.inv(features.T @ features + self.alpha * np.identity(features.shape[1])) @ features.T @ target
 
     
 from pysindy.optimizers import STLSQ

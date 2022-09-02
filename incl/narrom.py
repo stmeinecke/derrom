@@ -54,13 +54,13 @@ class narrom:
         self.n_runs = len(runs)
     
     
-    def __build_VAR_vec(self, matrix, col, n_VAR_steps):
+    def __build_VAR_vec(self, matrix, row, n_VAR_steps):
         VAR_vec = []
         for k in range(n_VAR_steps):
-            if col+k < 0:
-                VAR_vec.append(matrix[:,0])
+            if row+k < 0:
+                VAR_vec.append(matrix[0])
             else:
-                VAR_vec.append(matrix[:,col+k])
+                VAR_vec.append(matrix[row+k])
         return np.concatenate(VAR_vec, axis=0)
     
     
@@ -70,31 +70,31 @@ class narrom:
         target_matrix = []
         
         #transform coeffiecient matrix back to an ndarray of the individual coefficient runs
-        coef_runs = np.asarray(np.split(self.coef_matrix, self.n_runs, axis=1))
+        coef_runs = np.asarray(np.split(self.coef_matrix, self.n_runs, axis=0))
 
         for r in range(len(coef_runs)):
 
             if(self.full_hist == False):
-                nCols = coef_runs[r].shape[1]-1
+                nRows = coef_runs[r].shape[0]-1
                 Delta_j = self.n_VAR_steps-1
             else:
-                nCols = coef_runs[r].shape[1]-self.n_VAR_steps
+                nRows = coef_runs[r].shape[0]-self.n_VAR_steps
                 Delta_j = 0
                 
-            nRows = self.rdim*self.n_VAR_steps
+            nCols = self.rdim*self.n_VAR_steps
 
             run_VAR_matrix = np.zeros((nRows,nCols))
-            for j in range(nCols):
-                run_VAR_matrix[:,j] =self. __build_VAR_vec(coef_runs[r][:self.rdim,:], j-Delta_j, self.n_VAR_steps)
+            for j in range(nRows):
+                run_VAR_matrix[j] =self. __build_VAR_vec(coef_runs[r][:,:self.rdim], j-Delta_j, self.n_VAR_steps)
 
             training_matrix.append(run_VAR_matrix)
             if self.full_hist == False:
-                target_matrix.append(coef_runs[r][:,1:])
+                target_matrix.append(coef_runs[r][1:])
             else:
-                target_matrix.append(coef_runs[r][:,self.n_VAR_steps:])
+                target_matrix.append(coef_runs[r][self.n_VAR_steps:])
 
-        training_matrix = np.concatenate(training_matrix, axis=1)
-        target_matrix = np.concatenate(target_matrix, axis=1)
+        training_matrix = np.concatenate(training_matrix, axis=0)
+        target_matrix = np.concatenate(target_matrix, axis=0)
 
         return training_matrix,target_matrix
       
@@ -135,23 +135,33 @@ class narrom:
             self.optimizer = optimizer
         
         #apply the dimensionality reduction to get the reduced coefficient matrix with prdim features via the dim_reducer object
-        data_matrix = np.concatenate(self.runs,axis=1)
+        data_matrix = np.concatenate(self.runs,axis=0)
+        
+        print('data matrix shape: ', data_matrix.shape)
+        
         if self.reduce_dim == True:
             self.dim_reducer.train(data_matrix)
             self.coef_matrix = self.dim_reducer.reduce(data_matrix,self.prdim)
         else:
             self.coef_matrix = data_matrix
-            self.rdim = data_matrix.shape[0]
-            self.prdim = data_matrix.shape[0]
+            self.rdim = data_matrix.shape[1]
+            self.prdim = data_matrix.shape[1]
 
+        print('reduced data matrix shape: ', self.coef_matrix.shape)
         
         #apply data/feature scaling via scaler object
         if self.standardize:
             self.scaler.train(self.coef_matrix)
             self.coef_matrix = self.scaler.transform(self.coef_matrix)
+            
+        print('reduced data matrix shape: ', self.coef_matrix.shape)
 
         #create training data matrices
         self.training_matrix, self.target_matrix = self.__build_VAR_training_matrices()    
+        
+        
+        print('training matrix shape: ', self.training_matrix.shape)
+        print('target matrix shape: ', self.target_matrix.shape)
         
         #apply transformation to the VAR state
         if self.transform_VAR == True:
@@ -160,7 +170,7 @@ class narrom:
 
         #add bias/intercept
         if self.intercept:
-            self.training_matrix = np.concatenate( [self.training_matrix, np.ones((1,self.training_matrix.shape[1]))], axis=0 )
+            self.training_matrix = np.concatenate( [ self.training_matrix, np.ones( (self.training_matrix.shape[0],1) ) ] , axis=1 )
 
         #calculate weight matrix via optimizer object
         self.w = self.optimizer.solve(self.training_matrix, self.target_matrix)
@@ -184,29 +194,29 @@ class narrom:
         #build initial condition for the auto predictions
         if (self.full_hist == False):
             j_start = 1
-            pred[:,0] = coef_run[:,0]
+            pred[0] = coef_run[0]
         else:
             j_start = self.n_VAR_steps
             for l in range(self.n_VAR_steps):
-                pred[:,l] = coef_run[:,l]
+                pred[l] = coef_run[l]
 
         #let the machine predict the dynamics
-        for j in range(j_start,pred.shape[1]):
+        for j in range(j_start,pred.shape[0]):
         
             #build the VAR vector from the past steps
-            VAR_vec = self.__build_VAR_vec(pred[:self.rdim], j-self.n_VAR_steps, self.n_VAR_steps)
+            VAR_vec = self.__build_VAR_vec(pred[:,:self.rdim], j-self.n_VAR_steps, self.n_VAR_steps)
             VAR_vec = VAR_vec.reshape((self.rdim*self.n_VAR_steps,1))
-
+            
             #apply transformation to the VAR state
             if self.transform_VAR == True:
-                transform = self.VAR_transformer.transform(VAR_vec)
+                transform = self.VAR_transformer.transform(VAR_vec.T)
 
             #add intercept/bias
             if self.intercept:
                 transform = np.append(transform, 1.0)
                           
             #predict the next step
-            pred[:,j] = self.w.T @ transform
+            pred[j] = self.w.T @ transform
 
         #undo the data/feature scaling
         if self.standardize:

@@ -28,13 +28,13 @@ class polynomial_features(base_transformer):
     
     def transform(self,data_matrix):
         
-        nRows = self.__build_VAR_p_Vec(data_matrix[:,0], self.order).size
-        nCols = data_matrix.shape[1]
+        nCols = self.__build_VAR_p_Vec(data_matrix[0], self.order).size
+        nRows = data_matrix.shape[0]
         
         poly_features = np.zeros((nRows,nCols)) 
         
-        for k in range( data_matrix.shape[1] ):
-            poly_features[:,k] = self.__build_VAR_p_Vec(data_matrix[:,k], self.order)
+        for k in range( data_matrix.shape[0] ):
+            poly_features[k] = self.__build_VAR_p_Vec(data_matrix[k], self.order)
 
         return poly_features
         
