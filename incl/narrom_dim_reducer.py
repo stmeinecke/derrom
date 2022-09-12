@@ -11,7 +11,7 @@ class base_dim_reducer:
     def reduce(self):
         raise NotImplementedError
         
-    def expand(self):
+    def reconstruct(self):
         raise NotImplementedError
         
         
@@ -20,18 +20,14 @@ class SVD(base_dim_reducer):
         pass
     
     def train(self, data_matrix):
-        self.U,self.S = np.linalg.svd(data_matrix.T, full_matrices=False)[:2]
+        self.U,self.S = np.linalg.svd(data_matrix.T, full_matrices=False)[:2] #SVD of the transposed data matrix since the data is stored in row vectors
         
     def reduce(self, data_matrix, rdim):
-        #return self.U[:,:rdim].T @ data_matrix.T
-        return data_matrix @ self.U[:,:rdim]
+        return data_matrix @ self.U[:,:rdim] #project the data matrix onto the first rdim left singular vectors. The reduced data matrix then carries rdim coefficients in its rows
     
-    def expand(self, coef_matrix):
+    def reconstruct(self, coef_matrix):
         dim = coef_matrix.shape[1]
-        #return (self.U[:,:dim] @ coef_matrix).T
-        #print(coef_matrix.shape)
-        #print(self.U[:,:rdim].T.shape)
-        return coef_matrix @ self.U[:,:dim].T
+        return coef_matrix @ self.U[:,:dim].T 
       
       
 class DFT(base_dim_reducer):
@@ -70,7 +66,7 @@ class DFT(base_dim_reducer):
         else:
             return real_matrix[:rdim]
     
-    def expand(self, coef_matrix):
+    def reconstruct(self, coef_matrix):
         
         if self.sorted:
             real_matrix = np.zeros((2 * self.full_dim, coef_matrix.shape[1]))
@@ -187,7 +183,7 @@ class Hermite(base_dim_reducer):
         else:
             return self.H_matrix[:rdim] @ data_matrix
         
-    def expand(self, coef_matrix):
+    def reconstruct(self, coef_matrix):
         dim = coef_matrix.shape[0]
         if self.sorted:
             return np.linalg.pinv(self.sorted_H_matrix[:dim]) @ coef_matrix

@@ -85,7 +85,7 @@ class narrom:
 
             run_VAR_matrix = np.zeros((nRows,nCols))
             for j in range(nRows):
-                run_VAR_matrix[j] =self. __build_VAR_vec(coef_runs[r][:,:self.rdim], j-Delta_j, self.n_VAR_steps)
+                run_VAR_matrix[j] = self. __build_VAR_vec(coef_runs[r][:,:self.rdim], j-Delta_j, self.n_VAR_steps)
 
             training_matrix.append(run_VAR_matrix)
             if self.full_hist == False:
@@ -96,7 +96,7 @@ class narrom:
         training_matrix = np.concatenate(training_matrix, axis=0)
         target_matrix = np.concatenate(target_matrix, axis=0)
 
-        return training_matrix,target_matrix
+        return training_matrix, target_matrix
       
 
   
@@ -222,9 +222,9 @@ class narrom:
         if self.standardize:
             pred = self.scaler.inverse_transform(pred)
         
-        #expand the reduced representation to full dimension
+        #reconstruct the full from the reduced representation
         if self.reduce_dim == True:
-            pred = self.dim_reducer.expand(pred)
+            pred = self.dim_reducer.reconstruct(pred)
 
         return pred
     
@@ -273,9 +273,9 @@ class narrom:
         if self.standardize:
             pred = self.scaler.inverse_transform(pred)
         
-        #expand the reduced representation to full dimension
+        #reconstruct the full from the reduced representation
         if self.reduce_dim == True:
-            pred = self.dim_reducer.expand(pred)
+            pred = self.dim_reducer.reconstruct(pred)
 
         return pred
         
