@@ -73,12 +73,12 @@ def get_KFold_CV_scores(model, runs, folds=5, seed=817, norms = ['std'], train_k
         train_runs = [item for sublist in train_runs for item in sublist] #unpack the training folds into one flattened list
 
         #train the model on the training runs and get scores from the testing runs
-        model.load_runs(train_runs) 
+        model.load_trajectories(train_runs) 
         model.train(**train_kwargs)
         
         #score the test runs for each error norm in the norms list
         for l,norm in enumerate(norms): 
-            fold_mean_score, fold_all_scores = model.score_multiple_runs(test_runs, norm=norm)
+            fold_mean_score, fold_all_scores = model.score_multiple_trajectories(test_runs, norm=norm)
             scores[l].append(fold_all_scores)
             
     for n in range(len(norms)):
