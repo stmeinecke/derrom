@@ -8,7 +8,7 @@ import narrom_transformer as transformer
 
 class narrom:
   
-    def __init__(self, trajectories = None, rdim = 1, prdim=None, VAR_k = 1, full_hist=False, intercept = False, dim_reducer = None, scaler = None, VAR_transformer = None, optimizer = None):
+    def __init__(self, trajectories = None, rdim = 1, prdim=None, VAR_l = 1, full_hist=False, intercept = False, dim_reducer = None, scaler = None, VAR_transformer = None, optimizer = None):
         
         if trajectories != None:
             self.trajectories = trajectories
@@ -20,7 +20,7 @@ class narrom:
         else:
             self.prdim = prdim
         
-        self.VAR_k = VAR_k
+        self.VAR_l = VAR_l
         
         self.intercept = intercept
         self.full_hist = full_hist
@@ -54,9 +54,9 @@ class narrom:
         self.n_trajectories = len(trajectories)
     
     
-    def __build_VAR_vec(self, matrix, row, VAR_k):
+    def __build_VAR_vec(self, matrix, row, VAR_l):
         VAR_vec = []
-        for k in range(VAR_k):
+        for k in range(VAR_l):
             if row+k < 0:
                 VAR_vec.append(matrix[0])
             else:
@@ -76,22 +76,22 @@ class narrom:
 
             if(self.full_hist == False):
                 nRows = reduced_trajectories[r].shape[0]-1
-                Delta_j = self.VAR_k-1
+                Delta_j = self.VAR_l-1
             else:
-                nRows = reduced_trajectories[r].shape[0]-self.VAR_k
+                nRows = reduced_trajectories[r].shape[0]-self.VAR_l
                 Delta_j = 0
                 
-            nCols = self.rdim*self.VAR_k
+            nCols = self.rdim*self.VAR_l
 
             run_VAR_matrix = np.zeros((nRows,nCols))
             for j in range(nRows):
-                run_VAR_matrix[j] = self. __build_VAR_vec(reduced_trajectories[r][:,:self.rdim], j-Delta_j, self.VAR_k)
+                run_VAR_matrix[j] = self. __build_VAR_vec(reduced_trajectories[r][:,:self.rdim], j-Delta_j, self.VAR_l)
 
             training_matrix.append(run_VAR_matrix)
             if self.full_hist == False:
                 target_matrix.append(reduced_trajectories[r][1:])
             else:
-                target_matrix.append(reduced_trajectories[r][self.VAR_k:])
+                target_matrix.append(reduced_trajectories[r][self.VAR_l:])
 
         training_matrix = np.concatenate(training_matrix, axis=0)
         target_matrix = np.concatenate(target_matrix, axis=0)
@@ -100,7 +100,7 @@ class narrom:
       
 
   
-    def train(self, rdim = None, prdim = None, VAR_k = None, intercept=None, full_hist=None, dim_reducer = None, scaler = None, VAR_transformer = None, optimizer = None):
+    def train(self, rdim = None, prdim = None, VAR_l = None, intercept=None, full_hist=None, dim_reducer = None, scaler = None, VAR_transformer = None, optimizer = None):
         
         assert self.trajectories != None
         
@@ -112,8 +112,8 @@ class narrom:
             if rdim != None:
                 self.prdim = rdim
         
-        if VAR_k != None:
-            self.VAR_k = VAR_k
+        if VAR_l != None:
+            self.VAR_l = VAR_l
         if intercept != None:
             self.intercept = intercept
         if full_hist != None:
@@ -165,37 +165,36 @@ class narrom:
         #calculate weight matrix via optimizer object
         self.w = self.optimizer.solve(self.training_matrix, self.target_matrix)
                           
-
-    def predict_test_trajectory(self, test_trajectory):
-        
-        #apply the dimensionality reduction to the test_trajectory
+    
+    
+    def predict(self,init,n_steps):
+        #apply the dimensionality reduction to the initital conditions
         if self.reduce_dim == True:
-            reduced_test_trajectory = self.dim_reducer.reduce(test_trajectory,self.prdim)
+            reduced_init = self.dim_reducer.reduce(init,self.prdim)
         else:
-            reduced_test_trajectory = test_trajectory
-
+            reduced_init = init
+        
         #apply data/feature scaling
         if self.standardize:
-            reduced_test_trajectory = self.scaler.transform(reduced_test_trajectory)
+            reduced_init = self.scaler.transform(reduced_init)
 
         #setup numpy array for the auto prediction
-        pred = np.zeros(reduced_test_trajectory.shape)
+        pred = np.zeros((n_steps,reduced_init.shape[1]))
 
         #build initial condition for the auto predictions
         if (self.full_hist == False):
             j_start = 1
-            pred[0] = reduced_test_trajectory[0]
+            pred[0] = reduced_init[0]
         else:
-            j_start = self.VAR_k
-            for l in range(self.VAR_k):
-                pred[l] = reduced_test_trajectory[l]
-
+            j_start = self.VAR_l
+            pred[:l] = reduced_init[:l]
+        
         #let the machine predict the dynamics
         for j in range(j_start,pred.shape[0]):
         
             #build the VAR vector from the past steps
-            VAR_vec = self.__build_VAR_vec(pred[:,:self.rdim], j-self.VAR_k, self.VAR_k)
-            VAR_vec = VAR_vec.reshape((self.rdim*self.VAR_k,1))
+            VAR_vec = self.__build_VAR_vec(pred[:,:self.rdim], j-self.VAR_l, self.VAR_l)
+            VAR_vec = VAR_vec.reshape((self.rdim*self.VAR_l,1))
             
             #apply transformation to the VAR state
             if self.transform_VAR == True:
@@ -217,72 +216,21 @@ class narrom:
             pred = self.dim_reducer.reconstruct(pred)
 
         return pred
-    
-    def predict(self,init,n_steps):
-        #apply the dimensionality reduction to the initital conditions
-        if self.reduce_dim == True:
-            reduced_init = self.dim_reducer.reduce(init,self.prdim)
-        else:
-            reduced_init = init
         
-        #apply data/feature scaling
-        if self.standardize:
-            reduced_init = self.scaler.transform(reduced_init)
-
-        #setup numpy array for the auto prediction
-        pred = np.zeros((reduced_init.shape[0],n_steps))
-
-        #build initial condition for the auto predictions
-        if (self.full_hist == False):
-            j_start = 1
-            pred[:,0] = coef_init[:,0]
-        else:
-            j_start = self.VAR_k
-            for l in range(self.VAR_k):
-                pred[:,l] = reduced_init[:,l]
-
-        #let the machine predict the dynamics
-        for j in range(j_start,pred.shape[1]):
-        
-            #build the VAR vector from the past steps
-            VAR_vec = self.__build_VAR_vec(pred[:self.rdim], j-self.VAR_k, self.VAR_k)
-            VAR_vec = VAR_vec.reshape((self.rdim*self.VAR_k,1))
-
-            #apply transformation to the VAR state
-            if self.transform_VAR == True:
-                transform = self.VAR_transformer.transform(VAR_vec)
-
-            #add intercept/bias
-            if self.intercept:
-                transform = np.append(transform, 1.0)
-                          
-            #predict the next step
-            pred[:,j] = self.w.T @ transform
-
-        #undo the data/feature scaling
-        if self.standardize:
-            pred = self.scaler.inverse_transform(pred)
-        
-        #reconstruct the full from the reduced representation
-        if self.reduce_dim == True:
-            pred = self.dim_reducer.reconstruct(pred)
-
-        return pred
-        
-        
-        
+    def predict_test_trajectory(self, test_trajectory):
+        return self.predict(test_trajectory, test_trajectory.shape[0])
           
     def get_error(self, test_trajectory, pred=np.zeros(1), norm='NF'):
         if pred.size == 1:
             pred = self.predict_test_trajectory(test_trajectory)
         
         err = -1.
-        if norm == 'fro': #Frobenius norm
+        if norm =='NF': #normalized Frobenius norm
+            err = np.sqrt( np.mean( np.square(test_trajectory-pred) ) )
+        elif norm == 'fro': #Frobenius norm
             err = np.linalg.norm(test_trajectory-pred, ord='fro')
         elif norm =='max': #absolute max norm
             err = np.abs(test_trajectory-pred).max()
-        elif norm =='NF': #normalized Frobenius norm
-            err = np.sqrt( np.mean( np.square(test_trajectory-pred) ) )
         else:
             print('unknown norm')
         
@@ -303,7 +251,7 @@ class narrom:
         print('standardize: ', self.standardize)
         print('rdim: ', self.rdim)
         print('prdim: ', self.prdim)
-        print('VAR_k: ', self.VAR_k)
+        print('VAR_l: ', self.VAR_l)
         print('train shape: ', self.training_matrix.shape)
         print('target shape: ', self.target_matrix.shape)
         print('weights shape: ', self.w.shape)
