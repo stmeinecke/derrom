@@ -106,13 +106,13 @@ class MidpointNormalize(colors.Normalize):
             result = np.atleast_1d(result)[0]
         return result
     
-def plot_difference(truth,test,title='difference'):
+def plot_difference(test,truth,title='difference'):
     
     err = test-truth
 
     midnorm = MidpointNormalize(vmin=err.min(), vcenter=0.0, vmax=err.max())
     
-    plt.imshow(err, aspect='auto', interpolation='none',origin='lower',cmap='bwr')
+    plt.imshow(err, aspect='auto', interpolation='none',origin='lower',cmap='bwr', norm=midnorm)
     plt.title(title)
     plt.xlabel(r'time $n_k$')
     plt.ylabel(r'electron momentum $n_t$')
