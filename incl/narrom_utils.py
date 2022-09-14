@@ -125,7 +125,7 @@ def plot_difference(truth,test,title='difference'):
 ### class to benchmark the dimensionality reduction with the KFold function
 #######################################
 
-class RedDimApprox:
+class reducer_helper_class:
     
     def __init__(self, runs = None, dim_reducer = None, rdim = 1):
         self.runs = runs
@@ -152,7 +152,7 @@ class RedDimApprox:
         if rdim != None:
             self.rdim = rdim
 
-        data_matrix = np.concatenate(self.runs,axis=1)
+        data_matrix = np.concatenate(self.runs,axis=0)
         
         self.dim_reducer.train(data_matrix)
         
@@ -160,22 +160,25 @@ class RedDimApprox:
         if rdim == None:
             rdim = self.rdim
                
-        return self.dim_reducer.expand( self.dim_reducer.reduce(run, rdim) )
+        return self.dim_reducer.reconstruct( self.dim_reducer.reduce(run, rdim) )
     
-    def get_error(self, run, approx=np.zeros(1), rdim=None, norm='std'):
+    def get_error(self, run, approx=np.zeros(1), rdim=None, norm='NF'):
         
         if rdim == None:
             rdim = self.rdim
         
         if approx.size == 1:
             approx = self.approx_single_run(run, rdim=rdim)
-             
+        
+        err=-1.
         if norm=='fro':
             err = np.linalg.norm(run-approx, ord='fro')       
         elif norm =='max':
             err = np.abs(run-approx).max()
         elif norm == 'std':
             err = np.std(np.ravel(run-approx))
+        elif norm == 'NF':
+            err = np.sqrt( np.mean( np.square(run-approx) ) )
         else:
             print('unknown norm') 
 
