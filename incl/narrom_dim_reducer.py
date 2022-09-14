@@ -25,9 +25,9 @@ class SVD(base_dim_reducer):
     def reduce(self, data_matrix, rdim):
         return data_matrix @ self.U[:,:rdim] #project the data matrix onto the first rdim left singular vectors. The reduced data matrix then carries rdim coefficients in its rows
     
-    def reconstruct(self, coef_matrix):
-        dim = coef_matrix.shape[1]
-        return coef_matrix @ self.U[:,:dim].T 
+    def reconstruct(self, reduced_data_matrix):
+        dim = reduced_data_matrix.shape[1]
+        return reduced_data_matrix @ self.U[:,:dim].T 
       
       
 class DFT(base_dim_reducer):
@@ -36,17 +36,17 @@ class DFT(base_dim_reducer):
         pass
     
     def train(self, data_matrix):
-        self.full_dim = data_matrix.shape[0]
+        self.full_dim = data_matrix.shape[1]
         
         if self.sorted:
-            FT = np.fft.rfft(data_matrix, axis=0)
+            FT = np.fft.rfft(data_matrix, axis=1)
 
-            real_matrix = np.zeros((FT.shape[0]*2,FT.shape[1]))
+            real_matrix = np.zeros((FT.shape[0],FT.shape[1]*2))
 
-            real_matrix[::2] = np.real(FT)
-            real_matrix[1::2] = np.imag(FT)
+            real_matrix[:,::2] = np.real(FT)
+            real_matrix[:,1::2] = np.imag(FT)
 
-            self.mean_coefs = np.mean(real_matrix, axis=1)
+            self.mean_coefs = np.mean(real_matrix, axis=0)
 
             self.sort_inds = np.flip(np.argsort(np.abs(self.mean_coefs)))
             self.unsort_inds = np.argsort(self.sort_inds)
@@ -54,30 +54,30 @@ class DFT(base_dim_reducer):
         
     def reduce(self, data_matrix, rdim):
         
-        FT = np.fft.rfft(data_matrix, axis=0)
+        FT = np.fft.rfft(data_matrix, axis=1)
   
-        real_matrix = np.zeros((FT.shape[0]*2,FT.shape[1]))
+        real_matrix = np.zeros((FT.shape[0],FT.shape[1]*2))
         
-        real_matrix[::2] = np.real(FT)
-        real_matrix[1::2] = np.imag(FT)
+        real_matrix[:,::2] = np.real(FT)
+        real_matrix[:,1::2] = np.imag(FT)
         
         if self.sorted:
-            return real_matrix[self.sort_inds][:rdim]
+            return real_matrix[:,self.sort_inds][:,:rdim]
         else:
-            return real_matrix[:rdim]
+            return real_matrix[:,:rdim]
     
-    def reconstruct(self, coef_matrix):
+    def reconstruct(self, reduced_data_matrix):
         
         if self.sorted:
-            real_matrix = np.zeros((2 * self.full_dim, coef_matrix.shape[1]))
-            real_matrix[:coef_matrix.shape[0]] = coef_matrix
-            real_matrix = real_matrix[self.unsort_inds]
+            real_matrix = np.zeros((reduced_data_matrix.shape[0],2 * self.full_dim))
+            real_matrix[:,:reduced_data_matrix.shape[1]] = reduced_data_matrix
+            real_matrix = real_matrix[:,self.unsort_inds]
           
-            complex_matrix = real_matrix[::2] + 1.j*real_matrix[1::2]  
+            complex_matrix = real_matrix[:,::2] + 1.j*real_matrix[:,1::2]  
         else:
-            complex_matrix = coef_matrix[::2] + 1.j*coef_matrix[1::2]
+            complex_matrix = reduced_data_matrix[:,::2] + 1.j*reduced_data_matrix[:,1::2]
             
-        iFT = np.fft.irfft(complex_matrix, n=self.full_dim, axis=0)
+        iFT = np.fft.irfft(complex_matrix, n=self.full_dim, axis=1)
         
         return iFT
 
@@ -183,12 +183,12 @@ class Hermite(base_dim_reducer):
         else:
             return self.H_matrix[:rdim] @ data_matrix
         
-    def reconstruct(self, coef_matrix):
-        dim = coef_matrix.shape[0]
+    def reconstruct(self, reduced_data_matrix):
+        dim = reduced_data_matrix.shape[0]
         if self.sorted:
-            return np.linalg.pinv(self.sorted_H_matrix[:dim]) @ coef_matrix
+            return np.linalg.pinv(self.sorted_H_matrix[:dim]) @ reduced_data_matrix
         else:
-            return np.linalg.pinv(self.H_matrix[:dim]) @ coef_matrix
+            return np.linalg.pinv(self.H_matrix[:dim]) @ reduced_data_matrix
         
             
         
