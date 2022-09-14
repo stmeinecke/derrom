@@ -13,28 +13,28 @@ class lstsqrs(base_optimizer):
     def __init__(self):
         pass
     
-    def solve(self, state, target):
-        return np.asarray( np.linalg.lstsq(state.T, target.T, rcond = -1)[0] )
+    def solve(self, feature_matrix, target_matrix):
+        return np.asarray( np.linalg.lstsq(feature_matrix, target_matrix, rcond = -1)[0] )
 
     
 class ridge(base_optimizer):
-    def __init__(self, alpha = 0.0):
+    def __init__(self, alpha = 1e-6):
         self.alpha = alpha
         
-    def solve(self, features, target):
-        return np.linalg.inv(features.T @ features + self.alpha * np.identity(features.shape[1])) @ features.T @ target
+    def solve(self, feature_matrix, target_matrix):
+        return np.linalg.inv(feature_matrix.T @ feature_matrix + self.alpha * np.identity(feature_matrix.shape[1])) @ feature_matrix.T @ target_matrix
 
     
 from pysindy.optimizers import STLSQ
 class stlsq(base_optimizer):
-    def __init__(self, alpha, threshold):
+    def __init__(self, alpha = 1e-6, threshold = 1e-6):
         self.alpha = alpha
         self.threshold = threshold
         pass
     
-    def solve(self, state, target):
+    def solve(self, feature_matrix, target_matrix):
         opt = STLSQ(alpha=self.alpha, threshold=self.threshold)
-        opt.fit(state.T, target.T)
+        opt.fit(feature_matrix, target_matrix)
         return opt.coef_.T
 
 
@@ -46,19 +46,20 @@ import matplotlib.pyplot as plt
 
         
 class PIML_adam(base_optimizer):
-    def __init__(self, alpha = 0.0, lambda1=0.0, mini_batch_size = 50, epochs = 1):
+    def __init__(self, alpha = 1e-6, lambda1=0.0, mini_batch_size = 50, epochs = 1):
         self.alpha = alpha
         self.lambda1 = lambda1
         self.mini_batch_size = mini_batch_size
         self.epochs = epochs
         
-    def solve(self, state, target):
+    def solve(self, feature_matrix, target_matrix):
         
         
-        def loss(beta, state, target):
+        def loss(beta, feature_matrix, target_matrix):
     
-            pred = beta.T @ state
-            res = pred - target
+            #pred = beta.T @ feature_matrix
+            pred = feature_matrix @ beta
+            res = pred - target_matrix
 
             err_lstsqs = jnp.sum(jnp.square(res))
             #err_lstsqs = jnp.amax(jnp.abs(res))
@@ -67,8 +68,8 @@ class PIML_adam(base_optimizer):
             err_reg = self.alpha * jnp.sum(jnp.square(beta))
             error +=  err_reg 
 
-            ones = jnp.ones(target.shape[0])
-            err_density = self.lambda1 * np.sum( jnp.square( ones @ (pred - target) ) ) 
+            ones = jnp.ones(target_matrix.shape[0])
+            err_density = self.lambda1 * np.sum( jnp.square( ones @ (pred - target_matrix) ) ) 
             
             
             error += err_density
@@ -76,46 +77,48 @@ class PIML_adam(base_optimizer):
             return error
   
         PIML_grad = jax.jit(jax.grad(loss))
-
-        beta = ELPH_utils.get_ridge_regression_weights(state, target, alpha=self.alpha)
+        
+        ridge_optimizer = ridge(alpha=self.alpha)
+        beta = ridge_optimizer.solve(feature_matrix, target_matrix)
+        #beta = ELPH_utils.get_ridge_regression_weights(feature_matrix, target_matrix, alpha=self.alpha)
 #         beta += np.random.normal(loc=0.0, scale=1e-2, size=beta.shape)
 
 
-        print('ridge regression loss: ' + str(loss(beta, state, target)))
-        #plt.plot(np.ravel(PIML_grad(beta, state, target)))
+        print('ridge regression loss: ' + str(loss(beta, feature_matrix, target_matrix)))
+        #plt.plot(np.ravel(PIML_grad(beta, feature_matrix, target_matrix)))
         #plt.show()
 
 
-#         print(state.shape)
-#         print(target.shape)
+#         print(feature_matrix.shape)
+#         print(target_matrix.shape)
 
 #         n_batches = 1000
-        n_batches = state.shape[1]/self.mini_batch_size
+        n_batches = feature_matrix.shape[0]/self.mini_batch_size
 
         rng = np.random.default_rng(42)
   
   
         def fit(params, optimizer):
-            opt_state = optimizer.init(params)
+            opt_feature_matrix = optimizer.init(params)
 
             @jax.jit
-            def step(params, opt_state, batch, labels):
+            def step(params, opt_feature_matrix, batch, labels):
                 loss_value, grads = jax.value_and_grad(loss)(params, batch, labels)
-                updates, opt_state = optimizer.update(grads, opt_state, params)
+                updates, opt_feature_matrix = optimizer.update(grads, opt_feature_matrix, params)
                 params = opt.apply_updates(params, updates)
-                return params, opt_state, loss_value
+                return params, opt_feature_matrix, loss_value
 
             for k in range(self.epochs):
-                permuted_inds = rng.permutation(state.shape[1])
-                TRAINING_DATA = np.array_split( np.array(state)[:,permuted_inds] , n_batches, axis=1)
-                LABELS = np.array_split( np.array(target)[:,permuted_inds] , n_batches, axis=1)
+                permuted_inds = rng.permutation(feature_matrix.shape[0])
+                TRAINING_DATA = np.array_split( np.array(feature_matrix)[permuted_inds] , n_batches, axis=0)
+                LABELS = np.array_split( np.array(target_matrix)[permuted_inds] , n_batches, axis=0)
 
                 for i, (batch, labels) in enumerate(zip(TRAINING_DATA, LABELS)):
-                    params, opt_state, loss_value = step(params, opt_state, batch, labels)
+                    params, opt_feature_matrix, loss_value = step(params, opt_feature_matrix, batch, labels)
 #                     if i % 100 == 0:
 #                         print(f'step {i}, loss: {loss_value}')
                         
-                print('epoch:', k+1, 'loss:', loss(params, state, target) )
+                print('epoch:', k+1, 'loss:', loss(params, feature_matrix, target_matrix) )
 
             return params
 
@@ -123,7 +126,7 @@ class PIML_adam(base_optimizer):
         optimizer = opt.adam(learning_rate=1e-5)
         beta = fit(beta, optimizer)
   
-        print('regression loss: ' + str(loss(beta, state, target)))
+        print('regression loss: ' + str(loss(beta, feature_matrix, target_matrix)))
 
         return beta
   

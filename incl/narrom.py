@@ -4,6 +4,7 @@ import narrom_dim_reducer as dim_reducer
 import narrom_optimizer as optimizer
 import narrom_scaler as scaler
 import narrom_transformer as transformer
+import narrom_utils as utils
 
 
 class narrom:
@@ -155,7 +156,7 @@ class narrom:
         
         #apply transformation to the VAR state
         if self.transform_VAR == True:
-            self.VAR_transformer.setup(self.training_matrix.shape[0])
+            self.VAR_transformer.setup(self.training_matrix.shape[1])
             self.training_matrix = self.VAR_transformer.transform(self.training_matrix)
 
         #add bias/intercept
@@ -194,18 +195,18 @@ class narrom:
         
             #build the VAR vector from the past steps
             VAR_vec = self.__build_VAR_vec(pred[:,:self.rdim], j-self.VAR_l, self.VAR_l)
-            VAR_vec = VAR_vec.reshape((self.rdim*self.VAR_l,1))
+            VAR_vec = VAR_vec.reshape((1,VAR_vec.size))
             
             #apply transformation to the VAR state
             if self.transform_VAR == True:
-                transform = self.VAR_transformer.transform(VAR_vec.T)
+                transform = self.VAR_transformer.transform(VAR_vec)
 
             #add intercept/bias
             if self.intercept:
                 transform = np.append(transform, 1.0)
                           
             #predict the next step
-            pred[j] = self.w.T @ transform
+            pred[j] = transform @ self.w
 
         #undo the data/feature scaling
         if self.standardize:
