@@ -6,37 +6,37 @@ import numpy as np
 ### KFold cross validation
 #######################################
 
-def get_KFold_runs(runs, folds=5):
-    KFold_runs = np.array_split(runs, folds) #numpy returns list of ndarrays
-    KFold_runs = [list(array) for array in KFold_runs] #covert ndarrays back to list such that KFold_runs is a list of lists of ndarrays (the individual runs)
-    return KFold_runs
+def get_KFold_trajectories(trajectories, folds=5):
+    KFold_trajectories = np.array_split(trajectories, folds) #numpy returns list of ndarrays
+    KFold_trajectories = [list(array) for array in KFold_trajectories] #covert ndarrays back to list such that KFold_trajectories is a list of lists of ndarrays (the individual trajectories)
+    return KFold_trajectories
   
   
-def get_KFold_CV_scores(model, runs, folds=5, seed=817, norms = ['std'], train_kwargs={}):
+def get_KFold_CV_scores(model, trajectories, folds=5, seed=817, norms = ['std'], train_kwargs={}):
     
-    #create shuffled copy of the runs
+    #create shuffled copy of the trajectories
     rng = np.random.default_rng(seed=seed)
-    sruns = runs.copy()
-    rng.shuffle(sruns)
+    strajectories = trajectories.copy()
+    rng.shuffle(strajectories)
     
-    #split runs into folds
-    KFold_runs = get_KFold_runs(sruns, folds=folds)
+    #split trajectories into folds
+    KFold_trajectories = get_KFold_trajectories(strajectories, folds=folds)
     
     scores = [[] for n in range(len(norms))]  #of the individual folds - for each error norm in the norms list
     
     for k in range(folds):
-        train_runs = KFold_runs.copy()
-        test_runs = train_runs.pop(k) #test_runs = the kth fold, train_runs to remaining folds
+        train_trajectories = KFold_trajectories.copy()
+        test_trajectories = train_trajectories.pop(k) #test_trajectories = the kth fold, train_trajectories to remaining folds
 
-        train_runs = [item for sublist in train_runs for item in sublist] #unpack the training folds into one flattened list
+        train_trajectories = [item for sublist in train_trajectories for item in sublist] #unpack the training folds into one flattened list
 
-        #train the model on the training runs and get scores from the testing runs
-        model.load_trajectories(train_runs) 
+        #train the model on the training trajectories and get scores from the testing trajectories
+        model.load_trajectories(train_trajectories) 
         model.train(**train_kwargs)
         
-        #score the test runs for each error norm in the norms list
+        #score the test trajectories for each error norm in the norms list
         for l,norm in enumerate(norms): 
-            fold_mean_score, fold_all_scores = model.score_multiple_trajectories(test_runs, norm=norm)
+            fold_mean_score, fold_all_scores = model.score_multiple_trajectories(test_trajectories, norm=norm)
             scores[l].append(fold_all_scores)
             
     for n in range(len(norms)):
@@ -46,26 +46,26 @@ def get_KFold_CV_scores(model, runs, folds=5, seed=817, norms = ['std'], train_k
 
 
 #######################################
-### save and load runs
+### save and load trajectories
 #######################################
 
-def save_runs(runs, filename='../runs'):
-    np.savez(filename, runs)
+def save_trajectories(trajectories, filename='../trajectories'):
+    np.savez(filename, trajectories)
     
-def load_runs(filename='../runs.npz'):
+def load_trajectories(filename='../trajectories.npz'):
     
     from os.path import exists
 
     if not exists(filename):
-        print('runs file ot found')
+        print('trajectories file ot found')
         return None
     else:
-        npz_runs = np.load(filename)
-        runs = np.split(npz_runs['arr_0'], npz_runs['arr_0'].shape[0], axis=0)
+        npz_trajectories = np.load(filename)
+        trajectories = np.split(npz_trajectories['arr_0'], npz_trajectories['arr_0'].shape[0], axis=0)
 
-        for k in range(len(runs)):
-            runs[k] = np.reshape(runs[k], runs[k].shape[1:])
-        return runs
+        for k in range(len(trajectories)):
+            trajectories[k] = np.reshape(trajectories[k], trajectories[k].shape[1:])
+        return trajectories
 
 
 #######################################
@@ -127,21 +127,21 @@ def plot_difference(test,truth,title='difference'):
 
 class reducer_helper_class:
     
-    def __init__(self, runs = None, dim_reducer = None, rdim = 1):
-        self.runs = runs
-        if runs != None:
-            self.n_runs = len(runs)
+    def __init__(self, trajectories = None, dim_reducer = None, rdim = 1):
+        self.trajectories = trajectories
+        if trajectories != None:
+            self.n_trajectories = len(trajectories)
         self.rdim = rdim
         self.dim_reducer = dim_reducer
     
-    def load_runs(self, runs):
-        self.runs = runs
-        self.n_runs = len(runs)
+    def load_trajectories(self, trajectories):
+        self.trajectories = trajectories
+        self.n_trajectories = len(trajectories)
     
     def train(self, rdim=None, dim_reducer = None):
         
-        if self.runs == None:
-            raise ValueError('no runs loaded')
+        if self.trajectories == None:
+            raise ValueError('no trajectories loaded')
         
         if dim_reducer != None:
             self.dim_reducer = dim_reducer
@@ -152,7 +152,7 @@ class reducer_helper_class:
         if rdim != None:
             self.rdim = rdim
 
-        data_matrix = np.concatenate(self.runs,axis=0)
+        data_matrix = np.concatenate(self.trajectories,axis=0)
         
         self.dim_reducer.train(data_matrix)
         
@@ -184,10 +184,10 @@ class reducer_helper_class:
 
         return err
     
-    def score_multiple_runs(self,runs,**kwargs):
+    def score_multiple_trajectories(self,trajectories,**kwargs):
         scores = []
-        for k in range(len(runs)):
-            scores.append(self.get_error(runs[k], **kwargs))
+        for k in range(len(trajectories)):
+            scores.append(self.get_error(trajectories[k], **kwargs))
         
         mean = np.mean(scores)
         return mean, scores
