@@ -43,10 +43,16 @@ import jax
 import jax.numpy as jnp
 import optax as opt
 import matplotlib.pyplot as plt
+import ELPH_dyn
 
         
 class PIML_adam(base_optimizer):
-    def __init__(self, alpha = 1e-6, lambda1=0.0, mini_batch_size = 50, epochs = 1):
+    def __init__(self, dim_reducer = None, alpha = 1e-6, lambda1=0.0, mini_batch_size = 50, epochs = 1):
+        
+        assert dim_reducer != None
+        
+        self.dim_reducer = dim_reducer
+        
         self.alpha = alpha
         self.lambda1 = lambda1
         self.mini_batch_size = mini_batch_size
@@ -54,6 +60,15 @@ class PIML_adam(base_optimizer):
         
     def solve(self, feature_matrix, target_matrix):
         
+        red_dim = target_matrix.shape[1]
+        full_dim = self.dim_reducer.reconstruct(target_matrix[:1]).shape[1]
+        #print(full_dim)
+        
+        dk=4./full_dim
+        n_states_vec = np.zeros(full_dim)
+        for k in range(full_dim):
+            n_states_vec[k] = ELPH_dyn.get_k(dk,k)*dk/2./np.pi
+  
         
         def loss(beta, feature_matrix, target_matrix):
     
@@ -69,8 +84,8 @@ class PIML_adam(base_optimizer):
             error +=  err_reg 
 
             ones = jnp.ones(target_matrix.shape[0])
-            err_density = self.lambda1 * np.sum( jnp.square( ones @ (pred - target_matrix) ) ) 
-            
+            #err_density = self.lambda1 * np.sum( jnp.square( self.dim_reducer.reconstruct(pred - target_matrix) @ n_states_vec ) )
+            err_density = self.lambda1 * np.sum( jnp.square( (pred - target_matrix) @ self.dim_reducer.U[:,:red_dim].T @ n_states_vec ) ) 
             
             error += err_density
 
@@ -80,7 +95,6 @@ class PIML_adam(base_optimizer):
         
         ridge_optimizer = ridge(alpha=self.alpha)
         beta = ridge_optimizer.solve(feature_matrix, target_matrix)
-        #beta = ELPH_utils.get_ridge_regression_weights(feature_matrix, target_matrix, alpha=self.alpha)
 #         beta += np.random.normal(loc=0.0, scale=1e-2, size=beta.shape)
 
 
