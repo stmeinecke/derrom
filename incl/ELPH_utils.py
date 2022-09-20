@@ -73,12 +73,12 @@ def get_KFold_CV_scores(model, runs, folds=5, seed=817, norms = ['std'], train_k
         train_runs = [item for sublist in train_runs for item in sublist] #unpack the training folds into one flattened list
 
         #train the model on the training runs and get scores from the testing runs
-        model.load_runs(train_runs) 
+        model.load_trajectories(train_runs) 
         model.train(**train_kwargs)
         
         #score the test runs for each error norm in the norms list
         for l,norm in enumerate(norms): 
-            fold_mean_score, fold_all_scores = model.score_multiple_runs(test_runs, norm=norm)
+            fold_mean_score, fold_all_scores = model.score_multiple_trajectories(test_runs, norm=norm)
             scores[l].append(fold_all_scores)
             
     for n in range(len(norms)):
@@ -86,46 +86,6 @@ def get_KFold_CV_scores(model, runs, folds=5, seed=817, norms = ['std'], train_k
     
     return scores
 
-
-def get_KFold_CV_scores_std_max(model, runs, folds=5, seed=817, score_kwargs = {}, train_kwargs={}):
-    
-    #create shuffled copy of the runs
-    rng = np.random.default_rng(seed=seed)
-    sruns = runs.copy()
-    rng.shuffle(sruns)
-    
-    #split runs into folds
-    KFold_runs = get_KFold_runs(sruns, folds=folds)
-    
-    mean_scores_std = [] #of the individual folds
-    mean_scores_max = [] #of the individual folds
-    
-    all_scores_std = []
-    all_scores_max = []
-    for k in range(folds):
-        train_runs = KFold_runs.copy()
-        test_runs = train_runs.pop(k) #test_runs = the kth fold, train_runs to remaining folds
-
-        train_runs = [item for sublist in train_runs for item in sublist] #unpack the training folds into one flattened list
-
-        #train the model on the training runs and get scores from the testing runs
-        model.load_runs(train_runs) 
-        model.train(**train_kwargs)
-        
-        mean_std_score, scores_std = model.score_multiple_runs(test_runs, norm='std')
-        mean_scores_std.append(mean_std_score)
-        all_scores_std.append(scores_std)
-        
-        
-        mean_max_score, scores_max = model.score_multiple_runs(test_runs, norm='max')
-        mean_scores_max.append(mean_max_score)
-        all_scores_max.append(scores_max)
-    
-    
-    all_scores_std = [item for sublist in all_scores_std for item in sublist]
-    all_scores_max = [item for sublist in all_scores_max for item in sublist]
-    
-    return mean_scores_std, mean_scores_max, all_scores_std, all_scores_max
 
 #######################################
 ### save and load runs
@@ -143,20 +103,10 @@ def load_runs(filename='../runs.npz'):
         return None
     else:
         npz_runs = np.load(filename)
-    #     print(npz_runs.files)
-    #     print(type(npz_runs['arr_0']))
-    #     print(npz_runs['arr_0'].shape)
         runs = np.split(npz_runs['arr_0'], npz_runs['arr_0'].shape[0], axis=0)
 
         for k in range(len(runs)):
             runs[k] = np.reshape(runs[k], runs[k].shape[1:])
-    #     print(type(runs))
-    #     print(type(runs[1]))
-    #     print(runs[1].shape)
         return runs
     
-    
-def load_MG(filename='../MG.txt'):
-    first_row = np.fromfile(filename, count=3, dtype=int, sep='\n')
-    return np.loadtxt(filename,skiprows=1), first_row[0], first_row[1], first_row[2]
 

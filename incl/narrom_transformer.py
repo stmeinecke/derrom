@@ -26,17 +26,21 @@ class polynomial_features(base_transformer):
             VAR_p_Vec.append(VARp)
         return np.concatenate(VAR_p_Vec, axis=0)
     
-    def transform(self,data_matrix):
+    def transform(self,VAR_state_matrix):
         
-        nRows = self.__build_VAR_p_Vec(data_matrix[:,0], self.order).size
-        nCols = data_matrix.shape[1]
-        
-        poly_features = np.zeros((nRows,nCols)) 
-        
-        for k in range( data_matrix.shape[1] ):
-            poly_features[:,k] = self.__build_VAR_p_Vec(data_matrix[:,k], self.order)
+        if VAR_state_matrix.shape[0] == 1:
+            return self.__build_VAR_p_Vec(VAR_state_matrix[0], self.order)
+          
+        else:        
+          nCols = self.__build_VAR_p_Vec(VAR_state_matrix[0], self.order).size
+          nRows = VAR_state_matrix.shape[0]
+          
+          poly_features = np.zeros((nRows,nCols)) 
+          
+          for k in range( VAR_state_matrix.shape[0] ):
+              poly_features[k] = self.__build_VAR_p_Vec(VAR_state_matrix[k], self.order)
 
-        return poly_features
+          return poly_features
         
     def setup(self, n_VAR_features):
         pass
@@ -55,14 +59,11 @@ class ELM_features(base_transformer):
         self.activation_function = activation_function
         
     def setup(self, n_VAR_features):
-        #self.projection_matrix = self.rng.uniform(self.ELM_weights_mean, self.ELM_weights_std, (n_VAR_features, self.ELM_nodes))
-        #self.bias_matrix = self.rng.uniform(self.ELM_weights_mean, self.ELM_weights_std, self.ELM_nodes)
-        
         self.projection_matrix = self.rng.normal(self.ELM_weights_mean, self.ELM_weights_std/np.sqrt(n_VAR_features), (n_VAR_features, self.ELM_nodes))
         self.bias_matrix = self.rng.uniform(0, 1.0, self.ELM_nodes)
     
-    def transform(self,data_matrix):
-        projected_data = self.activation_function(data_matrix.T @ self.projection_matrix + self.bias_matrix)
-        state = np.concatenate([data_matrix,projected_data.T])
+    def transform(self,VAR_state_matrix):
+        projected_data = self.activation_function( VAR_state_matrix @ self.projection_matrix + self.bias_matrix )
+        state = np.concatenate( [VAR_state_matrix,projected_data], axis=1)
 
         return state

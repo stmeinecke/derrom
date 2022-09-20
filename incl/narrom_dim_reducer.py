@@ -11,7 +11,7 @@ class base_dim_reducer:
     def reduce(self):
         raise NotImplementedError
         
-    def expand(self):
+    def reconstruct(self):
         raise NotImplementedError
         
         
@@ -20,33 +20,33 @@ class SVD(base_dim_reducer):
         pass
     
     def train(self, data_matrix):
-        self.U,self.S = np.linalg.svd(data_matrix, full_matrices=False)[:2]
+        self.U,self.S = np.linalg.svd(data_matrix.T, full_matrices=False)[:2] #SVD of the transposed data matrix since the data is stored in row vectors
         
     def reduce(self, data_matrix, rdim):
-        return self.U[:,:rdim].T @ data_matrix
+        return data_matrix @ self.U[:,:rdim] #project the data matrix onto the first rdim left singular vectors. The reduced data matrix then carries rdim coefficients in its rows
     
-    def expand(self, coef_matrix):
-        dim = coef_matrix.shape[0]
-        return self.U[:,:dim] @ coef_matrix 
+    def reconstruct(self, reduced_data_matrix):
+        dim = reduced_data_matrix.shape[1]
+        return reduced_data_matrix @ self.U[:,:dim].T 
       
       
-class FFT(base_dim_reducer):
+class DFT(base_dim_reducer):
     def __init__(self, sorted=False):
         self.sorted = sorted
         pass
     
     def train(self, data_matrix):
-        self.full_dim = data_matrix.shape[0]
+        self.full_dim = data_matrix.shape[1]
         
         if self.sorted:
-            FT = np.fft.rfft(data_matrix, axis=0)
+            FT = np.fft.rfft(data_matrix, axis=1)
 
-            real_matrix = np.zeros((FT.shape[0]*2,FT.shape[1]))
+            real_matrix = np.zeros((FT.shape[0],FT.shape[1]*2))
 
-            real_matrix[::2] = np.real(FT)
-            real_matrix[1::2] = np.imag(FT)
+            real_matrix[:,::2] = np.real(FT)
+            real_matrix[:,1::2] = np.imag(FT)
 
-            self.mean_coefs = np.mean(real_matrix, axis=1)
+            self.mean_coefs = np.mean(real_matrix, axis=0)
 
             self.sort_inds = np.flip(np.argsort(np.abs(self.mean_coefs)))
             self.unsort_inds = np.argsort(self.sort_inds)
@@ -54,30 +54,30 @@ class FFT(base_dim_reducer):
         
     def reduce(self, data_matrix, rdim):
         
-        FT = np.fft.rfft(data_matrix, axis=0)
+        FT = np.fft.rfft(data_matrix, axis=1)
   
-        real_matrix = np.zeros((FT.shape[0]*2,FT.shape[1]))
+        real_matrix = np.zeros((FT.shape[0],FT.shape[1]*2))
         
-        real_matrix[::2] = np.real(FT)
-        real_matrix[1::2] = np.imag(FT)
+        real_matrix[:,::2] = np.real(FT)
+        real_matrix[:,1::2] = np.imag(FT)
         
         if self.sorted:
-            return real_matrix[self.sort_inds][:rdim]
+            return real_matrix[:,self.sort_inds][:,:rdim]
         else:
-            return real_matrix[:rdim]
+            return real_matrix[:,:rdim]
     
-    def expand(self, coef_matrix):
+    def reconstruct(self, reduced_data_matrix):
         
         if self.sorted:
-            real_matrix = np.zeros((2 * self.full_dim, coef_matrix.shape[1]))
-            real_matrix[:coef_matrix.shape[0]] = coef_matrix
-            real_matrix = real_matrix[self.unsort_inds]
+            real_matrix = np.zeros((reduced_data_matrix.shape[0],2 * self.full_dim))
+            real_matrix[:,:reduced_data_matrix.shape[1]] = reduced_data_matrix
+            real_matrix = real_matrix[:,self.unsort_inds]
           
-            complex_matrix = real_matrix[::2] + 1.j*real_matrix[1::2]  
+            complex_matrix = real_matrix[:,::2] + 1.j*real_matrix[:,1::2]  
         else:
-            complex_matrix = coef_matrix[::2] + 1.j*coef_matrix[1::2]
+            complex_matrix = reduced_data_matrix[:,::2] + 1.j*reduced_data_matrix[:,1::2]
             
-        iFT = np.fft.irfft(complex_matrix, n=self.full_dim, axis=0)
+        iFT = np.fft.irfft(complex_matrix, n=self.full_dim, axis=1)
         
         return iFT
 
@@ -117,7 +117,7 @@ class Hermite(base_dim_reducer):
     
     
     def train(self, data_matrix):
-        self.full_dim = data_matrix.shape[0]
+        self.full_dim = data_matrix.shape[1]
         
         if self.train_rdim == None:
             rdim = self.full_dim
@@ -139,6 +139,7 @@ class Hermite(base_dim_reducer):
             
         
         if self.optimize == True:
+            
             def loss(sample_max):
                 x_test = np.linspace(0,sample_max,self.full_dim)
                 for k in range(self.full_dim):
@@ -148,16 +149,14 @@ class Hermite(base_dim_reducer):
                     self.H_matrix = self.__nGramSchmidt_Rows(self.H_matrix,10)
                 
                 if self.sorted:
-                    train_coefs = self.H_matrix @ data_matrix 
-                    self.mean_coefs = np.mean(train_coefs, axis=1)
+                    train_coefs = data_matrix @ self.H_matrix.T
+                    self.mean_coefs = np.mean(train_coefs, axis=0)
                     self.sort_inds = np.flip(np.argsort(np.abs(self.mean_coefs)))
                     self.sorted_H_matrix = self.H_matrix[self.sort_inds]
                         
-                apprx = np.linalg.pinv(self.H_matrix[:rdim]) @ (self.H_matrix[:rdim] @ data_matrix)
-                
-                #return np.linalg.norm(data_matrix-apprx, ord='fro')
-                #return np.abs(np.ravel(data_matrix-apprx)).max()
-                return np.std(np.ravel(data_matrix-apprx))
+                apprx = ( data_matrix @ self.H_matrix[:rdim].T ) @ np.linalg.pinv(self.H_matrix[:rdim]).T
+              
+                return np.linalg.norm(data_matrix-apprx, ord='fro')
               
             res = minimize_scalar(loss, bounds=(0,40))
             self.sample_max = res.x
@@ -171,24 +170,24 @@ class Hermite(base_dim_reducer):
             self.H_matrix = self.__nGramSchmidt_Rows(self.H_matrix,10)
         
         if self.sorted:
-            train_coefs = self.H_matrix @ data_matrix 
-            self.mean_coefs = np.mean(train_coefs, axis=1)
+            train_coefs = data_matrix @ self.H_matrix.T
+            self.mean_coefs = np.mean(train_coefs, axis=0)
             self.sort_inds = np.flip(np.argsort(np.abs(self.mean_coefs)))
             self.sorted_H_matrix = self.H_matrix[self.sort_inds]
         
         
     def reduce(self,data_matrix,rdim):
         if self.sorted:
-            return self.sorted_H_matrix[:rdim] @ data_matrix
+            return data_matrix @ self.sorted_H_matrix[:rdim].T
         else:
-            return self.H_matrix[:rdim] @ data_matrix
+            return data_matrix @ self.H_matrix[:rdim].T
         
-    def expand(self, coef_matrix):
-        dim = coef_matrix.shape[0]
+    def reconstruct(self, reduced_data_matrix):
+        dim = reduced_data_matrix.shape[1]
         if self.sorted:
-            return np.linalg.pinv(self.sorted_H_matrix[:dim]) @ coef_matrix
+            return reduced_data_matrix @ np.linalg.pinv(self.sorted_H_matrix[:dim]).T
         else:
-            return np.linalg.pinv(self.H_matrix[:dim]) @ coef_matrix
+            return reduced_data_matrix @ np.linalg.pinv(self.H_matrix[:dim]).T
         
             
         
