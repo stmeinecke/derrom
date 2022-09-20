@@ -303,45 +303,4 @@ def get_el_dynamics(init_cond, kmax= 2.0, n_kmax = 20, tmax = 10000.0, n_tmax = 
   
 
 
-#kmax = 2.
-#n_kmax = 30
-#dk = kmax/n_kmax
-
-
-#init = get_init_cond_gauss(kmax = kmax, n_kmax = n_kmax)
-#nkdyn = get_el_dynamics(init, n_kmax = n_kmax)
-
-#time_ende = time.time()
-#print("Laufzeit des Codes:"+str(time_ende-time_start))
-
-
-#import matplotlib.pyplot as plt
-#plt.imshow(nkdyn, aspect='auto')
-#plt.colorbar()
-#plt.show()
-  
-
-
-#energy = np.full((n_tmax,5),0.)
-#occupation = np.full((n_tmax,5),0.)
-#for n_t in range(n_tmax):
-  #for a in range(4):
-    #for n_k in range(n_kmax):
-      #energy[n_t][1+a] += y_values[n_t][1+a][n_k]*phonon_dispersion(get_k(dk,n_k),0.,a)*get_k(dk,n_k)*dk/2./pi
-      #occupation[n_t][1+a] += y_values[n_t][1+a][n_k]*get_k(dk,n_k)*dk/2./pi
-  #for n_k in range(n_kmax):
-    #energy[n_t][0] +=get_k(dk,n_k)*dk/2./pi* y_values[n_t][0][n_k]*electron_dispersion(get_k(dk,n_k),0.)
-    #occupation[n_t][0] +=get_k(dk,n_k)*dk/2./pi* y_values[n_t][0][n_k]
-#print(np.shape(energy))
-
-#path = "data"+str(n_kmax)
-#if not os.path.exists(path):
-  #os.makedirs(path)
-
-
-#np.save(path+"/time_traces",np.array(y_values))
-#np.save(path+"/time_grid",np.array(t_values))
-#np.save(path+"/energy",np.array(energy))
-#np.save(path+"/occupation",np.array(occupation))
-
 
