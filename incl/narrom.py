@@ -139,7 +139,7 @@ class narrom:
         data_matrix = np.concatenate(self.trajectories,axis=0)
 
         if self.reduce_dim == True:
-            self.dim_reducer.train(data_matrix)
+            self.dim_reducer.train(data_matrix,self.prdim)
             self.reduced_data_matrix = self.dim_reducer.reduce(data_matrix,self.prdim)
         else:
             self.reduced_data_matrix = data_matrix

@@ -131,7 +131,7 @@ class reducer_helper_class:
 
         data_matrix = np.concatenate(self.trajectories,axis=0)
         
-        self.dim_reducer.train(data_matrix)
+        self.dim_reducer.train(data_matrix, self.rdim)
         
     def approx_single_run(self, run, rdim=None):
         if rdim == None:
