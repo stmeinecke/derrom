@@ -60,7 +60,7 @@ class ELM_features(base_transformer):
         
     def setup(self, n_VAR_features):
         self.projection_matrix = self.rng.normal(self.ELM_weights_mean, self.ELM_weights_std/np.sqrt(n_VAR_features), (n_VAR_features, self.ELM_nodes))
-        self.bias_matrix = self.rng.uniform(0, 1.0, self.ELM_nodes)
+        self.bias_matrix = self.rng.uniform(-1.0, 1.0, self.ELM_nodes)
     
     def transform(self,VAR_state_matrix):
         projected_data = self.activation_function( VAR_state_matrix @ self.projection_matrix + self.bias_matrix )
