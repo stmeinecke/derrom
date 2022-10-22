@@ -43,15 +43,18 @@ dphi = phimax/n_phimax
 
 
 def get_k(dk,n_k):
-  return (n_k+1)*dk
+    return (n_k+1.)*dk
   
 def get_phi(dphi,n_phi):
   return n_phi*dphi
 
 
-def electron_dispersion(k,phi):
+def electron_dispersion(k,phi=0):
   help = hbar*hbar*k*k/2./m
   return help
+
+def electron_DOS(k,dk):
+    return k*dk/2./np.pi
 
 def phonon_dispersion(k,phi,alpha):
   if alpha==0:
