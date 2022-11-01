@@ -7,9 +7,9 @@ import narrom_transformer as transformer
 import narrom_utils as utils
 
 
-class noderrom:
+class noror:
   
-    def __init__(self, trajectories = None, targets = None, rdim = 1, prdim=None, VAR_l = 1, full_hist=False, intercept = False, dim_reducer = None, scaler = None, VAR_transformer = None, optimizer = None):
+    def __init__(self, trajectories = None, targets = None, rdim = 1, VAR_l = 1, full_hist=False, intercept = False, dim_reducer = None, scaler = None, VAR_transformer = None, optimizer = None):
         
         if trajectories != None:
             self.trajectories = trajectories
@@ -24,10 +24,6 @@ class noderrom:
         assert self.__compare_trajectories_targets()
         
         self.rdim = rdim
-        if prdim == None:
-            self.prdim = self.rdim
-        else:
-            self.prdim = prdim
         
         self.VAR_l = VAR_l
         
@@ -93,18 +89,15 @@ class noderrom:
             return np.concatenate(VAR_vec, axis=0)
     
     
-    def __build_VAR_matrix(self, data_matrix):
+    def __build_VAR_matrix(self, reduced_trajectories):
         
         assert self.VAR_l > 0
         
         if self.VAR_l == 1:
-            return data_matrix
+            return np.concatenate(reduced_trajectories,axis=0)
         
         else:
             VAR_matrix = []
-            
-            #transform reduced data matrix back to an ndarray of the individual reduced trajectories
-            reduced_trajectories = np.asarray(np.split(data_matrix, self.n_trajectories, axis=0))
 
             for r in range(len(reduced_trajectories)):
 
@@ -128,24 +121,24 @@ class noderrom:
             return VAR_matrix
     
     
-    def __build_target_matrix(self):
+    def __build_target_matrix(self, targets):
         
         if self.full_hist == False:
-            target_matrix = np.concatenate(self.targets, axis=0)
+            target_matrix = np.concatenate(targets, axis=0)
         else:
             assert self.VAR_l > 0
             
             target_matrix = []
             
-            for r in range(len(self.targets)):
-                target_matrix.append(self.targets[r][self.VAR_l-1:])
+            for r in range(len(targets)):
+                target_matrix.append(targets[r][self.VAR_l-1:])
                 
             target_matrix = np.concatenate(target_matrix, axis=0)
         
         return target_matrix
 
   
-    def train(self, rdim = None, prdim = None, VAR_l = None, intercept=None, full_hist=None, dim_reducer = None, scaler = None, VAR_transformer = None, optimizer = None):
+    def train(self, rdim = None, VAR_l = None, intercept=None, full_hist=None, dim_reducer = None, scaler = None, VAR_transformer = None, optimizer = None):
         
         assert (self.trajectories != None and self.targets != None)
         
@@ -154,11 +147,6 @@ class noderrom:
         
         if rdim != None:
             self.rdim = rdim
-        if prdim != None:
-            self.prdim = prdim
-        else:
-            if rdim != None:
-                self.prdim = rdim
         
         if VAR_l != None:
             self.VAR_l = VAR_l
@@ -182,25 +170,22 @@ class noderrom:
         if optimizer != None:
             self.optimizer = optimizer
         
-        #apply the dimensionality reduction to get the reduced coefficient matrix with prdim features via the dim_reducer object
-        data_matrix = np.concatenate(self.trajectories,axis=0)
-
+        #apply the dimensionality reduction to get the reduced coefficient matrix with rdim features via the dim_reducer object
         if self.reduce_dim == True:
-            self.dim_reducer.train(data_matrix,self.prdim)
-            self.reduced_data_matrix = self.dim_reducer.reduce(data_matrix,self.prdim)
+            self.dim_reducer.train(np.concatenate(self.trajectories,axis=0),self.rdim)
+            self.reduced_trajectories = [self.dim_reducer.reduce(trajectory,self.rdim) for trajectory in self.trajectories]
         else:
-            self.reduced_data_matrix = data_matrix
-            self.rdim = data_matrix.shape[1]
-            self.prdim = data_matrix.shape[1]
+            self.reduced_trajectories = self.trajectories
+            self.rdim = self.trajectories[0].shape[1]
 
         #apply data/feature scaling via scaler object
         if self.standardize:
-            self.scaler.train(self.reduced_data_matrix)
-            self.reduced_data_matrix = self.scaler.transform(self.reduced_data_matrix)
+            self.scaler.train(np.concatenate(self.reduced_trajectories,axis=0))
+            self.reduced_trajectories = [self.scaler.transform(reduced_trajectory) for reduced_trajectory in self.reduced_trajectories]
            
         #create training data matrices
-        self.training_matrix = self.__build_VAR_matrix(self.reduced_data_matrix)    
-        self.target_matrix = self.__build_target_matrix()
+        self.training_matrix = self.__build_VAR_matrix(self.reduced_trajectories)    
+        self.target_matrix = self.__build_target_matrix(self.targets)
         
         
         #apply transformation to the VAR state
@@ -235,8 +220,10 @@ class noderrom:
         #setup numpy array for the predession
         pred = np.zeros((trajectory.shape[0],self.n_target_vars))
         
-        
-        feature_matrix = self.VAR_transformer.transform(self.__build_VAR_matrix(reduced_trajectory))
+        if self.transform_VAR == True:
+            feature_matrix = self.VAR_transformer.transform(self.__build_VAR_matrix([reduced_trajectory]))
+        else:
+            feature_matrix = self.__build_VAR_matrix([reduced_trajectory])
         
         #add bias/intercept 
         if self.intercept:
@@ -256,8 +243,119 @@ class noderrom:
         print('intercept: ', self.intercept)
         print('standardize: ', self.standardize)
         print('rdim: ', self.rdim)
-        print('prdim: ', self.prdim)
         print('VAR_l: ', self.VAR_l)
         print('train shape: ', self.training_matrix.shape)
         print('target shape: ', self.target_matrix.shape)
         print('weights shape: ', self.w.shape)
+        
+        
+class noroar(noror):
+    
+    def __init__(self, trajectories = None, rdim = 1, prdim=None, VAR_l = 1, full_hist=False, intercept = False, dim_reducer = None, scaler = None, VAR_transformer = None, optimizer = None):
+        
+        if trajectories != None:
+            self.trajectories = trajectories
+            self.n_trajectories = len(trajectories)
+            
+        assert self.__compare_trajectories_targets()
+        
+        self.rdim = rdim
+        if prdim == None:
+            self.prdim = self.rdim
+        else:
+            self.prdim = prdim
+        
+        self.VAR_l = VAR_l
+        
+        self.intercept = intercept
+        self.full_hist = full_hist
+        
+        if dim_reducer != None:
+            self.dim_reducer = dim_reducer
+            self.reduce_dim = True
+        else:
+            self.reduce_dim = False
+        
+        if scaler != None:
+            self.scaler = scaler
+            self.standardize = True
+        else:
+            self.standardize = False
+            
+        if VAR_transformer != None:
+            self.VAR_transformer = VAR_transformer
+            self.transform_VAR = True
+        else:
+            self.transform_VAR = False
+            
+        if optimizer != None:
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer.lstsqrs()
+            
+    
+    def load_data(self,trajectories):
+        
+        self.trajectories = trajectories
+        self.n_trajectories = len(trajectories)
+        
+    
+    def train(self, rdim = None, VAR_l = None, intercept=None, full_hist=None, dim_reducer = None, scaler = None, VAR_transformer = None, optimizer = None):
+        
+        if rdim != None:
+            self.rdim = rdim
+        
+        if VAR_l != None:
+            self.VAR_l = VAR_l
+        if intercept != None:
+            self.intercept = intercept
+        if full_hist != None:
+            self.full_hist = full_hist
+        
+        if dim_reducer != None:
+            self.dim_reducer = dim_reducer
+            self.reduce_dim = True
+        
+        if scaler != None:
+            self.scaler = scaler
+            self.standardize = True
+            
+        if VAR_transformer != None:
+            self.VAR_transformer = VAR_transformer
+            self.transform_VAR = True
+            
+        if optimizer != None:
+            self.optimizer = optimizer
+        
+        #apply the dimensionality reduction to get the reduced coefficient matrix with rdim features via the dim_reducer object
+        data_matrix = np.concatenate(self.trajectories,axis=0)
+
+        if self.reduce_dim == True:
+            self.dim_reducer.train(data_matrix,self.rdim)
+            self.reduced_data_matrix = self.dim_reducer.reduce(data_matrix,self.rdim)
+        else:
+            self.reduced_data_matrix = data_matrix
+            self.rdim = data_matrix.shape[1]
+
+        #apply data/feature scaling via scaler object
+        if self.standardize:
+            self.scaler.train(self.reduced_data_matrix)
+            self.reduced_data_matrix = self.scaler.transform(self.reduced_data_matrix)
+           
+        #create training data matrices
+        self.training_matrix = self.__build_VAR_matrix(self.reduced_data_matrix)    
+        self.target_matrix = self.__build_target_matrix()
+        
+        
+        #apply transformation to the VAR state
+        if self.transform_VAR == True:
+            self.VAR_transformer.setup(self.training_matrix.shape[1])
+            self.training_matrix = self.VAR_transformer.transform(self.training_matrix)
+
+        #add bias/intercept
+        if self.intercept:
+            self.training_matrix = np.concatenate( [ self.training_matrix, np.ones( (self.training_matrix.shape[0],1) ) ] , axis=1 )
+
+        #calculate weight matrix via optimizer object
+        self.w = self.optimizer.solve(self.training_matrix, self.target_matrix)
+    
