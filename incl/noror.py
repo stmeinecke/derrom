@@ -302,16 +302,25 @@ class noror:
         return pred
     
     
-    def get_error(self, trajectory, truth=[None], pred=[None], norm='NF'):
+    def get_error(self, trajectory=None, truth=None, pred=None, norm='NF'):
         
         if self.targets == 'AR':
-            truth = trajectory
+            if truth is None and trajectory is None:
+                raise ValueError('no trajectory supplied')
+            elif truth is None:
+                truth = trajectory
+            elif trajectory is None:
+                trajectory = truth
+                
         else:
-            if truth[0] == None:
+            if truth is None:
                 raise ValueError('no truth supplied')
             
-        if pred[0] == None:
-            pred = self.predict(trajectory)
+        if pred is None:
+            if trajectory is not None:
+                pred = self.predict(trajectory)
+            else:
+                raise ValueError('no trajectory supplied to compute prediction')
         
         err = -1.
         if norm =='NF': #normalized Frobenius norm
