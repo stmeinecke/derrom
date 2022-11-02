@@ -56,13 +56,10 @@ class normalize_scaler(data_scaler):
                 self.rel_scale_vec[k] = 0.0
         
     def transform(self, data_matrix):
-        n_features = data_matrix.shape[1]
-        
-        return ( ( (data_matrix - self.min[:n_features])/self.scale[:n_features]) - 0.5*self.rel_scale_vec[:n_features])
+        return ( ( (data_matrix - self.min)/self.scale) - 0.5*self.rel_scale_vec)
     
     def inverse_transform(self, data_matrix):
-        n_features = data_matrix.shape[1]
-        return ( ( (data_matrix + 0.5*self.rel_scale_vec[:n_features]) * self.scale[:n_features])+self.min[:n_features] )
+        return ( ( (data_matrix + 0.5*self.rel_scale_vec) * self.scale)+self.min )
       
       
 class tanh_scaler(data_scaler):
