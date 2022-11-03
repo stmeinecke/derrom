@@ -78,8 +78,8 @@ import matplotlib.colors as colors
 def plot_trajectory(data,title='trajectory'):
     plt.imshow(data, aspect='auto', interpolation='none',origin='lower',cmap='Reds')
     plt.title(title)
-    plt.xlabel(r'time $n_k$')
-    plt.ylabel(r'electron momentum $n_t$')
+    plt.xlabel(r'time $t_n$')
+    plt.ylabel(r'electron momentum $k_n$')
     cb = plt.colorbar()
     cb.set_label('occupation')
     plt.show()
