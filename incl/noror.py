@@ -1,10 +1,10 @@
 import numpy as np
 
-import narrom_dim_reducer as dim_reducer
-import narrom_optimizer as optimizer
-import narrom_scaler as scaler
-import narrom_transformer as transformer
-import narrom_utils as utils
+import noror_dim_reducer as dim_reducers
+import noror_optimizer as optimizers
+import noror_scaler as scalers
+import noror_transformer as transformers
+import noror_utils as utils
 
 import matplotlib.pyplot as plt
 
@@ -53,7 +53,7 @@ class noror:
         if optimizer != None:
             self.optimizer = optimizer
         else:
-            self.optimizer = optimizer.lstsqrs()
+            self.optimizer = optimizers.lstsqrs()
         
         
     def load_data(self,trajectories,targets):
@@ -253,6 +253,9 @@ class noror:
     
     
     def forecast(self,init,n_steps):
+        
+        assert self.targets == 'AR'
+        
         #apply the dimensionality reduction to the initital conditions
         if self.reduce_dim == True:
             reduced_init = self.dim_reducer.reduce(init,self.rdim)
