@@ -6,42 +6,64 @@ import numpy as np
 ### KFold cross validation
 #######################################
 
-def get_KFold_trajectories(trajectories, folds=5):
-    KFold_trajectories = np.array_split(trajectories, folds) #numpy returns list of ndarrays
-    KFold_trajectories = [list(array) for array in KFold_trajectories] #covert ndarrays back to list such that KFold_trajectories is a list of lists of ndarrays (the individual trajectories)
-    return KFold_trajectories
+def get_KFolds(data_list, folds=5):
+    KFolds = np.array_split(data_list, folds) #numpy returns list of ndarrays
+    KFolds = [list(array) for array in KFolds] #covert ndarrays back to list such that KFolds is a list of lists of ndarrays (the individual trajectories)
+    return KFolds
   
   
-def get_KFold_CV_scores(model, trajectories, folds=5, seed=817, norms = ['std'], train_kwargs={}):
+def get_KFold_CV_scores(model, trajectories, targets='AR', folds=5, seed=817, norms = ['NF'], train_kwargs={}):
+    
+    if targets != 'AR':
+        assert len(trajectories) == len(targets)
+    if targets == 'AR':
+        assert model.targets == 'AR'
     
     #create shuffled copy of the trajectories
     rng = np.random.default_rng(seed=seed)
-    strajectories = trajectories.copy()
-    rng.shuffle(strajectories)
+    shuffled_inds = [i for i in range(len(trajectories))]
+    rng.shuffle(shuffled_inds)
+    
+    strajectories = [trajectories[ind] for ind in shuffled_inds]
+    if targets != 'AR':
+        stargets = [targets[ind] for ind in shuffled_inds]
+    
     
     #split trajectories into folds
-    KFold_trajectories = get_KFold_trajectories(strajectories, folds=folds)
+    KFold_trajectories = get_KFolds(strajectories, folds=folds)
+    if targets != 'AR':
+        KFold_targets = get_KFolds(stargets, folds=folds)
     
     scores = [[] for n in range(len(norms))]  #of the individual folds - for each error norm in the norms list
     
     for k in range(folds):
         train_trajectories = KFold_trajectories.copy()
         test_trajectories = train_trajectories.pop(k) #test_trajectories = the kth fold, train_trajectories to remaining folds
-
         train_trajectories = [item for sublist in train_trajectories for item in sublist] #unpack the training folds into one flattened list
-
+        
+        if targets != 'AR':
+            train_targets = KFold_targets.copy()
+            test_targets = train_targets.pop(k)
+            train_targets = [item for sublist in train_targets for item in sublist]
+        else:
+            test_targets = None
+        
         #train the model on the training trajectories and get scores from the testing trajectories
-        model.load_trajectories(train_trajectories) 
+        
+        if targets == 'AR':
+            model.load_data(trajectories=train_trajectories, targets='AR') 
+        else:
+            model.load_data(trajectories=train_trajectories, targets=train_targets) 
+        
         model.train(**train_kwargs)
         
         #score the test trajectories for each error norm in the norms list
         for l,norm in enumerate(norms): 
-            fold_mean_score, fold_all_scores = model.score_multiple_trajectories(test_trajectories, norm=norm)
+            fold_mean_score, fold_all_scores = model.score_multiple_trajectories(test_trajectories, test_targets, norm=norm)
             scores[l].append(fold_all_scores)
             
     for n in range(len(norms)):
-        scores[n] = [item for sublist in scores[n] for item in sublist] #unpack the training folds into one flattened list
-    
+        scores[n] = [item for sublist in scores[n] for item in sublist]
     return scores
 
 

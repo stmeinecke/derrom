@@ -56,16 +56,17 @@ class noror:
             self.optimizer = optimizers.lstsqrs()
         
         
-    def load_data(self,trajectories,targets):
+    def load_data(self,trajectories,targets='AR'):
         self.trajectories = trajectories
         self.n_trajectories = len(trajectories)
         
         self.targets = targets
-        self.n_targets = len(targets)
-        self.n_target_vars = targets[0][0].size
+        if targets != 'AR':
+            self.n_targets = len(targets)
+            self.n_target_vars = targets[0][0].size
         
-        ### check data consistency
-        assert self.__compare_trajectories_targets()
+            ### check data consistency
+            assert self.__compare_trajectories_targets()
         
     
     def load_trajectories(self,trajectories):
@@ -340,10 +341,13 @@ class noror:
         return err
                 
                 
-    def score_multiple_trajectories(self,trajectories, **kwargs):
+    def score_multiple_trajectories(self,trajectories, targets=None, **kwargs):
         scores = []
         for k in range(len(trajectories)):
-            scores.append(self.get_error(trajectories[k], **kwargs))
+            if targets is None or self.targets=='AR':
+                scores.append(self.get_error(trajectory=trajectories[k], **kwargs))
+            else:
+                scores.append(self.get_error(trajectory=trajectories[k], truth=targets[k], **kwargs))
         
         mean = np.mean(scores)
         return mean, scores
