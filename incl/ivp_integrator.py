@@ -3,18 +3,26 @@ import numpy as np
 class ivp_integrator:
     
     def __init__(self, model, dt=1., dt_out=1., method='Heun'):
-        self.model = model
         self.dt = dt
         self.dt_out = dt_out
         self.method = method
         
         self.targets = 'AR'
+        
+        self.model = model
+        self.model_hist_option = model.full_hist
+        self.model.full_hist = True
     
     def load_data(self, **kwargs):
         self.model.load_data(**kwargs)
     
     def train(self, **kwargs):
+        
+        self.model.full_hist = self.model_hist_option
+        
         self.model.train(**kwargs)
+        
+        self.model.full_hist = True
     
     
     #def __Euler(self, init, n_steps, dt, dt_out):
@@ -42,7 +50,7 @@ class ivp_integrator:
         
         sol = np.zeros((n_steps,init.shape[1]))
         
-        sol[0] = init
+        sol[0] = init[0]
         
         state = sol[0]
         
@@ -53,7 +61,7 @@ class ivp_integrator:
         hist_ind = hist_length - 1
         hist = np.zeros((hist_length,init.shape[1]))
         for k in range(hist.shape[0]):
-            hist[k] = init
+            hist[k] = init[0]
         
         
         for j in range(1,sol.shape[0]*j_out):
@@ -110,7 +118,7 @@ class ivp_integrator:
         if self.method == 'Heun':
             return self.__Heun(init,n_steps,dt,dt_out)
         elif self.method == 'Euler':
-            return self.__Heun(init,n_steps,dt,dt_out)
+            return self.__Euler(init,n_steps,dt,dt_out)
         else:
             raise ValueError('integration method >> ' + self.method + ' << does not exist')
 
