@@ -25,28 +25,28 @@ class ivp_integrator:
         self.model.full_hist = True
     
     
-    #def __Euler(self, init, n_steps, dt, dt_out):
-        
-        #sol = np.zeros((n_steps,init.shape[1]))
-        
-        #sol[:init.shape[0]] = init
-        
-        #state = sol[0]
-        
-        #j_out = int(dt_out/dt)
-        #j_max = sol.shape[0]*j_out
-        
-        
-        #for j in range(1,sol.shape[0]*j_out):
-            #state = state + dt*self.model.predict(state)
-            
-            #if j%j_out == 0:
-                #sol[j//j_out] = state
-                
-        #return sol
-
-
     def __Euler(self, init, n_steps, dt, dt_out):
+        
+        sol = np.zeros((n_steps,init.shape[1]))
+        
+        sol[:init.shape[0]] = init
+        
+        state = sol[0]
+        
+        j_out = int(dt_out/dt)
+        j_max = sol.shape[0]*j_out
+        
+        
+        for j in range(1,sol.shape[0]*j_out):
+            state = state + dt*self.model.predict(state)
+            
+            if j%j_out == 0:
+                sol[j//j_out] = state
+                
+        return sol
+
+
+    def __Euler_wdelay(self, init, n_steps, dt, dt_out):
         
         sol = np.zeros((n_steps,init.shape[1]))
         
@@ -66,9 +66,7 @@ class ivp_integrator:
         
         for j in range(1,sol.shape[0]*j_out):
             
-            vecs = [hist[(hist_ind - n*j_out + self.model.VAR_l*j_out)%hist_length] for n in range(self.model.VAR_l)]
-            
-            vecs = np.stack(vecs)
+            vecs = np.stack( [hist[(hist_ind - n*j_out + self.model.VAR_l*j_out)%hist_length] for n in range(self.model.VAR_l)] )
             
             state = state + dt*self.model.predict(vecs)
             
@@ -107,6 +105,45 @@ class ivp_integrator:
         return sol
 
     
+    def __Heun_wdelay(self, init, n_steps, dt, dt_out):
+        
+        sol = np.zeros((n_steps,init.shape[1]))
+        
+        sol[0] = init[0]
+        
+        state = sol[0]
+        
+        j_out = int(dt_out/dt)
+        j_max = sol.shape[0]*j_out
+        
+        hist_length = (self.model.VAR_l-1)*j_out + 1
+        hist_ind = hist_length - 1
+        hist = np.zeros((hist_length,init.shape[1]))
+        for k in range(hist.shape[0]):
+            hist[k] = init[0]
+        
+        
+        for j in range(1,sol.shape[0]*j_out):
+            
+            vecs = np.stack( [hist[(hist_ind - n*j_out + self.model.VAR_l*j_out)%hist_length] for n in range(self.model.VAR_l)] )
+            
+            f1 = self.model.predict(vecs).flatten()
+            
+            hist_ind = (hist_ind+1)%hist_length
+            
+            vecs = np.stack( [(state+dt*f1).flatten()]+[hist[(hist_ind - n*j_out + self.model.VAR_l*j_out)%hist_length] for n in range(1,self.model.VAR_l)] )
+            
+            f2 = self.model.predict(vecs)
+            
+            state = state + 0.5*dt*(f1+f2)
+
+            hist[hist_ind] = state
+            
+            if j%j_out == 0:
+                sol[j//j_out] = state
+                
+        return sol
+    
     
     def integrate(self, init, n_steps, dt=None, dt_out=None):
         
@@ -116,9 +153,15 @@ class ivp_integrator:
             dt_out = self.dt_out
         
         if self.method == 'Heun':
-            return self.__Heun(init,n_steps,dt,dt_out)
+            if self.model.VAR_l == 1:
+                return self.__Heun(init,n_steps,dt,dt_out)
+            else:
+                return self.__Heun_wdelay(init,n_steps,dt,dt_out)
         elif self.method == 'Euler':
-            return self.__Euler(init,n_steps,dt,dt_out)
+            if self.model.VAR_l == 1:
+                return self.__Euler(init,n_steps,dt,dt_out)
+            else:
+                return self.__Euler_wdelay(init,n_steps,dt,dt_out)
         else:
             raise ValueError('integration method >> ' + self.method + ' << does not exist')
 

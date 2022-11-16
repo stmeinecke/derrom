@@ -250,7 +250,6 @@ class noror:
             if self.intercept:
                 feature_matrix = np.concatenate( [ feature_matrix, np.ones( (feature_matrix.shape[0],1) ) ] , axis=1 )
       
-            
             #let the machine predict the dynamics
             for j in range(0, pred.shape[0]):
                 #predict the next step
