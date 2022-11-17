@@ -12,7 +12,7 @@ def get_KFolds(data_list, folds=5):
     return KFolds
   
   
-def get_KFold_CV_scores(model, trajectories, targets='AR', folds=5, seed=817, norms = ['NF'], train_kwargs={}):
+def get_KFold_CV_scores(model, trajectories, targets='AR', folds=5, seed=817, norms = ['rms'], train_kwargs={}):
     
     if targets != 'AR':
         assert len(trajectories) == len(targets)
@@ -100,8 +100,8 @@ import matplotlib.colors as colors
 def plot_trajectory(data,title='trajectory'):
     plt.imshow(data, aspect='auto', interpolation='none',origin='lower',cmap='Reds')
     plt.title(title)
-    plt.xlabel(r'time $t_n$')
-    plt.ylabel(r'electron momentum $k_n$')
+    plt.ylabel(r'time $t_n$')
+    plt.xlabel(r'electron momentum $k_n$')
     cb = plt.colorbar()
     cb.set_label('occupation')
     plt.show()
@@ -113,8 +113,8 @@ def plot_difference(test,truth,title='difference'):
     
     plt.imshow(err, aspect='auto', interpolation='none',origin='lower',cmap='bwr', norm=colors.CenteredNorm(vcenter=0.0))
     plt.title(title)
-    plt.xlabel(r'time $n_k$')
-    plt.ylabel(r'electron momentum $n_t$')
+    plt.ylabel(r'time $t_n$')
+    plt.xlabel(r'electron momentum $t_n$')
     cb = plt.colorbar()
     cb.set_label('error')
     plt.show()
@@ -163,7 +163,7 @@ class reducer_helper_class:
                
         return self.dim_reducer.reconstruct( self.dim_reducer.reduce(run, rdim) )
     
-    def get_error(self, trajectory, approx=np.zeros(1), rdim=None, norm='NF'):
+    def get_error(self, trajectory, approx=np.zeros(1), rdim=None, norm='rms'):
         
         if rdim == None:
             rdim = self.rdim
@@ -178,7 +178,7 @@ class reducer_helper_class:
             err = np.abs(trajectory-approx).max()
         elif norm == 'std':
             err = np.std(np.ravel(trajectory-approx))
-        elif norm == 'NF':
+        elif norm == 'rms':
             err = np.sqrt( np.mean( np.square(trajectory-approx) ) )
         else:
             print('unknown norm') 

@@ -312,7 +312,7 @@ class derrom:
         
         
     
-    def get_error(self, trajectory=None, truth=None, pred=None, norm='NF'):
+    def get_error(self, trajectory=None, truth=None, pred=None, norm='rms'):
         
         if self.targets == 'AR':
             if truth is None and trajectory is None:
@@ -333,7 +333,7 @@ class derrom:
                 raise ValueError('no trajectory supplied to compute prediction')
         
         err = -1.
-        if norm =='NF': #normalized Frobenius norm
+        if norm =='rms': #normalized Frobenius norm
             err = np.sqrt( np.mean( np.square(truth-pred) ) )
         elif norm == 'fro': #Frobenius norm
             err = np.linalg.norm(truth-pred, ord='fro')

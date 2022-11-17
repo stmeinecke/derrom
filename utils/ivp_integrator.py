@@ -166,7 +166,7 @@ class ivp_integrator:
             raise ValueError('integration method >> ' + self.method + ' << does not exist')
 
     
-    def get_error(self, truth, pred=None, norm='NF'):
+    def get_error(self, truth, pred=None, norm='rms'):
         
         if pred is None:
             pred = self.integrate(truth, truth.shape[0])
@@ -174,7 +174,7 @@ class ivp_integrator:
         assert pred.shape == truth.shape
         
         err = -1.
-        if norm =='NF': #normalized Frobenius norm
+        if norm =='rms': #normalized Frobenius norm
             err = np.sqrt( np.mean( np.square(truth-pred) ) )
         elif norm == 'fro': #Frobenius norm
             err = np.linalg.norm(truth-pred, ord='fro')
