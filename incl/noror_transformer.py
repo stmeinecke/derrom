@@ -29,18 +29,18 @@ class polynomial_features(base_transformer):
     def transform(self,VAR_state_matrix):
         
         if VAR_state_matrix.shape[0] == 1:
-            return self.__build_VAR_p_Vec(VAR_state_matrix[0], self.order)
+            return self.__build_VAR_p_Vec(VAR_state_matrix[0], self.order).reshape(1,-1)
           
         else:        
-          nCols = self.__build_VAR_p_Vec(VAR_state_matrix[0], self.order).size
-          nRows = VAR_state_matrix.shape[0]
+            nCols = self.__build_VAR_p_Vec(VAR_state_matrix[0], self.order).size
+            nRows = VAR_state_matrix.shape[0]
           
-          poly_features = np.zeros((nRows,nCols)) 
+            poly_features = np.zeros((nRows,nCols)) 
           
-          for k in range( VAR_state_matrix.shape[0] ):
-              poly_features[k] = self.__build_VAR_p_Vec(VAR_state_matrix[k], self.order)
+            for k in range( VAR_state_matrix.shape[0] ):
+                poly_features[k] = self.__build_VAR_p_Vec(VAR_state_matrix[k], self.order)
 
-          return poly_features
+            return poly_features
         
     def setup(self, n_VAR_features):
         pass

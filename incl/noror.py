@@ -56,16 +56,17 @@ class noror:
             self.optimizer = optimizers.lstsqrs()
         
         
-    def load_data(self,trajectories,targets):
+    def load_data(self,trajectories,targets='AR'):
         self.trajectories = trajectories
         self.n_trajectories = len(trajectories)
         
         self.targets = targets
-        self.n_targets = len(targets)
-        self.n_target_vars = targets[0][0].size
+        if targets != 'AR':
+            self.n_targets = len(targets)
+            self.n_target_vars = targets[0][0].size
         
-        ### check data consistency
-        assert self.__compare_trajectories_targets()
+            ### check data consistency
+            assert self.__compare_trajectories_targets()
         
     
     def load_trajectories(self,trajectories):
@@ -232,8 +233,13 @@ class noror:
             if self.standardize:
                 reduced_trajectory = self.scaler.transform(reduced_trajectory)
 
-            #setup numpy array for the predession
-            pred = np.zeros((trajectory.shape[0],self.n_target_vars))
+            #setup numpy array for the prediction
+            if self.full_hist == True:
+                pred_length = trajectory.shape[0]-(self.VAR_l-1)
+            if self.full_hist == False:
+                pred_length = trajectory.shape[0]
+            
+            pred = np.zeros((pred_length,self.n_target_vars))
             
             if self.transform_VAR == True:
                 feature_matrix = self.VAR_transformer.transform(self.__build_VAR_matrix([reduced_trajectory]))
@@ -243,7 +249,7 @@ class noror:
             #add bias/intercept 
             if self.intercept:
                 feature_matrix = np.concatenate( [ feature_matrix, np.ones( (feature_matrix.shape[0],1) ) ] , axis=1 )
-            
+      
             #let the machine predict the dynamics
             for j in range(0, pred.shape[0]):
                 #predict the next step
@@ -340,10 +346,13 @@ class noror:
         return err
                 
                 
-    def score_multiple_trajectories(self,trajectories, **kwargs):
+    def score_multiple_trajectories(self,trajectories, targets=None, **kwargs):
         scores = []
         for k in range(len(trajectories)):
-            scores.append(self.get_error(trajectories[k], **kwargs))
+            if targets is None or self.targets=='AR':
+                scores.append(self.get_error(trajectory=trajectories[k], **kwargs))
+            else:
+                scores.append(self.get_error(trajectory=trajectories[k], truth=targets[k], **kwargs))
         
         mean = np.mean(scores)
         return mean, scores
