@@ -57,7 +57,7 @@ class ivp_integrator:
         j_out = int(dt_out/dt)
         j_max = sol.shape[0]*j_out
         
-        hist_length = (self.model.VAR_l-1)*j_out + 1
+        hist_length = (self.model.DE_l-1)*j_out + 1
         hist_ind = hist_length - 1
         hist = np.zeros((hist_length,init.shape[1]))
         for k in range(hist.shape[0]):
@@ -66,7 +66,7 @@ class ivp_integrator:
         
         for j in range(1,sol.shape[0]*j_out):
             
-            vecs = np.stack( [hist[(hist_ind - n*j_out + self.model.VAR_l*j_out)%hist_length] for n in range(self.model.VAR_l)] )
+            vecs = np.stack( [hist[(hist_ind - n*j_out + self.model.DE_l*j_out)%hist_length] for n in range(self.model.DE_l)] )
             
             state = state + dt*self.model.predict(vecs)
             
@@ -116,7 +116,7 @@ class ivp_integrator:
         j_out = int(dt_out/dt)
         j_max = sol.shape[0]*j_out
         
-        hist_length = (self.model.VAR_l-1)*j_out + 1
+        hist_length = (self.model.DE_l-1)*j_out + 1
         hist_ind = hist_length - 1
         hist = np.zeros((hist_length,init.shape[1]))
         for k in range(hist.shape[0]):
@@ -125,13 +125,13 @@ class ivp_integrator:
         
         for j in range(1,sol.shape[0]*j_out):
             
-            vecs = np.stack( [hist[(hist_ind - n*j_out + self.model.VAR_l*j_out)%hist_length] for n in range(self.model.VAR_l)] )
+            vecs = np.stack( [hist[(hist_ind - n*j_out + self.model.DE_l*j_out)%hist_length] for n in range(self.model.DE_l)] )
             
             f1 = self.model.predict(vecs).flatten()
             
             hist_ind = (hist_ind+1)%hist_length
             
-            vecs = np.stack( [(state+dt*f1).flatten()]+[hist[(hist_ind - n*j_out + self.model.VAR_l*j_out)%hist_length] for n in range(1,self.model.VAR_l)] )
+            vecs = np.stack( [(state+dt*f1).flatten()]+[hist[(hist_ind - n*j_out + self.model.DE_l*j_out)%hist_length] for n in range(1,self.model.DE_l)] )
             
             f2 = self.model.predict(vecs)
             
@@ -153,12 +153,12 @@ class ivp_integrator:
             dt_out = self.dt_out
         
         if self.method == 'Heun':
-            if self.model.VAR_l == 1:
+            if self.model.DE_l == 1:
                 return self.__Heun(init,n_steps,dt,dt_out)
             else:
                 return self.__Heun_wdelay(init,n_steps,dt,dt_out)
         elif self.method == 'Euler':
-            if self.model.VAR_l == 1:
+            if self.model.DE_l == 1:
                 return self.__Euler(init,n_steps,dt,dt_out)
             else:
                 return self.__Euler_wdelay(init,n_steps,dt,dt_out)
@@ -166,7 +166,7 @@ class ivp_integrator:
             raise ValueError('integration method >> ' + self.method + ' << does not exist')
 
     
-    def get_error(self, truth, pred=None, norm='NF'):
+    def get_error(self, truth, pred=None, norm='rms'):
         
         if pred is None:
             pred = self.integrate(truth, truth.shape[0])
@@ -174,7 +174,7 @@ class ivp_integrator:
         assert pred.shape == truth.shape
         
         err = -1.
-        if norm =='NF': #normalized Frobenius norm
+        if norm =='rms': #normalized Frobenius norm
             err = np.sqrt( np.mean( np.square(truth-pred) ) )
         elif norm == 'fro': #Frobenius norm
             err = np.linalg.norm(truth-pred, ord='fro')

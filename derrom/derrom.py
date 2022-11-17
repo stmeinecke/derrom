@@ -1,16 +1,15 @@
 import numpy as np
 
-import noror_dim_reducer as dim_reducers
-import noror_optimizer as optimizers
-import noror_scaler as scalers
-import noror_transformer as transformers
-import noror_utils as utils
+import derrom_dim_reducers as dim_reducers
+import derrom_optimizers as optimizers
+import derrom_scalers as scalers
+import derrom_transformers as transformers
+import derrom_utils as utils
 
-import matplotlib.pyplot as plt
 
-class noror:
+class derrom:
   
-    def __init__(self, trajectories = None, targets = None, rdim = 1, VAR_l = 1, full_hist=False, intercept = False, dim_reducer = None, scaler = None, VAR_transformer = None, optimizer = None):
+    def __init__(self, trajectories = None, targets = None, rdim = 1, DE_l = 1, full_hist=False, intercept = False, dim_reducer = None, scaler = None, NL_transformer = None, optimizer = None):
         
         if trajectories != None:
             self.trajectories = trajectories
@@ -27,7 +26,7 @@ class noror:
         
         self.rdim = rdim
         
-        self.VAR_l = VAR_l
+        self.DE_l = DE_l
         
         self.intercept = intercept
         self.full_hist = full_hist
@@ -44,11 +43,11 @@ class noror:
         else:
             self.standardize = False
             
-        if VAR_transformer != None:
-            self.VAR_transformer = VAR_transformer
-            self.transform_VAR = True
+        if NL_transformer != None:
+            self.NL_transformer = NL_transformer
+            self.NL_transform = True
         else:
-            self.transform_VAR = False
+            self.NL_transform = False
             
         if optimizer != None:
             self.optimizer = optimizer
@@ -84,49 +83,49 @@ class noror:
             return False
     
     
-    def __build_VAR_vec(self, matrix, row, VAR_l):
-        if VAR_l == 1:
+    def __build_DE_vec(self, matrix, row, DE_l):
+        if DE_l == 1:
             return matrix[row]
         else:
-            VAR_vec = []
-            for k in range(VAR_l):
+            DE_vec = []
+            for k in range(DE_l):
                 if row+k < 0:
-                    VAR_vec.append(matrix[0])
+                    DE_vec.append(matrix[0])
                 else:
-                    VAR_vec.append(matrix[row+k])
-            return np.concatenate(VAR_vec, axis=0)
+                    DE_vec.append(matrix[row+k])
+            return np.concatenate(DE_vec, axis=0)
     
     
-    def __build_VAR_matrix(self, reduced_trajectories):
+    def __build_DE_matrix(self, reduced_trajectories):
         
-        assert self.VAR_l > 0
+        assert self.DE_l > 0
         
-        if self.VAR_l == 1:
+        if self.DE_l == 1:
             return np.concatenate(reduced_trajectories,axis=0)
         
         else:
-            VAR_matrix = []
+            DE_matrix = []
 
             for r in range(len(reduced_trajectories)):
 
                 if(self.full_hist == False):
                     nRows = reduced_trajectories[r].shape[0]
-                    Delta_j = self.VAR_l-1
+                    Delta_j = self.DE_l-1
                 else:
-                    nRows = reduced_trajectories[r].shape[0]-(self.VAR_l-1)
+                    nRows = reduced_trajectories[r].shape[0]-(self.DE_l-1)
                     Delta_j = 0
                     
-                nCols = self.rdim*self.VAR_l
+                nCols = self.rdim*self.DE_l
 
-                run_VAR_matrix = np.zeros((nRows,nCols))
+                run_DE_matrix = np.zeros((nRows,nCols))
                 for j in range(nRows):
-                    run_VAR_matrix[j] = self. __build_VAR_vec(reduced_trajectories[r][:,:self.rdim], j-Delta_j, self.VAR_l)
+                    run_DE_matrix[j] = self. __build_DE_vec(reduced_trajectories[r][:,:self.rdim], j-Delta_j, self.DE_l)
 
-                VAR_matrix.append(run_VAR_matrix)
+                DE_matrix.append(run_DE_matrix)
 
-            VAR_matrix = np.concatenate(VAR_matrix, axis=0)
+            DE_matrix = np.concatenate(DE_matrix, axis=0)
 
-            return VAR_matrix
+            return DE_matrix
     
     
     def __build_target_matrix(self, targets):
@@ -134,19 +133,19 @@ class noror:
         if self.full_hist == False:
             target_matrix = np.concatenate(targets, axis=0)
         else:
-            assert self.VAR_l > 0
+            assert self.DE_l > 0
             
             target_matrix = []
             
             for r in range(len(targets)):
-                target_matrix.append(targets[r][self.VAR_l-1:])
+                target_matrix.append(targets[r][self.DE_l-1:])
                 
             target_matrix = np.concatenate(target_matrix, axis=0)
         
         return target_matrix
 
   
-    def train(self, rdim = None, VAR_l = None, intercept=None, full_hist=None, dim_reducer = None, scaler = None, VAR_transformer = None, optimizer = None):
+    def train(self, rdim = None, DE_l = None, intercept=None, full_hist=None, dim_reducer = None, scaler = None, NL_transformer = None, optimizer = None):
         
         assert (self.trajectories != None and self.targets != None)
         
@@ -157,8 +156,8 @@ class noror:
         if rdim != None:
             self.rdim = rdim
         
-        if VAR_l != None:
-            self.VAR_l = VAR_l
+        if DE_l != None:
+            self.DE_l = DE_l
         if intercept != None:
             self.intercept = intercept
         if full_hist != None:
@@ -172,9 +171,9 @@ class noror:
             self.scaler = scaler
             self.standardize = True
             
-        if VAR_transformer != None:
-            self.VAR_transformer = VAR_transformer
-            self.transform_VAR = True
+        if NL_transformer != None:
+            self.NL_transformer = NL_transformer
+            self.NL_transform = True
             
         if optimizer != None:
             self.optimizer = optimizer
@@ -194,17 +193,17 @@ class noror:
            
         #create training data matrices
         if self.targets != 'AR':
-            self.training_matrix = self.__build_VAR_matrix(self.reduced_trajectories)    
+            self.training_matrix = self.__build_DE_matrix(self.reduced_trajectories)    
             self.target_matrix = self.__build_target_matrix(self.targets)
         else:
-            self.training_matrix = self.__build_VAR_matrix( [reduced_trajectory[:-1] for reduced_trajectory in self.reduced_trajectories] ) 
+            self.training_matrix = self.__build_DE_matrix( [reduced_trajectory[:-1] for reduced_trajectory in self.reduced_trajectories] ) 
             self.target_matrix = self.__build_target_matrix( [reduced_trajectory[1:] for reduced_trajectory in self.reduced_trajectories] )
         
         
-        #apply transformation to the VAR state
-        if self.transform_VAR == True:
-            self.VAR_transformer.setup(self.training_matrix.shape[1])
-            self.training_matrix = self.VAR_transformer.transform(self.training_matrix)
+        #apply transformation to the DE state
+        if self.NL_transform == True:
+            self.NL_transformer.setup(self.training_matrix.shape[1])
+            self.training_matrix = self.NL_transformer.transform(self.training_matrix)
 
         #add bias/intercept
         if self.intercept:
@@ -235,16 +234,16 @@ class noror:
 
             #setup numpy array for the prediction
             if self.full_hist == True:
-                pred_length = trajectory.shape[0]-(self.VAR_l-1)
+                pred_length = trajectory.shape[0]-(self.DE_l-1)
             if self.full_hist == False:
                 pred_length = trajectory.shape[0]
             
             pred = np.zeros((pred_length,self.n_target_vars))
             
-            if self.transform_VAR == True:
-                feature_matrix = self.VAR_transformer.transform(self.__build_VAR_matrix([reduced_trajectory]))
+            if self.NL_transform == True:
+                feature_matrix = self.NL_transformer.transform(self.__build_DE_matrix([reduced_trajectory]))
             else:
-                feature_matrix = self.__build_VAR_matrix([reduced_trajectory])
+                feature_matrix = self.__build_DE_matrix([reduced_trajectory])
             
             #add bias/intercept 
             if self.intercept:
@@ -280,19 +279,19 @@ class noror:
             j_start = 1
             pred[0] = reduced_init[0]
         else:
-            j_start = self.VAR_l
-            pred[:self.VAR_l] = reduced_init[:self.VAR_l]
+            j_start = self.DE_l
+            pred[:self.DE_l] = reduced_init[:self.DE_l]
         
         #let the machine predict the dynamics
         for j in range(j_start,pred.shape[0]):
         
-            #build the VAR vector from the past steps
-            VAR_vec = self.__build_VAR_vec(pred[:,:self.rdim], j-self.VAR_l, self.VAR_l)
-            VAR_vec = VAR_vec.reshape((1,VAR_vec.size))
+            #build the DE vector from the past steps
+            DE_vec = self.__build_DE_vec(pred[:,:self.rdim], j-self.DE_l, self.DE_l)
+            DE_vec = DE_vec.reshape((1,DE_vec.size))
             
-            #apply transformation to the VAR state
-            if self.transform_VAR == True:
-                transform = self.VAR_transformer.transform(VAR_vec)
+            #apply transformation to the DE state
+            if self.NL_transform == True:
+                transform = self.NL_transformer.transform(DE_vec)
 
             #add intercept/bias
             if self.intercept:
@@ -313,7 +312,7 @@ class noror:
         
         
     
-    def get_error(self, trajectory=None, truth=None, pred=None, norm='NF'):
+    def get_error(self, trajectory=None, truth=None, pred=None, norm='rms'):
         
         if self.targets == 'AR':
             if truth is None and trajectory is None:
@@ -334,7 +333,7 @@ class noror:
                 raise ValueError('no trajectory supplied to compute prediction')
         
         err = -1.
-        if norm =='NF': #normalized Frobenius norm
+        if norm =='rms': #normalized Frobenius norm
             err = np.sqrt( np.mean( np.square(truth-pred) ) )
         elif norm == 'fro': #Frobenius norm
             err = np.linalg.norm(truth-pred, ord='fro')
@@ -363,7 +362,7 @@ class noror:
         print('intercept: ', self.intercept)
         print('standardize: ', self.standardize)
         print('rdim: ', self.rdim)
-        print('VAR_l: ', self.VAR_l)
+        print('DE_l: ', self.DE_l)
         print('train shape: ', self.training_matrix.shape)
         print('target shape: ', self.target_matrix.shape)
         print('weights shape: ', self.w.shape)

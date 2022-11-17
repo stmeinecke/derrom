@@ -57,7 +57,7 @@ class ELPH:
     def get_electron_density(self,state):
         dens = 0
         for j in range(state.size):
-            dens += state[j] * self.electron_DOS(self.get_k(dk,j))
+            dens += state[j] * self.electron_DOS(self.get_k(self.dk,j))
         return dens
 
     
