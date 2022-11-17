@@ -1,3 +1,3 @@
-# ELPH-ML
+# derrom
 
-An AI/ML approach to solve Phonon-Electron dynamics.
+Statistical Forecasting for Non-Equilibrium Solid-State Physics 
