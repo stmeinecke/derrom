@@ -1,14 +1,13 @@
 import numpy as np
 
-import noror_dim_reducer as dim_reducers
-import noror_optimizer as optimizers
-import noror_scaler as scalers
-import noror_transformer as transformers
-import noror_utils as utils
+import derrom_dim_reducers as dim_reducers
+import derrom_optimizers as optimizers
+import derrom_scalers as scalers
+import derrom_transformers as transformers
+import derrom_utils as utils
 
-import matplotlib.pyplot as plt
 
-class noror:
+class derrom:
   
     def __init__(self, trajectories = None, targets = None, rdim = 1, VAR_l = 1, full_hist=False, intercept = False, dim_reducer = None, scaler = None, VAR_transformer = None, optimizer = None):
         

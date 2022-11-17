@@ -132,8 +132,10 @@ class reducer_helper_class:
             self.n_trajectories = len(trajectories)
         self.rdim = rdim
         self.dim_reducer = dim_reducer
+        
+        self.targets = 'AR' #fake AR to make the KFold CV scores work
     
-    def load_trajectories(self, trajectories):
+    def load_data(self, trajectories, targets='AR'):
         self.trajectories = trajectories
         self.n_trajectories = len(trajectories)
     
@@ -161,32 +163,32 @@ class reducer_helper_class:
                
         return self.dim_reducer.reconstruct( self.dim_reducer.reduce(run, rdim) )
     
-    def get_error(self, run, approx=np.zeros(1), rdim=None, norm='NF'):
+    def get_error(self, trajectory, approx=np.zeros(1), rdim=None, norm='NF'):
         
         if rdim == None:
             rdim = self.rdim
         
         if approx.size == 1:
-            approx = self.approx_single_run(run, rdim=rdim)
+            approx = self.approx_single_run(trajectory, rdim=rdim)
         
         err=-1.
         if norm=='fro':
-            err = np.linalg.norm(run-approx, ord='fro')       
+            err = np.linalg.norm(trajectory-approx, ord='fro')       
         elif norm =='max':
-            err = np.abs(run-approx).max()
+            err = np.abs(trajectory-approx).max()
         elif norm == 'std':
-            err = np.std(np.ravel(run-approx))
+            err = np.std(np.ravel(trajectory-approx))
         elif norm == 'NF':
-            err = np.sqrt( np.mean( np.square(run-approx) ) )
+            err = np.sqrt( np.mean( np.square(trajectory-approx) ) )
         else:
             print('unknown norm') 
 
         return err
     
-    def score_multiple_trajectories(self,trajectories,**kwargs):
+    def score_multiple_trajectories(self, trajectories, targets=None, **kwargs):
         scores = []
         for k in range(len(trajectories)):
-            scores.append(self.get_error(trajectories[k], **kwargs))
+            scores.append(self.get_error(trajectory=trajectories[k], **kwargs))
         
         mean = np.mean(scores)
         return mean, scores

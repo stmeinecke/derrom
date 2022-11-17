@@ -6,43 +6,45 @@ import matplotlib.pyplot as plt
 ### get initial conditions and and calc runs
 #######################################
 
-import ELPH_dyn
+import ELPH
 
-def get_runs(kmax, n_kmax, inits, tmax = 5000.0, n_tmax = 1000):
-  runs = []
-  for k in range(len(inits)):
-    print('run ', k+1, ' from ', len(inits))
-    eldyn = ELPH_dyn.get_el_dynamics(inits[k], n_kmax = n_kmax, tmax = tmax, n_tmax = n_tmax)
-    runs.append( eldyn )
-  return runs
+#def get_runs(kmax, n_kmax, inits, tmax = 5000.0, n_tmax = 1000):
+  #runs = []
+  #for k in range(len(inits)):
+    #print('run ', k+1, ' from ', len(inits))
+    #eldyn = ELPH_dyn.get_el_dynamics(inits[k], n_kmax = n_kmax, tmax = tmax, n_tmax = n_tmax)
+    #runs.append( eldyn )
+  #return runs
 
 
-def get_runs_gaussian_init(kmax, n_kmax, gaussian_paras, tmax = 5000.0, n_tmax = 1000):
+#def get_runs_gaussian_init(kmax, n_kmax, gaussian_paras, tmax = 5000.0, n_tmax = 1000):
 
-  runs = []
+  #runs = []
 
-  for k in range(gaussian_paras.shape[0]):
+  #for k in range(gaussian_paras.shape[0]):
     
-    print('run ', k+1, ' from ', gaussian_paras.shape[0])
+    #print('run ', k+1, ' from ', gaussian_paras.shape[0])
  
-    p = gaussian_paras[k]
-    init = ELPH_dyn.get_init_cond_gauss(kmax = kmax, n_kmax = n_kmax, max_pos = p[0], width = p[1], density = p[2])
-    eldyn = ELPH_dyn.get_el_dynamics(init, n_kmax = n_kmax, tmax = tmax, n_tmax = n_tmax)
+    #p = gaussian_paras[k]
+    #init = ELPH_dyn.get_init_cond_gauss(kmax = kmax, n_kmax = n_kmax, max_pos = p[0], width = p[1], density = p[2])
+    #eldyn = ELPH_dyn.get_el_dynamics(init, n_kmax = n_kmax, tmax = tmax, n_tmax = n_tmax)
 
-    runs.append( eldyn )
+    #runs.append( eldyn )
 
-  return runs
+  #return runs
 
 def get_gaussian_inits(kmax, n_kmax, gaussian_paras):
+    
+    system = ELPH.ELPH(kmax=kmax,n_kmax=n_kmax)
+    
+    inits = []
 
-  inits = []
+    for k in range(gaussian_paras.shape[0]):
 
-  for k in range(gaussian_paras.shape[0]):
- 
-    p = gaussian_paras[k]
-    inits.append( ELPH_dyn.get_init_cond_gauss(kmax = kmax, n_kmax = n_kmax, max_pos = p[0], width = p[1], density = p[2]) )
+        p = gaussian_paras[k]
+        inits.append( system.get_init_cond_gauss(max_pos = p[0], width = p[1], density = p[2]) )
 
-  return inits
+    return inits
 
 #######################################
 ### KFold cross validation
