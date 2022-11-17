@@ -1,3 +1,3 @@
-# derrom
+# Delay Embedded Regressive Reduced Order Model (derrom)
 
-Statistical Forecasting for Non-Equilibrium Solid-State Physics 
+Application to Statistical Forecasting for Non-Equilibrium Solid-State Physics 
