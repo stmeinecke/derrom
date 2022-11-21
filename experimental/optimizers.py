@@ -1,7 +1,12 @@
+import sys
+sys.path.append("../derrom/")
+import derrom_optimizers
+
+
 import numpy as np
 
 from pysindy.optimizers import STLSQ
-class stlsq(base_optimizer):
+class stlsq(derrom_optimizers.base_optimizer):
     def __init__(self, alpha = 1e-6, threshold = 1e-6):
         self.alpha = alpha
         self.threshold = threshold
@@ -21,7 +26,7 @@ import matplotlib.pyplot as plt
 import ELPH_dyn
 
         
-class PIML_adam(base_optimizer):
+class PIML_adam(derrom_optimizers.base_optimizer):
     def __init__(self, dim_reducer = None, alpha = 1e-6, lambda1=0.0, mini_batch_size = 50, epochs = 1):
         
         assert dim_reducer != None
