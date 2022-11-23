@@ -1,6 +1,10 @@
+import sys
+sys.path.append("../derrom/")
+import derrom_dim_reducers
+
  
 from sklearn.decomposition import NMF
-class NNMF(base_dim_reducer):     
+class NNMF(derrom_dim_reducers.base_dim_reducer):     
         
     def __init__(self, max_iter=200, alpha_W=1e-4):
         self.max_iter = max_iter

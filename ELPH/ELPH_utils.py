@@ -52,7 +52,7 @@ def load_trajectories(filename='../trajectories.npz'):
         return None
     else:
         npz_trajectories = np.load(filename)
-        trajectories = np.split(npz_runs['arr_0'], npz_runs['arr_0'].shape[0], axis=0)
+        trajectories = np.split(npz_trajectories['arr_0'], npz_trajectories['arr_0'].shape[0], axis=0)
 
         for k in range(len(trajectories)):
             trajectories[k] = np.reshape(trajectories[k], trajectories[k].shape[1:])
