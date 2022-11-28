@@ -29,7 +29,9 @@ n_phimax = 20
 dphi = phimax/n_phimax
 
 
-class ELPH:
+
+
+class PHELPH:
     
     def __init__(self, kmax=2.0, n_kmax=80):
         self.kmax = kmax
@@ -153,12 +155,18 @@ class ELPH:
 
         return [in_scattering_matrix_em, out_scattering_matrix_em, in_scattering_matrix_abs, out_scattering_matrix_abs, absorption_matrix, emission_matrix, einer]
 
+  
     
-    def boltzmann_equation(self,t,y):
+    def derivs(self,t,y):
     
-        y = np.reshape(y,(5,self.n_kmax))
-        right_ele = y[0]
-        right_phon = y[1:]
+        #y = np.reshape(y,(5,self.n_kmax))
+        #right_ele = y[0]
+        #right_phon = y[1:]
+        
+        right_ele = y[:self.n_kmax]
+        right_phon = y[self.n_kmax:5*self.n_kmax].reshape(4,self.n_kmax)
+        I = y[5*self.n_kmax]
+        
 
         block_ele = self.einer - right_ele
         stim_phon = self.einer + right_phon
@@ -172,6 +180,7 @@ class ELPH:
         temp_ele_out = np.multiply(help_source_weg,right_ele)
 
 
+
         block_weg = np.tensordot(self.absorption_matrix,block_ele,axes = (1,0))
         temp_phon_abs = np.tensordot(block_weg,right_ele,axes = (0,0))
         temp_phon_abs = np.multiply(temp_phon_abs,right_phon)
@@ -180,12 +189,19 @@ class ELPH:
         block_weg_2 = np.tensordot(block_weg,block_ele,axes = (0,0))
         temp_phon_em = np.multiply(block_weg_2,stim_phon)
 
-        left_phon = temp_phon_abs + temp_phon_em
 
         left_ele = temp_ele_in + temp_ele_out
-        
+
+        left_phon = temp_phon_abs + temp_phon_em
         left_phon = left_phon.flatten()
-        result = np.concatenate((left_ele,left_phon))
+        
+        
+        tau_photon = 500
+        g_photon = 1
+    
+        dI = -I/tau_photon + g_photon*np.sum(2.*right_ele - 1.0)
+        
+        result = np.concatenate((left_ele,left_phon,[dI]))
 
         return result
     
@@ -193,19 +209,23 @@ class ELPH:
     def get_full_trajectory(self, init_cond, tmax = 2000.0, n_tmax = 400):
 
         t_values = np.linspace(0.0, tmax, n_tmax)
-        sol = scpy_solve_ivp(self.boltzmann_equation, [t_values[0],t_values[-1]], init_cond, t_eval=t_values)
-        y_values = np.reshape(np.asarray(sol.y).T,(n_tmax,5,self.n_kmax))
+        sol = scpy_solve_ivp(self.derivs, [t_values[0],t_values[-1]], init_cond, t_eval=t_values)
+        
+        #y_values = np.reshape(np.asarray(sol.y).T,(n_tmax,5,self.n_kmax))
+        #y_values = np.asarray(sol.y)
+        y_values = sol.y.T
 
-        return y_values[:,:,:]
+        #return y_values[:,:,:]
+        return y_values
     
     def get_electron_trajectory(self, init_cond, tmax = 2000.0, n_tmax = 400):
         return self.get_full_trajectory(init_cond, tmax = tmax, n_tmax = n_tmax)[:,0,:]
     
     def get_electron_derivs(self,state):
-        return self.boltzmann_equation(0,state)[:self.n_kmax]
+        return self.derivs(0,state)[:self.n_kmax]
     
     
-    def get_init_cond_gauss(self,max_pos=0.2, width=0.05, density = 0.1):
+    def get_init_cond_gauss(self,max_pos=0.1, width=0.02, density = 0.05):
         dk = self.dk
         n_kmax = self.n_kmax
 
@@ -229,5 +249,8 @@ class ELPH:
 
         initial_state = np.concatenate((initial_ele,initial_phon),axis = 0 )
         initial_state = np.reshape(initial_state,5*n_kmax)
-
+        
+        initial_state = np.concatenate((initial_state,[1.0]))
+        
+        
         return initial_state
