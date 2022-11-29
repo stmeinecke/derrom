@@ -211,7 +211,6 @@ class PHELPH:
        
         
     
-#         dI = -I/self.tau_photon + I * self.g_photon * np.sum(self.DOS_vec * self.lineshape_vec * (2.*right_ele - 1.0))
         dI = -I/self.tau_photon + I * np.sum(self.I_gain_helper_vec * (2.*right_ele - 1.0))
         dI += 1e-12
         
