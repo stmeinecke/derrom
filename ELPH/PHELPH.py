@@ -38,8 +38,22 @@ class PHELPH:
         self.n_kmax = n_kmax
         
         self.dk = kmax/n_kmax
+        self.k_vec = self.get_k(self.dk,np.arange(0,self.n_kmax-0.5,1))
+        self.E_el_vec = self.electron_dispersion(self.k_vec)
+        self.DOS_vec = self.electron_DOS(self.k_vec)
+        
         
         self.in_scattering_matrix_em, self.out_scattering_matrix_em, self.in_scattering_matrix_abs, self.out_scattering_matrix_abs, self.absorption_matrix, self.emission_matrix, self.einer = self.build_boltzmann_mats(self.kmax, self.n_kmax)
+        
+        
+        self.tau_photon = 1000
+        self.g_photon = 0.01
+        self.E_photon = 0.02
+        self.linewidth = 0.005
+        
+        self.setup_laser()
+        
+    
     
     def get_k(self,dk,n_k):
         return (n_k+1.)*dk
@@ -194,22 +208,76 @@ class PHELPH:
 
         left_phon = temp_phon_abs + temp_phon_em
         left_phon = left_phon.flatten()
+       
         
-        
-        tau_photon = 500
-        g_photon = 1
     
-        dI = -I/tau_photon + g_photon*np.sum(2.*right_ele - 1.0)
+#         dI = -I/self.tau_photon + I * self.g_photon * np.sum(self.DOS_vec * self.lineshape_vec * (2.*right_ele - 1.0))
+        dI = -I/self.tau_photon + I * np.sum(self.I_gain_helper_vec * (2.*right_ele - 1.0))
+        dI += 1e-12
+        
+        left_ele += -self.g_photon * I * self.lineshape_vec * (2.*right_ele - 1.0)
+        
         
         result = np.concatenate((left_ele,left_phon,[dI]))
 
         return result
     
     
+    def setup_laser(self):        
+        
+        def lineshape(delta_E, width):
+            return (1/(np.pi*width))/(np.cosh(delta_E/width))
+        
+        self.lineshape_vec = lineshape(self.E_el_vec - self.E_photon, self.linewidth)
+        
+        self.I_gain_helper_vec = self.g_photon * self.DOS_vec * self.lineshape_vec
+        
+    def get_net_photon_gain(self,el_state):
+        return -1.0/self.tau_photon + np.sum(self.I_gain_helper_vec * (2.*el_state - 1.0))
+         
+    
+    def integrate(self, init, n_steps=501, dt=1.0, dt_out=5.0):
+        
+        sol = np.zeros((n_steps,init.size))
+        
+        sol[0] = init
+        
+        state = sol[0]
+        
+        j_out = int(dt_out/dt)
+        j_max = sol.shape[0]*j_out
+        
+        
+#         for j in range(1,sol.shape[0]*j_out):
+            
+#             f1 = self.derivs(0,state)
+#             f2 = self.derivs(0,state + dt*f1)
+            
+#             state = state + 0.5*dt*(f1+f2)
+            
+#             if j%j_out == 0:
+#                 sol[j//j_out] = state
+
+        for j in range(1,sol.shape[0]*j_out):
+            
+            f1 = self.derivs(0,state)
+            f2 = self.derivs(0,state + 0.5*dt*f1)
+            f3 = self.derivs(0,state + 0.5*dt*f2)
+            f4 = self.derivs(0,state + dt*f3)
+            
+            state = state + dt*(f1 + 2.*f2 + 2.*f3 + f4)/6.
+            
+            if j%j_out == 0:
+                sol[j//j_out] = state
+                
+        return sol
+    
+    
     def get_full_trajectory(self, init_cond, tmax = 2000.0, n_tmax = 400):
 
         t_values = np.linspace(0.0, tmax, n_tmax)
-        sol = scpy_solve_ivp(self.derivs, [t_values[0],t_values[-1]], init_cond, t_eval=t_values)
+        sol = scpy_solve_ivp(self.derivs, [t_values[0],t_values[-1]], init_cond, t_eval=t_values,
+                            rtol=0.01, atol=1e-03)
         
         #y_values = np.reshape(np.asarray(sol.y).T,(n_tmax,5,self.n_kmax))
         #y_values = np.asarray(sol.y)
@@ -250,7 +318,7 @@ class PHELPH:
         initial_state = np.concatenate((initial_ele,initial_phon),axis = 0 )
         initial_state = np.reshape(initial_state,5*n_kmax)
         
-        initial_state = np.concatenate((initial_state,[1.0]))
+        initial_state = np.concatenate((initial_state,[1e-9]))
         
         
         return initial_state

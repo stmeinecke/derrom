@@ -95,7 +95,7 @@ class ivp_integrator:
         for j in range(1,sol.shape[0]*j_out):
             
             f1 = self.model.predict(state)
-            f2 = self.model.predict(state + dt*self.model.predict(state))
+            f2 = self.model.predict(state + dt*f1)
             
             state = state + 0.5*dt*(f1+f2)
             
