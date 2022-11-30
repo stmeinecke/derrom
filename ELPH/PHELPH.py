@@ -74,7 +74,7 @@ class PHELPH(ELPH.ELPH):
         
         self.lineshape_vec = lineshape(self.E_el_vec - self.E_photon, self.linewidth)
         
-        self.I_gain_helper_vec = self.g_photon * self.DOS_vec * self.lineshape_vec
+        self.I_gain_helper_vec = 2.*self.g_photon * self.DOS_vec * self.lineshape_vec
         
     def get_net_photon_gain(self,el_state):
         return -1.0/self.tau_photon + np.sum(self.I_gain_helper_vec * (2.*el_state - 1.0))
