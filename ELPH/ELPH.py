@@ -5,37 +5,39 @@ from scipy.integrate import solve_ivp as scpy_solve_ivp
 
 import math
 
-pi = np.pi
-kB = 8.61745*0.00001
-m0 = 5.6856800
-mP = 10439.60413
-hbar = 0.658212196
 
-m = 0.5*m0
-a0 = 0.314
-ca = 4.1/1000.
-EAprime = 0.031
-ETO = 0.036
-Mr = 253*mP
-Vol = np.sqrt(3.0)/2.0*a0*a0
-Da = 3.4
-Do = 5.2*10
-T_cryo = 300
-# density = 0.1
-
-#Winkel
-phimax = 2.*pi
-n_phimax = 20
-dphi = phimax/n_phimax
-
-
-class ELPH:
+class ELPH(object):
     
     def __init__(self, kmax=2.0, n_kmax=80):
         self.kmax = kmax
         self.n_kmax = n_kmax
+                
+        #constants
+        self.kB = 8.61745*0.00001
+        self.m0 = 5.6856800
+        self.mP = 10439.60413
+        self.hbar = 0.658212196
+
+        self.m = 0.5*self.m0
+        self.a0 = 0.314
+        self.ca = 4.1/1000.
+        self.EAprime = 0.031
+        self.ETO = 0.036
+        self.Mr = 253*self.mP
+        self.Vol = np.sqrt(3.0)/2.0*self.a0*self.a0
+        self.Da = 3.4
+        self.Do = 5.2*10
+        self.T_cryo = 300
+
+        #angle
+        self.phimax = 2.*np.pi
+        self.n_phimax = 20
+        self.dphi = self.phimax/self.n_phimax
         
         self.dk = kmax/n_kmax
+        self.k_vec = self.get_k(self.dk,np.arange(0,self.n_kmax-0.5,1))
+        self.E_el_vec = self.electron_dispersion(self.k_vec)
+        self.DOS_vec = self.electron_DOS(self.k_vec)
         
         self.in_scattering_matrix_em, self.out_scattering_matrix_em, self.in_scattering_matrix_abs, self.out_scattering_matrix_abs, self.absorption_matrix, self.emission_matrix, self.einer = self.build_boltzmann_mats(self.kmax, self.n_kmax)
     
@@ -48,7 +50,7 @@ class ELPH:
 
 
     def electron_dispersion(self,k,phi=0):
-        help = hbar*hbar*k*k/2./m
+        help = self.hbar*self.hbar*k*k/2./self.m
         return help
     
     def electron_DOS(self,k):
@@ -63,30 +65,30 @@ class ELPH:
     
     def phonon_dispersion(self,k,phi,alpha):
         if alpha==0:
-            sau = EAprime
+            sau = self.EAprime
         if alpha==1:
-            sau = ETO
+            sau = self.ETO
         if alpha==2:
-            sau=ca*k
+            sau=self.ca*k
         if alpha==3:
-            sau=ca*k
+            sau=self.ca*k
         return sau
 
     
     def phonon_coupling(self,k,phi,alpha):
         if alpha==0:
-            sau = np.sqrt(Vol*hbar*hbar/2.0/Mr/self.phonon_dispersion(k,phi,0))*Do
+            sau = np.sqrt(self.Vol*self.hbar*self.hbar/2.0/self.Mr/self.phonon_dispersion(k,phi,0))*self.Do
         if alpha==1:
-            sau = np.sqrt(Vol*hbar*hbar/2.0/Mr/self.phonon_dispersion(k,phi,1))*Do
+            sau = np.sqrt(self.Vol*self.hbar*self.hbar/2.0/self.Mr/self.phonon_dispersion(k,phi,1))*self.Do
         if alpha==2:
-            sau = np.sqrt(Vol*hbar*hbar/2.0/Mr/self.phonon_dispersion(k,phi,2))*Da*k
+            sau = np.sqrt(self.Vol*self.hbar*self.hbar/2.0/self.Mr/self.phonon_dispersion(k,phi,2))*self.Da*k
         if alpha==3:
-            sau = np.sqrt(Vol*hbar*hbar/2.0/Mr/self.phonon_dispersion(k,phi,3))*Da*k
+            sau = np.sqrt(self.Vol*self.hbar*self.hbar/2.0/self.Mr/self.phonon_dispersion(k,phi,3))*self.Da*k
         return sau
     
     
     def phonon_occupation(self,k,phi,alpha,T):
-        help = 1/(np.exp(self.phonon_dispersion(k,phi,alpha)/kB/T)-1.)
+        help = 1/(np.exp(self.phonon_dispersion(k,phi,alpha)/self.kB/T)-1.)
         return help
 
 
@@ -103,10 +105,10 @@ class ELPH:
 
 
         for n_k in range(n_kmax):
-            for n_phi in range(n_phimax):
+            for n_phi in range(self.n_phimax):
                 for beta in range(4):
                     kk = self.get_k(dk,n_k)
-                    phi_diff = self.get_phi(dphi,n_phi)
+                    phi_diff = self.get_phi(self.dphi,n_phi)
 
                     if True:
                         def delta_fun_phon(x):
@@ -137,24 +139,24 @@ class ELPH:
                                             if n_q > -1 and n_q < n_kmax:
                                                 part1 = self.phonon_coupling(qq,0,beta)*self.phonon_coupling(qq,0,beta)
                                                 if beta<2:
-                                                    part2 = 1./np.absolute(hbar*hbar*self.get_k(dk,n_kt)/m)/dk
+                                                    part2 = 1./np.absolute(self.hbar*self.hbar*self.get_k(dk,n_kt)/self.m)/dk
                                                 if beta>1:
-                                                    part2 =  1./np.absolute(hbar*hbar*self.get_k(dk,n_kt)/m-hbar*ca*(kkt-kk*np.cos(phi_diff))/qq)/dk
+                                                    part2 =  1./np.absolute(self.hbar*self.hbar*self.get_k(dk,n_kt)/self.m-self.hbar*self.ca*(kkt-kk*np.cos(phi_diff))/qq)/dk
                                                 #absorption
-                                                out_scattering_matrix_abs[n_k][n_kt][beta][n_q] +=- 2.*pi/hbar*dk*kkt*dphi/4./pi/pi*part1*part2*interpolator_electrons[n_kt-n_null_elec]*interpolator_phonons[n_q-n_null_phon]#(1-fkt) fk n
-                                                in_scattering_matrix_abs[n_kt][n_k][beta][n_q] += 2.*pi/hbar*dk*kk*dphi/4./pi/pi*part1*part2*interpolator_electrons[n_kt-n_null_elec]*interpolator_phonons[n_q-n_null_phon]#(1-fk) fkt n
-                                                absorption_matrix[n_k][n_kt][beta][n_q] +=  - 2.*pi/hbar*dk*kk*dphi/4./pi/pi*part1*part2*interpolator_electrons[n_kt-n_null_elec]*interpolator_phonons[n_q-n_null_phon]
+                                                out_scattering_matrix_abs[n_k][n_kt][beta][n_q] +=- 2.*np.pi/self.hbar*dk*kkt*self.dphi/4./np.pi/np.pi*part1*part2*interpolator_electrons[n_kt-n_null_elec]*interpolator_phonons[n_q-n_null_phon]#(1-fkt) fk n
+                                                in_scattering_matrix_abs[n_kt][n_k][beta][n_q] += 2.*np.pi/self.hbar*dk*kk*self.dphi/4./np.pi/np.pi*part1*part2*interpolator_electrons[n_kt-n_null_elec]*interpolator_phonons[n_q-n_null_phon]#(1-fk) fkt n
+                                                absorption_matrix[n_k][n_kt][beta][n_q] +=  - 2.*np.pi/self.hbar*dk*kk*self.dphi/4./np.pi/np.pi*part1*part2*interpolator_electrons[n_kt-n_null_elec]*interpolator_phonons[n_q-n_null_phon]
                                                 #emission
-                                                in_scattering_matrix_em[n_k][n_kt][beta][n_q] +=  2.*pi/hbar*dk*kkt*dphi/4./pi/pi*part1*part2*interpolator_electrons[n_kt-n_null_elec]*interpolator_phonons[n_q-n_null_phon]#(1-fkt) fk (1+n)
-                                                out_scattering_matrix_em[n_kt][n_k][beta][n_q] += - 2.*pi/hbar*dk*kk*dphi/4./pi/pi*part1*part2*interpolator_electrons[n_kt-n_null_elec]*interpolator_phonons[n_q-n_null_phon]#(1-fk) fkt (1+n)
-                                                emission_matrix[n_k][n_kt][beta][n_q] += 2.*pi/hbar*dk*kk*dphi/4./pi/pi*part1*part2*interpolator_electrons[n_kt-n_null_elec]*interpolator_phonons[n_q-n_null_phon]
+                                                in_scattering_matrix_em[n_k][n_kt][beta][n_q] +=  2.*np.pi/self.hbar*dk*kkt*self.dphi/4./np.pi/np.pi*part1*part2*interpolator_electrons[n_kt-n_null_elec]*interpolator_phonons[n_q-n_null_phon]#(1-fkt) fk (1+n)
+                                                out_scattering_matrix_em[n_kt][n_k][beta][n_q] += - 2.*np.pi/self.hbar*dk*kk*self.dphi/4./np.pi/np.pi*part1*part2*interpolator_electrons[n_kt-n_null_elec]*interpolator_phonons[n_q-n_null_phon]#(1-fk) fkt (1+n)
+                                                emission_matrix[n_k][n_kt][beta][n_q] += 2.*np.pi/self.hbar*dk*kk*self.dphi/4./np.pi/np.pi*part1*part2*interpolator_electrons[n_kt-n_null_elec]*interpolator_phonons[n_q-n_null_phon]
 
         einer = np.full(n_kmax,1.)
 
         return [in_scattering_matrix_em, out_scattering_matrix_em, in_scattering_matrix_abs, out_scattering_matrix_abs, absorption_matrix, emission_matrix, einer]
 
     
-    def boltzmann_equation(self,t,y):
+    def derivs(self,t,y):
     
         y = np.reshape(y,(5,self.n_kmax))
         right_ele = y[0]
@@ -190,19 +192,21 @@ class ELPH:
         return result
     
     
-    def get_full_trajectory(self, init_cond, tmax = 2000.0, n_tmax = 400):
+    def get_full_trajectory(self, init_cond, tmax = 2000.0, n_tmax = 400, **kwargs):
 
         t_values = np.linspace(0.0, tmax, n_tmax)
-        sol = scpy_solve_ivp(self.boltzmann_equation, [t_values[0],t_values[-1]], init_cond, t_eval=t_values)
-        y_values = np.reshape(np.asarray(sol.y).T,(n_tmax,5,self.n_kmax))
-
-        return y_values[:,:,:]
+        sol = scpy_solve_ivp(self.derivs, [t_values[0],t_values[-1]], init_cond, t_eval=t_values, **kwargs)
+        
+        #y_values = np.reshape(np.asarray(sol.y).T,(n_tmax,5,self.n_kmax))
+        #return y_values[:,:,:]
     
-    def get_electron_trajectory(self, init_cond, tmax = 2000.0, n_tmax = 400):
-        return self.get_full_trajectory(init_cond, tmax = tmax, n_tmax = n_tmax)[:,0,:]
+        return sol.y.T
+    
+    def get_electron_trajectory(self, init_cond, tmax = 2000.0, n_tmax = 400, **kwargs):
+        return self.get_full_trajectory(init_cond, tmax = tmax, n_tmax = n_tmax, **kwargs)[:,:self.n_kmax]
     
     def get_electron_derivs(self,state):
-        return self.boltzmann_equation(0,state)[:self.n_kmax]
+        return self.derivs(0,state)[:self.n_kmax]
     
     
     def get_init_cond_gauss(self,max_pos=0.2, width=0.05, density = 0.1):
@@ -217,17 +221,52 @@ class ELPH:
             initial_ele[n_k] = helper
         helper = 0.
         for n_k in range(n_kmax):
-            helper += dk*self.get_k(dk,n_k)/2./pi*initial_ele[n_k]
+            helper += dk*self.get_k(dk,n_k)/2./np.pi*initial_ele[n_k]
         initial_ele = initial_ele/helper*density
         for n_k in range(n_kmax):
             for a in range(4):
-                initial_phon[a][n_k] = self.phonon_occupation(self.get_k(dk,n_k),0.,a,T_cryo)
+                initial_phon[a][n_k] = self.phonon_occupation(self.get_k(dk,n_k),0.,a,self.T_cryo)
 
-        #print(np.shape(initial_phon))
         initial_ele = np.reshape(initial_ele,(1,n_kmax))
-        #print(np.shape(initial_ele))
 
         initial_state = np.concatenate((initial_ele,initial_phon),axis = 0 )
         initial_state = np.reshape(initial_state,5*n_kmax)
 
         return initial_state
+    
+    
+    ### quick and dirty Runge-Kutta solver
+    def integrate(self, init, n_steps=501, dt=1.0, dt_out=5.0):
+        
+        sol = np.zeros((n_steps,init.size))
+        sol[0] = init
+        
+        state = sol[0]
+        
+        j_out = int(dt_out/dt)
+        j_max = sol.shape[0]*j_out
+
+        
+#         for j in range(1,sol.shape[0]*j_out):
+            
+#             f1 = self.derivs(0,state)
+#             f2 = self.derivs(0,state + dt*f1)
+            
+#             state = state + 0.5*dt*(f1+f2)
+            
+#             if j%j_out == 0:
+#                 sol[j//j_out] = state
+
+        for j in range(1,sol.shape[0]*j_out):
+            
+            f1 = self.derivs(0,state)
+            f2 = self.derivs(0,state + 0.5*dt*f1)
+            f3 = self.derivs(0,state + 0.5*dt*f2)
+            f4 = self.derivs(0,state + dt*f3)
+            
+            state = state + dt*(f1 + 2.*f2 + 2.*f3 + f4)/6.
+            
+            if j%j_out == 0:
+                sol[j//j_out] = state
+                
+        return sol
