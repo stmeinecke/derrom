@@ -21,10 +21,8 @@ def get_el_trajectories(kmax, n_kmax, inits, tmax = 2000.0, n_tmax = 401):
 
 
 
-def get_gaussian_inits(kmax, n_kmax, gaussian_paras):
-    
-    system = ELPH.ELPH(kmax=kmax,n_kmax=n_kmax)
-    
+def get_gaussian_inits(system, gaussian_paras):
+        
     inits = []
 
     for k in range(gaussian_paras.shape[0]):
