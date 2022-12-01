@@ -57,7 +57,7 @@ class PHELPH(ELPH.ELPH):
         
         ### laser stuff ###
         dI = -I/self.tau_photon + I * np.sum(self.I_gain_helper_vec * (2.*right_ele - 1.0))
-        dI += 1e-12
+        dI += 1e-9
         
         left_ele += -self.g_photon * I * self.lineshape_vec * (2.*right_ele - 1.0)
         ### laser stuff ###
@@ -74,11 +74,21 @@ class PHELPH(ELPH.ELPH):
         
         self.lineshape_vec = lineshape(self.E_el_vec - self.E_photon, self.linewidth)
         
-        self.I_gain_helper_vec = 2.*self.g_photon * self.DOS_vec * self.lineshape_vec
+        self.I_gain_helper_vec = self.g_photon * self.DOS_vec * self.lineshape_vec
         
     def get_net_photon_gain(self,el_state):
         return -1.0/self.tau_photon + np.sum(self.I_gain_helper_vec * (2.*el_state - 1.0))
-
+    
+    
+    def get_electron_scattering_terms(self,state):
+        tmp_g = self.g_photon
+        self.g_photon = 0.0
+        
+        scat_terms =  self.derivs(0,state)[:self.n_kmax]
+        
+        self.g_photon = tmp_g
+        
+        return scat_terms
     
     
     def get_init_cond_gauss(self,max_pos=0.1, width=0.02, density = 0.05, I_0 = 1e-6):
