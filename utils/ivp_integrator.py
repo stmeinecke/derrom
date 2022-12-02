@@ -2,7 +2,7 @@ import numpy as np
 
 class ivp_integrator:
     
-    def __init__(self, model, dt=1., dt_out=1., method='Heun'):
+    def __init__(self, model, derivs=None, dt=1., dt_out=1., method='Heun'):
         self.dt = dt
         self.dt_out = dt_out
         self.method = method
@@ -12,6 +12,11 @@ class ivp_integrator:
         self.model = model
         self.model_hist_option = model.full_hist
         self.model.full_hist = True
+        
+        if derivs is None:
+            self.derivs = self.model.predict
+        else:
+            self.derivs = derivs
     
     def load_data(self, **kwargs):
         self.model.load_data(**kwargs)
@@ -31,14 +36,14 @@ class ivp_integrator:
         
         sol[:init.shape[0]] = init
         
-        state = sol[0]
+        state = sol[:1]
         
         j_out = int(dt_out/dt)
         j_max = sol.shape[0]*j_out
         
         
         for j in range(1,sol.shape[0]*j_out):
-            state = state + dt*self.model.predict(state)
+            state = state + dt*self.derivs(state)
             
             if j%j_out == 0:
                 sol[j//j_out] = state
@@ -52,7 +57,7 @@ class ivp_integrator:
         
         sol[0] = init[0]
         
-        state = sol[0]
+        state = sol[:1]
         
         j_out = int(dt_out/dt)
         j_max = sol.shape[0]*j_out
@@ -66,9 +71,9 @@ class ivp_integrator:
         
         for j in range(1,sol.shape[0]*j_out):
             
-            vecs = np.stack( [hist[(hist_ind - n*j_out + self.model.DE_l*j_out)%hist_length] for n in range(self.model.DE_l)] )
+            vecs = np.stack( [ hist[(hist_ind - n*j_out + hist_length)%hist_length] for n in range(self.model.DE_l-1,-1,-1)] )
             
-            state = state + dt*self.model.predict(vecs)
+            state = state + dt*self.derivs(vecs)
             
             hist_ind = (hist_ind+1)%hist_length
             
@@ -86,7 +91,7 @@ class ivp_integrator:
         
         sol[:init.shape[0]] = init
         
-        state = sol[0]
+        state = sol[:1]
         
         j_out = int(dt_out/dt)
         j_max = sol.shape[0]*j_out
@@ -94,8 +99,8 @@ class ivp_integrator:
         
         for j in range(1,sol.shape[0]*j_out):
             
-            f1 = self.model.predict(state)
-            f2 = self.model.predict(state + dt*f1)
+            f1 = self.derivs(state)
+            f2 = self.derivs(state + dt*f1)
             
             state = state + 0.5*dt*(f1+f2)
             
@@ -111,7 +116,7 @@ class ivp_integrator:
         
         sol[0] = init[0]
         
-        state = sol[0]
+        state = sol[:1]
         
         j_out = int(dt_out/dt)
         j_max = sol.shape[0]*j_out
@@ -125,15 +130,15 @@ class ivp_integrator:
         
         for j in range(1,sol.shape[0]*j_out):
             
-            vecs = np.stack( [hist[(hist_ind - n*j_out + self.model.DE_l*j_out)%hist_length] for n in range(self.model.DE_l)] )
+            vecs = np.stack( [hist[(hist_ind - n*j_out + hist_length)%hist_length] for n in range(self.model.DE_l-1,-1,-1)] )
             
-            f1 = self.model.predict(vecs).flatten()
+            f1 = self.derivs(vecs).flatten()
             
             hist_ind = (hist_ind+1)%hist_length
             
-            vecs = np.stack( [(state+dt*f1).flatten()]+[hist[(hist_ind - n*j_out + self.model.DE_l*j_out)%hist_length] for n in range(1,self.model.DE_l)] )
+            vecs = np.stack( [hist[(hist_ind - n*j_out + hist_length)%hist_length] for n in range(self.model.DE_l-1,0,-1)]+[(state+dt*f1).flatten()] )
             
-            f2 = self.model.predict(vecs)
+            f2 = self.derivs(vecs)
             
             state = state + 0.5*dt*(f1+f2)
 

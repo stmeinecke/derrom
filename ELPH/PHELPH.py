@@ -6,6 +6,10 @@ from scipy.integrate import solve_ivp as scpy_solve_ivp
 import math
 import ELPH
 
+import sys
+sys.path.append("../utils/")
+import fermi_fit
+
 
 class PHELPH(ELPH.ELPH):
     
@@ -119,3 +123,29 @@ class PHELPH(ELPH.ELPH):
         
         
         return initial_state
+    
+    
+    def rel_time_approx(self, inits, tmax=10000.0, n_tmax=1001, tau_rel=500):
+        fermi_fitter = fermi_fit.fermi_fit(self.DOS_vec, self.E_el_vec, self.kB)
+
+        def rel_time_derivs(t,y):
+            el_state = y[:-1]
+            I = y[-1]
+            
+            
+            mu = mu,steps = fermi_fitter.fit_mu(el_state, 0.1, self.T_cryo, False)
+            fermi = fermi_fitter.fermi(self.E_el_vec,mu,self.T_cryo)
+            
+            df = (fermi - el_state)/tau_rel
+            df += -self.g_photon * I * self.lineshape_vec * (2.*el_state - 1.0)
+            
+            
+            dI = -I/self.tau_photon + I * np.sum(self.I_gain_helper_vec * (2.*el_state - 1.0))
+            dI += 1e-9
+            
+            return np.concatenate((df,[dI]))
+        
+        t_vec = np.linspace(0.0, tmax, n_tmax)
+        sol = scpy_solve_ivp(rel_time_derivs, [t_vec[0],t_vec[-1]], inits, t_eval=t_vec)
+        return sol.y.T
+        
