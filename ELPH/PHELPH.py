@@ -13,12 +13,12 @@ import fermi_fit
 
 class PHELPH(ELPH.ELPH):
     
-    def __init__(self, kmax=2.0, n_kmax=80):
+    def __init__(self, kmax=2.5, n_kmax=100):
         super().__init__(kmax,n_kmax)
         
-        self.tau_photon = 1000
-        self.g_photon = 0.01
-        self.E_photon = 0.02
+        self.g_photon = 0.02
+        self.tau_photon = 200
+        self.E_photon = 0.0175
         self.linewidth = 0.005
         
         self.setup_laser()

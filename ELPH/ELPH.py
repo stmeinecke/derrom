@@ -112,7 +112,7 @@ class ELPH(object):
 
                     if True:
                         def delta_fun_phon(x):
-                            helper1 = np.sqrt(x*x+self.get_k(dk,n_k)*self.get_k(dk,n_k) - 2.*x*self.get_k(dk,n_k)*np.cos(phi_diff) + 1e-15)
+                            helper1 = np.sqrt(x*x+self.get_k(dk,n_k)*self.get_k(dk,n_k) - 2.*x*self.get_k(dk,n_k)*np.cos(phi_diff) + 5e-15)
                             result = self.electron_dispersion(self.get_k(dk,n_k),0) - self.electron_dispersion(x,0)+self.phonon_dispersion(helper1,0,beta)
                             return result
                         sol = scpy_root(delta_fun_phon, self.get_k(dk,n_k+1), args=(), method='hybr', jac=None, tol=None, callback=None, options=None)
