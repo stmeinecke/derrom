@@ -57,9 +57,14 @@ def get_KFold_CV_scores(model, trajectories, targets='AR', folds=5, seed=817, no
         
         model.train(**train_kwargs)
         
+        
+        predictions=[]
+        for trajectory in test_trajectories:
+            predictions.append(model.predict(trajectory))
+        
         #score the test trajectories for each error norm in the norms list
         for l,norm in enumerate(norms): 
-            fold_mean_score, fold_all_scores = model.score_multiple_trajectories(test_trajectories, test_targets, norm=norm)
+            fold_mean_score, fold_all_scores = model.score_multiple_trajectories(test_trajectories, test_targets, predictions=predictions, norm=norm)
             scores[l].append(fold_all_scores)
             
     for n in range(len(norms)):

@@ -345,16 +345,39 @@ class derrom:
         return err
                 
                 
-    def score_multiple_trajectories(self,trajectories, targets=None, **kwargs):
+    def score_multiple_trajectories(self,trajectories, targets=None, predictions=None, **kwargs):
         scores = []
-        for k in range(len(trajectories)):
-            if targets is None or self.targets=='AR':
-                scores.append(self.get_error(trajectory=trajectories[k], **kwargs))
-            else:
-                scores.append(self.get_error(trajectory=trajectories[k], truth=targets[k], **kwargs))
+        
+        if predictions is None:
+            for k in range(len(trajectories)):
+                if targets is None or self.targets=='AR':
+                    scores.append(self.get_error(trajectory=trajectories[k], **kwargs))
+                else:
+                    scores.append(self.get_error(trajectory=trajectories[k], truth=targets[k], **kwargs))
+        else:
+            for k in range(len(trajectories)):
+                if targets is None or self.targets=='AR':
+                    scores.append(self.get_error(trajectory=trajectories[k], pred=predictions[k], **kwargs))
+                else:
+                    scores.append(self.get_error(trajectory=trajectories[k], truth=targets[k], pred=predictions[k], **kwargs))
         
         mean = np.mean(scores)
         return mean, scores
+    
+    
+    #def score_multiple_trajectories(self, trajectories, targets=None, predictions=None, **kwargs):
+      #scores = []
+      
+      #if predictions is None:
+          #for k in range(len(trajectories)):
+              #scores.append(self.get_error(trajectories[k],**kwargs))
+      #else:
+          #assert len(trajectories) == len(predictions)
+          #for k in range(len(trajectories)):
+              #scores.append(self.get_error(trajectories[k], pred=predictions[k], **kwargs))
+      
+      #mean = np.mean(scores)
+      #return mean, scores
     
                 
     def print_status(self):

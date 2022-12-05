@@ -169,12 +169,16 @@ class ivp_integrator:
                 return self.__Euler_wdelay(init,n_steps,dt,dt_out)
         else:
             raise ValueError('integration method >> ' + self.method + ' << does not exist')
-
+    
+    
+    def predict(self, trajectory):
+        return self.integrate(trajectory, trajectory.shape[0])
+    
     
     def get_error(self, truth, pred=None, norm='rms'):
         
         if pred is None:
-            pred = self.integrate(truth, truth.shape[0])
+            pred = self.predict(truth)
         
         assert pred.shape == truth.shape
         
@@ -190,10 +194,56 @@ class ivp_integrator:
         
         return err
     
-    def score_multiple_trajectories(self,trajectories,targets=None,**kwargs):
+    
+    def score_multiple_trajectories(self, trajectories, targets=None, predictions=None, **kwargs):
         scores = []
-        for k in range(len(trajectories)):
-            scores.append(self.get_error(trajectories[k],**kwargs))
+        
+        if predictions is None:
+            for k in range(len(trajectories)):
+                scores.append(self.get_error(trajectories[k],**kwargs))
+        else:
+            assert len(trajectories) == len(predictions)
+            for k in range(len(trajectories)):
+                scores.append(self.get_error(trajectories[k], pred=predictions[k], **kwargs))
         
         mean = np.mean(scores)
         return mean, scores
+    
+
+
+class PHELPH_ivp_integrator(ivp_integrator):
+        
+    def load_data(self, trajectories, targets):
+        el_trajectories = [trajectory[:,:-1] for trajectory in trajectories]
+        self.model.load_data(el_trajectories,targets)
+    
+    
+    def get_error(self, truth, pred=None, norm='rms'):
+        
+        if pred is None:
+            pred = self.predict(truth)
+        
+        assert pred.shape == truth.shape
+        
+        I_truth = truth[:,-1]
+        el_truth = truth[:,:-1]
+        
+        I_pred = pred[:,-1]
+        el_pred = pred[:,:-1]
+        
+        
+        err = -1.
+        if norm =='rms':
+            err = np.sqrt( np.mean( np.square(el_truth-el_pred) ) )
+        elif norm =='max': #absolute max norm
+            err = np.abs(el_truth-el_pred).max()
+        elif norm == 'I_max':
+            err = (I_pred.max()- I_truth.max())
+        elif norm == 'I_max_pos':
+            err = (np.argmax(I_pred)-np.argmax(I_truth))
+        elif norm == 'I_area':
+            err = (np.sum(I_pred) - np.sum(I_truth))
+        else:
+            print('unknown norm')
+        
+        return err
