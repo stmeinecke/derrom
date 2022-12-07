@@ -7,8 +7,8 @@ class fermi_fit:
         self.Energies = Energies
         self.kB = kB
         
-        self.MAXERROR = 5E-12
-        self.STEP_LIMIT = 100  #// maximale Anzahl an Schritten für eine Berechnung
+        self.MAXERROR = 1e-10 #5E-12
+        self.STEP_LIMIT = 150  #// maximale Anzahl an Schritten für eine Berechnung
         self.dmu = 0.5E-3        #// differentieller Schritt zur Berechnung der Ableitungen d/dmu,d/dT
         self.dT = 0.5
         

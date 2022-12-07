@@ -181,36 +181,36 @@ class derrom:
         #apply the dimensionality reduction to get the reduced coefficient matrix with rdim features via the dim_reducer object
         if self.reduce_dim == True:
             self.dim_reducer.train(np.concatenate(self.trajectories,axis=0),self.rdim)
-            self.reduced_trajectories = [self.dim_reducer.reduce(trajectory,self.rdim) for trajectory in self.trajectories]
+            reduced_trajectories = [self.dim_reducer.reduce(trajectory,self.rdim) for trajectory in self.trajectories]
         else:
-            self.reduced_trajectories = self.trajectories
+            reduced_trajectories = self.trajectories
             self.rdim = self.trajectories[0].shape[1]
 
         #apply data/feature scaling via scaler object
         if self.standardize:
-            self.scaler.train(np.concatenate(self.reduced_trajectories,axis=0))
-            self.reduced_trajectories = [self.scaler.transform(reduced_trajectory) for reduced_trajectory in self.reduced_trajectories]
+            self.scaler.train(np.concatenate(reduced_trajectories,axis=0))
+            reduced_trajectories = [self.scaler.transform(reduced_trajectory) for reduced_trajectory in reduced_trajectories]
            
         #create training data matrices
         if self.targets != 'AR':
-            self.training_matrix = self.__build_DE_matrix(self.reduced_trajectories)    
-            self.target_matrix = self.__build_target_matrix(self.targets)
+            training_matrix = self.__build_DE_matrix(reduced_trajectories)    
+            target_matrix = self.__build_target_matrix(self.targets)
         else:
-            self.training_matrix = self.__build_DE_matrix( [reduced_trajectory[:-1] for reduced_trajectory in self.reduced_trajectories] ) 
-            self.target_matrix = self.__build_target_matrix( [reduced_trajectory[1:] for reduced_trajectory in self.reduced_trajectories] )
+            training_matrix = self.__build_DE_matrix( [reduced_trajectory[:-1] for reduced_trajectory in reduced_trajectories] ) 
+            target_matrix = self.__build_target_matrix( [reduced_trajectory[1:] for reduced_trajectory in reduced_trajectories] )
         
         
         #apply transformation to the DE state
         if self.NL_transform == True:
-            self.NL_transformer.setup(self.training_matrix.shape[1])
-            self.training_matrix = self.NL_transformer.transform(self.training_matrix)
+            self.NL_transformer.setup(training_matrix.shape[1])
+            training_matrix = self.NL_transformer.transform(training_matrix)
 
         #add bias/intercept
         if self.intercept:
-            self.training_matrix = np.concatenate( [ self.training_matrix, np.ones( (self.training_matrix.shape[0],1) ) ] , axis=1 )
+            training_matrix = np.concatenate( [ training_matrix, np.ones( (training_matrix.shape[0],1) ) ] , axis=1 )
 
         #calculate weight matrix via optimizer object
-        self.w = self.optimizer.solve(self.training_matrix, self.target_matrix)
+        self.w = self.optimizer.solve(training_matrix, target_matrix)
     
     
     
@@ -386,8 +386,8 @@ class derrom:
         print('standardize: ', self.standardize)
         print('rdim: ', self.rdim)
         print('DE_l: ', self.DE_l)
-        print('train shape: ', self.training_matrix.shape)
-        print('target shape: ', self.target_matrix.shape)
+        #print('train shape: ', training_matrix.shape)
+        #print('target shape: ', target_matrix.shape)
         print('weights shape: ', self.w.shape)
         
         
