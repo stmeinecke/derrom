@@ -8,9 +8,9 @@ class fermi_fit:
         self.kB = kB
         
         self.MAXERROR = 1e-10 #5E-12
-        self.STEP_LIMIT = 150  #// maximale Anzahl an Schritten für eine Berechnung
+        self.STEP_LIMIT = 100  #// maximale Anzahl an Schritten für eine Berechnung
         self.dmu = 0.5E-3        #// differentieller Schritt zur Berechnung der Ableitungen d/dmu,d/dT
-        self.dT = 0.5
+        self.dT = 1.0
         
         self.mstep_max_init = 0.1  #// maximale Schrittweite der Iterationen
         self.Tstep_max_init = 100.
@@ -18,8 +18,8 @@ class fermi_fit:
         self.rel_mstep_max = 0.5  #// maximale Schrittweite der Iterationen
         self.rel_Tstep_max = 0.5
         
-        self.mstep_max = 0.1  #// maximale Schrittweite der Iterationen
-        self.Tstep_max = 500.
+        self.mstep_max = 0.01  #// maximale Schrittweite der Iterationen
+        self.Tstep_max = 100.
         
     def fermi(self,E,mu=1,T=1):
         return 1./(np.exp((E-mu)/(self.kB*T)) + 1)
@@ -116,8 +116,8 @@ class fermi_fit:
             mstep = (deltaE*dDdT-deltaD*dEdT)/Jacobi_Det
             Tstep = (deltaD*dEdmu-deltaE*dDdmu)/Jacobi_Det
             
-            self.mstep_max = max(np.abs(m * self.rel_mstep_max),self.mstep_max_init)  #// maximale Schrittweite der Iterationen
-            self.Tstep_max = max(T * self.rel_Tstep_max, self.Tstep_max_init)
+            #self.mstep_max = max(np.abs(m * self.rel_mstep_max),self.mstep_max_init)  #// maximale Schrittweite der Iterationen
+            #self.Tstep_max = max(T * self.rel_Tstep_max, self.Tstep_max_init)
             
             if(mstep < -self.mstep_max):
                 mstep = -self.mstep_max

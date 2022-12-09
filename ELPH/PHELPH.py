@@ -132,8 +132,8 @@ class PHELPH(ELPH.ELPH):
             el_state = y[:-1]
             I = y[-1]
             
-            
-            mu = mu,steps = fermi_fitter.fit_mu(el_state, 0.1, self.T_cryo, False)
+            mu,stps = fermi_fitter.fit_mu(el_state, 0.1, self.T_cryo, False)
+            #mu = 0.1
             fermi = fermi_fitter.fermi(self.E_el_vec,mu,self.T_cryo)
             
             df = (fermi - el_state)/tau_rel
@@ -147,5 +147,36 @@ class PHELPH(ELPH.ELPH):
         
         t_vec = np.linspace(0.0, tmax, n_tmax)
         sol = scpy_solve_ivp(rel_time_derivs, [t_vec[0],t_vec[-1]], inits, t_eval=t_vec)
+        return sol.y.T
+      
+      
+    def two_temperature_rel_time_approx(self, inits, tmax=10000.0, n_tmax=1001, tau_rel=500, tau_Tp=4000):
+        fermi_fitter = fermi_fit.fermi_fit(self.DOS_vec, self.E_el_vec, self.kB)
+
+        def ttrta_derivs(t,y):
+            el_state = y[:-2]
+            Tp = y[-2]
+            I = y[-1]
+            
+            #electron distribution
+            mu,stps = fermi_fitter.fit_mu(el_state, 0.1, Tp, False)
+            fermi = fermi_fitter.fermi(self.E_el_vec,mu,Tp)
+            
+            df = (fermi - el_state)/tau_rel
+            df += -self.g_photon * I * self.lineshape_vec * (2.*el_state - 1.0)
+            
+            #phonon/lattice temperature
+            mu_e,Te,stps = fermi_fitter.fit_mu_T(el_state, 0.1, 300, False)
+            
+            dTp = (Te-Tp)/tau_Tp
+            
+            #photon density
+            dI = -I/self.tau_photon + I * np.sum(self.I_gain_helper_vec * (2.*el_state - 1.0))
+            dI += 1e-9
+            
+            return np.concatenate((df,[dTp],[dI]))
+        
+        t_vec = np.linspace(0.0, tmax, n_tmax)
+        sol = scpy_solve_ivp(ttrta_derivs, [t_vec[0],t_vec[-1]], inits, t_eval=t_vec)
         return sol.y.T
         
