@@ -61,9 +61,11 @@ class PHELPH(ELPH.ELPH):
         
         ### laser stuff ###
         dI = -I/self.tau_photon + I * np.sum(self.I_gain_helper_vec * (2.*right_ele - 1.0))
+        #dI += 0.001*np.sum(self.I_gain_helper_vec * right_ele)
         dI += 1e-9
         
-        left_ele += -self.g_photon * I * self.lineshape_vec * (2.*right_ele - 1.0)
+        #left_ele += -self.g_photon * I * self.lineshape_vec * (2.*right_ele - 1.0)  
+        left_ele += -self.g_photon * 0.01*np.exp(-((t-1900.)/500.)**2/2) * self.lineshape_vec * (2.*right_ele - 1.0)  
         ### laser stuff ###
         
         result = np.concatenate((left_ele,left_phon,[dI]))
