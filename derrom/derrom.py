@@ -9,20 +9,11 @@ import derrom_utils as utils
 
 class derrom:
   
-    def __init__(self, trajectories = None, targets = None, rdim = 1, DE_l = 1, full_hist=False, intercept = False, dim_reducer = None, scaler = None, NL_transformer = None, optimizer = None):
+    def __init__(self, rdim = 1, DE_l = 1, full_hist=False, intercept = False, dim_reducer = None, scaler = None, NL_transformer = None, optimizer = None):
         
-        if trajectories != None:
-            self.trajectories = trajectories
-            self.n_trajectories = len(trajectories)
-            
-        if targets != None:
-            self.targets = targets
-            if self.targets != 'AR':
-                self.n_targets = len(targets)
-                self.n_target_vars = targets[0][0].size
-    
-                ### check data consistency
-                assert self.__compare_trajectories_targets()
+        self.w = None
+        self.reg_mode = None
+        self.n_target_vars = None
         
         self.rdim = rdim
         
@@ -53,31 +44,14 @@ class derrom:
             self.optimizer = optimizer
         else:
             self.optimizer = optimizers.lstsqrs()
-        
-        
-    def load_data(self,trajectories,targets='AR'):
-        self.trajectories = trajectories
-        self.n_trajectories = len(trajectories)
-        
-        self.targets = targets
-        if targets != 'AR':
-            self.n_targets = len(targets)
-            self.n_target_vars = targets[0][0].size
-        
-            ### check data consistency
-            assert self.__compare_trajectories_targets()
-        
-    
-    def load_trajectories(self,trajectories):
-        self.trajectories = trajectories
-        self.n_trajectories = len(trajectories)
+ 
     
     
-    def __compare_trajectories_targets(self):
-        n_trajectory_data_vectors = np.sum([trajectory.shape[0] for trajectory in self.trajectories])
-        n_target_data_vectors = np.sum([target.shape[0] for target in self.targets])
+    def __compare_trajectories_targets(self,trajectories,targets):
+        n_trajectory_data_vectors = np.sum([trajectory.shape[0] for trajectory in trajectories])
+        n_target_data_vectors = np.sum([target.shape[0] for target in targets])
         
-        if ( (n_trajectory_data_vectors == n_target_data_vectors) and (self.n_trajectories == self.n_targets) ):
+        if (n_trajectory_data_vectors == n_target_data_vectors):
             return True
         else:
             return False
@@ -145,13 +119,22 @@ class derrom:
         return target_matrix
 
   
-    def train(self, rdim = None, DE_l = None, intercept=None, full_hist=None, dim_reducer = None, scaler = None, NL_transformer = None, optimizer = None):
+    def fit(self, trajectories, targets='AR', rdim = None, DE_l = None, intercept=None, full_hist=None, dim_reducer = None, scaler = None, NL_transformer = None, optimizer = None):
         
-        assert (self.trajectories != None and self.targets != None)
+
+        n_trajectories = len(trajectories)
         
-        if self.targets != 'AR':
+        if targets == 'AR':
+            self.reg_mode = 'AR'
+        
+        else:
+            self.reg_mode = 'reg'
+            n_targets = len(targets)
+            self.n_target_vars = targets[0][0].size
+        
             ### check data consistency
-            assert self.__compare_trajectories_targets()
+            assert self.__compare_trajectories_targets(trajectories,targets)
+        
         
         if rdim != None:
             self.rdim = rdim
@@ -180,11 +163,11 @@ class derrom:
         
         #apply the dimensionality reduction to get the reduced coefficient matrix with rdim features via the dim_reducer object
         if self.reduce_dim == True:
-            self.dim_reducer.train(np.concatenate(self.trajectories,axis=0),self.rdim)
-            reduced_trajectories = [self.dim_reducer.reduce(trajectory,self.rdim) for trajectory in self.trajectories]
+            self.dim_reducer.train(np.concatenate(trajectories,axis=0),self.rdim)
+            reduced_trajectories = [self.dim_reducer.reduce(trajectory,self.rdim) for trajectory in trajectories]
         else:
-            reduced_trajectories = self.trajectories
-            self.rdim = self.trajectories[0].shape[1]
+            reduced_trajectories = trajectories
+            self.rdim = trajectories[0].shape[1]
 
         #apply data/feature scaling via scaler object
         if self.standardize:
@@ -192,9 +175,9 @@ class derrom:
             reduced_trajectories = [self.scaler.transform(reduced_trajectory) for reduced_trajectory in reduced_trajectories]
            
         #create training data matrices
-        if self.targets != 'AR':
+        if self.reg_mode == 'reg':
             training_matrix = self.__build_DE_matrix(reduced_trajectories)    
-            target_matrix = self.__build_target_matrix(self.targets)
+            target_matrix = self.__build_target_matrix(targets)
         else:
             training_matrix = self.__build_DE_matrix( [reduced_trajectory[:-1] for reduced_trajectory in reduced_trajectories] ) 
             target_matrix = self.__build_target_matrix( [reduced_trajectory[1:] for reduced_trajectory in reduced_trajectories] )
@@ -216,7 +199,7 @@ class derrom:
     
     def predict(self, trajectory):
         
-        if self.targets == 'AR':
+        if self.reg_mode == 'AR':
             return self.forecast(trajectory,trajectory.shape[0])
         else:
             if trajectory.ndim == 1:
@@ -259,7 +242,7 @@ class derrom:
     
     def forecast(self,init,n_steps):
         
-        assert self.targets == 'AR'
+        assert self.reg_mode == 'AR'
         
         #apply the dimensionality reduction to the initital conditions
         if self.reduce_dim == True:
@@ -314,7 +297,7 @@ class derrom:
     
     def get_error(self, trajectory=None, truth=None, pred=None, norm='rms'):
         
-        if self.targets == 'AR':
+        if self.reg_mode == 'AR':
             if truth is None and trajectory is None:
                 raise ValueError('no trajectory supplied')
             elif truth is None:
@@ -350,13 +333,13 @@ class derrom:
         
         if predictions is None:
             for k in range(len(trajectories)):
-                if targets is None or self.targets=='AR':
+                if targets is None or self.reg_mode=='AR':
                     scores.append(self.get_error(trajectory=trajectories[k], **kwargs))
                 else:
                     scores.append(self.get_error(trajectory=trajectories[k], truth=targets[k], **kwargs))
         else:
             for k in range(len(trajectories)):
-                if targets is None or self.targets=='AR':
+                if targets is None or self.reg_mode=='AR':
                     scores.append(self.get_error(trajectory=trajectories[k], pred=predictions[k], **kwargs))
                 else:
                     scores.append(self.get_error(trajectory=trajectories[k], truth=targets[k], pred=predictions[k], **kwargs))
@@ -365,29 +348,16 @@ class derrom:
         return mean, scores
     
     
-    #def score_multiple_trajectories(self, trajectories, targets=None, predictions=None, **kwargs):
-      #scores = []
-      
-      #if predictions is None:
-          #for k in range(len(trajectories)):
-              #scores.append(self.get_error(trajectories[k],**kwargs))
-      #else:
-          #assert len(trajectories) == len(predictions)
-          #for k in range(len(trajectories)):
-              #scores.append(self.get_error(trajectories[k], pred=predictions[k], **kwargs))
-      
-      #mean = np.mean(scores)
-      #return mean, scores
-    
                 
     def print_status(self):
+        
+        assert self.w is not None
+        
         print('full_hist: ', self.full_hist)
         print('intercept: ', self.intercept)
         print('standardize: ', self.standardize)
         print('rdim: ', self.rdim)
         print('DE_l: ', self.DE_l)
-        #print('train shape: ', training_matrix.shape)
-        #print('target shape: ', target_matrix.shape)
         print('weights shape: ', self.w.shape)
         
         

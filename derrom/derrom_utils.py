@@ -16,8 +16,6 @@ def get_KFold_CV_scores(model, trajectories, targets='AR', folds=5, seed=817, no
     
     if targets != 'AR':
         assert len(trajectories) == len(targets)
-    if targets == 'AR':
-        assert model.targets == 'AR'
     
     #create shuffled copy of the trajectories
     rng = np.random.default_rng(seed=seed)
@@ -51,11 +49,9 @@ def get_KFold_CV_scores(model, trajectories, targets='AR', folds=5, seed=817, no
         #train the model on the training trajectories and get scores from the testing trajectories
         
         if targets == 'AR':
-            model.load_data(trajectories=train_trajectories, targets='AR') 
+            model.fit(trajectories=train_trajectories, targets='AR', **train_kwargs)
         else:
-            model.load_data(trajectories=train_trajectories, targets=train_targets) 
-        
-        model.train(**train_kwargs)
+            model.fit(trajectories=train_trajectories, targets=train_targets, **train_kwargs)
         
         
         predictions=[]
@@ -145,23 +141,14 @@ def plot_difference(test,truth,title='difference'):
 
 class reducer_helper_class:
     
-    def __init__(self, trajectories = None, dim_reducer = None, rdim = 1):
-        self.trajectories = trajectories
-        if trajectories != None:
-            self.n_trajectories = len(trajectories)
+    def __init__(self, dim_reducer = None, rdim = 1):
+
         self.rdim = rdim
         self.dim_reducer = dim_reducer
         
-        self.targets = 'AR' #fake AR to make the KFold CV scores work
+        self.reg_mode = 'AR' #fake AR to make the KFold CV scores work
     
-    def load_data(self, trajectories, targets='AR'):
-        self.trajectories = trajectories
-        self.n_trajectories = len(trajectories)
-    
-    def train(self, rdim=None, dim_reducer = None):
-        
-        if self.trajectories == None:
-            raise ValueError('no trajectories loaded')
+    def fit(self, trajectories, targets='AR', rdim=None, dim_reducer = None):
         
         if dim_reducer != None:
             self.dim_reducer = dim_reducer
@@ -172,42 +159,47 @@ class reducer_helper_class:
         if rdim != None:
             self.rdim = rdim
 
-        data_matrix = np.concatenate(self.trajectories,axis=0)
+        data_matrix = np.concatenate(trajectories,axis=0)
         
         self.dim_reducer.train(data_matrix, self.rdim)
         
-    def approx_single_run(self, run, rdim=None):
+    def predict(self, run, rdim=None):
         if rdim == None:
             rdim = self.rdim
                
         return self.dim_reducer.reconstruct( self.dim_reducer.reduce(run, rdim) )
     
-    def get_error(self, trajectory, approx=np.zeros(1), rdim=None, norm='rms'):
+    def get_error(self, trajectory, pred=None, rdim=None, norm='rms'):
         
         if rdim == None:
             rdim = self.rdim
         
-        if approx.size == 1:
-            approx = self.approx_single_run(trajectory, rdim=rdim)
+        if pred is None:
+            pred = self.predict(trajectory, rdim=rdim)
         
         err=-1.
         if norm=='fro':
-            err = np.linalg.norm(trajectory-approx, ord='fro')       
+            err = np.linalg.norm(trajectory-pred, ord='fro')       
         elif norm =='max':
-            err = np.abs(trajectory-approx).max()
-        elif norm == 'std':
-            err = np.std(np.ravel(trajectory-approx))
+            err = np.abs(trajectory-pred).max()
         elif norm == 'rms':
-            err = np.sqrt( np.mean( np.square(trajectory-approx) ) )
+            err = np.sqrt( np.mean( np.square(trajectory-pred) ) )
         else:
             print('unknown norm') 
 
         return err
     
-    def score_multiple_trajectories(self, trajectories, targets=None, **kwargs):
+    
+    def score_multiple_trajectories(self,trajectories, targets=None, predictions=None, **kwargs):
         scores = []
-        for k in range(len(trajectories)):
-            scores.append(self.get_error(trajectory=trajectories[k], **kwargs))
+        
+        if predictions is None:
+            for k in range(len(trajectories)):
+                scores.append(self.get_error(trajectory=trajectories[k], **kwargs))
+
+        else:
+            for k in range(len(trajectories)):
+                scores.append(self.get_error(trajectory=trajectories[k], pred=predictions[k], **kwargs))
         
         mean = np.mean(scores)
         return mean, scores

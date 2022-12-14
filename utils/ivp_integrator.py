@@ -21,11 +21,11 @@ class ivp_integrator:
     def load_data(self, **kwargs):
         self.model.load_data(**kwargs)
     
-    def train(self, **kwargs):
+    def fit(self, **kwargs):
         
         self.model.full_hist = self.model_hist_option
         
-        self.model.train(**kwargs)
+        self.model.fit(**kwargs)
         
         self.model.full_hist = True
     
