@@ -1,5 +1,5 @@
 import numpy as np
-
+import matplotlib.pyplot as plt
 
 class fermi_fit:
     def __init__(self, DOS, Energies, kB):
@@ -27,7 +27,7 @@ class fermi_fit:
     #berechnet chem Pot. (eV) und Temperatur der Fermiverteilung
     #aus vorgegebener Ladungsträgerdichte + Gesamtenergie, Ausgabe in *mu, *temp
     #en_Bulk/QW/QD sind entweder Elektonen- oder Loch-Energien (werden durch Aufruf der jeweiligen calc_fermi_CP_e/h-Funktion gesetzt)
-    def fit_mu_T(self, state, mu_start, T_start, FERMI_DEBUG = False):
+    def fit_mu_T(self, state, mu_start, T_start, FERMI_DEBUG = False, WARNINGS = False):
         
         self.mstep_max = self.mstep_max_init  #// maximale Schrittweite der Iterationen
         self.Tstep_max = self.Tstep_max_init
@@ -49,7 +49,7 @@ class fermi_fit:
 
         m2 = m;
         T2 = T;
-    #     steps = 0;
+
         d = 0
         d_dmu = 0
         d_dT = 0
@@ -105,7 +105,9 @@ class fermi_fit:
             dDdT = (d_dT-d)/self.dT
             dEdT = (E_dT-E)/self.dT
             Jacobi_Det = dDdT*dEdmu-dDdmu*dEdT
-            if (Jacobi_Det == 0):
+            if (Jacobi_Det == 0 and WARNINGS == True):
+                #plt.plot(state)
+                #plt.show()
                 print("calc_fermi_CC_eh: Jacobi_Det wird null!!!")
                 print("     d=",d,"  mu=",m,"  E=",E,"  T=",T)
                 break
@@ -135,7 +137,9 @@ class fermi_fit:
                 print("calc_fermi_CC_eh: dens=",d,", en=",en)
                 print("calc_fermi_CC_eh: mu=",m,", T=",T," nach ",steps," Schritten")
 
-        if (steps == self.STEP_LIMIT-1):
+        if (steps == self.STEP_LIMIT-1 and WARNINGS == True):
+            plt.plot(state)
+            plt.show()
             print("calc_fermi_CC_eh braucht mehr als STEP_LIMIT Schritte!")
             print("calc_fermi_CC_eh: mu_start=",mu_start,",T_start=",T_start)
             print("calc_fermi_CC_eh: dens=",dens,", en=",en)
@@ -146,9 +150,10 @@ class fermi_fit:
 
         return m,T,steps
 
+
     #berechnet chem Pot. (eV) aus vorgegebener Ladungsträgerdichte + Temperatur, Ausgabe in *mu
     #en_Bulk/QW/QD sind entweder Elektonen- oder Loch-Energien (werden durch Aufruf der jeweiligen calc_fermi_CP_e/h-Funktion gesetzt)
-    def fit_mu(self, state, mu_start, T, FERMI_DEBUG = False):
+    def fit_mu(self, state, mu_start, T, FERMI_DEBUG = False, WARNINGS = False):
         
         self.mstep_max = self.mstep_max_init  #// maximale Schrittweite der Iterationen
         
@@ -177,7 +182,7 @@ class fermi_fit:
 
         #// Ableitung dDichte / dMu
         dDdmu = (d2-d)/self.dmu;
-        if (dDdmu == 0):
+        if (dDdmu == 0 and WARNINGS == True):
             print("calc_fermi_CP_eh: dDdmu wird null!!!")
             print("     Ziel: ", dens)
             print("     d=",d,"  mu=",m)
@@ -212,7 +217,8 @@ class fermi_fit:
             steps += 1
             
             if(steps>self.STEP_LIMIT):
-                print("fit_mu braucht mehr als STEP_LIMIT Schritte!")
+                if WARNINGS == True:
+                    print("fit_mu braucht mehr als STEP_LIMIT Schritte!")
                 break
 
 

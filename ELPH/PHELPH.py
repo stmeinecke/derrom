@@ -22,6 +22,11 @@ class PHELPH(ELPH.ELPH):
         self.linewidth = 0.005
         
         self.setup_laser()
+        
+        self.extI = False
+        self.extI_max = 0.01
+        self.extI_pos = 1900
+        self.extI_width = 500
   
     
     def derivs(self,t,y):
@@ -64,8 +69,10 @@ class PHELPH(ELPH.ELPH):
         #dI += 0.001*np.sum(self.I_gain_helper_vec * right_ele)
         dI += 1e-9
         
-        #left_ele += -self.g_photon * I * self.lineshape_vec * (2.*right_ele - 1.0)  
-        left_ele += -self.g_photon * 0.01*np.exp(-((t-1900.)/500.)**2/2) * self.lineshape_vec * (2.*right_ele - 1.0)  
+        if self.extI == False:
+            left_ele += -self.g_photon * I * self.lineshape_vec * (2.*right_ele - 1.0)  
+        if self.extI == True:
+            left_ele += -self.g_photon * self.extI_max*np.exp(-((t-self.extI_pos)/self.extI_width)**2/2) * self.lineshape_vec * (2.*right_ele - 1.0)  
         ### laser stuff ###
         
         result = np.concatenate((left_ele,left_phon,[dI]))
@@ -181,4 +188,32 @@ class PHELPH(ELPH.ELPH):
         t_vec = np.linspace(0.0, tmax, n_tmax)
         sol = scpy_solve_ivp(ttrta_derivs, [t_vec[0],t_vec[-1]], inits, t_eval=t_vec)
         return sol.y.T
-        
+      
+        #def integrate(derivs, init, n_steps=1001, dt=5.0, dt_out=10.0):
+            
+            #sol = np.zeros((n_steps,init.size))
+            #sol[0] = init
+            
+            #state = sol[0]
+            
+            #j_out = int(dt_out/dt)
+            #j_max = sol.shape[0]*j_out
+
+
+            #for j in range(1,sol.shape[0]*j_out):
+                
+                #f1 = derivs(0,state)
+                #f2 = derivs(0,state + 0.5*dt*f1)
+                #f3 = derivs(0,state + 0.5*dt*f2)
+                #f4 = derivs(0,state + dt*f3)
+                
+                #state = state + dt*(f1 + 2.*f2 + 2.*f3 + f4)/6.
+                
+                #if j%j_out == 0:
+                    #sol[j//j_out] = state
+                    #print(j//j_out)
+                    
+            #return sol
+
+        #sol = integrate(ttrta_derivs,inits)
+        #return sol
