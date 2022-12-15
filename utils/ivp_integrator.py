@@ -18,14 +18,12 @@ class ivp_integrator:
         else:
             self.derivs = derivs
     
-    def load_data(self, **kwargs):
-        self.model.load_data(**kwargs)
     
-    def train(self, **kwargs):
+    def fit(self, **kwargs):
         
         self.model.full_hist = self.model_hist_option
         
-        self.model.train(**kwargs)
+        self.model.fit(**kwargs)
         
         self.model.full_hist = True
     
@@ -212,11 +210,10 @@ class ivp_integrator:
 
 
 class PHELPH_ivp_integrator(ivp_integrator):
-        
-    def load_data(self, trajectories, targets):
-        el_trajectories = [trajectory[:,:-1] for trajectory in trajectories]
-        self.model.load_data(el_trajectories,targets)
     
+    def fit(self, trajectories, targets, **kwargs):
+        el_trajectories = [trajectory[:,:-1] for trajectory in trajectories]
+        self.model.fit(el_trajectories, targets, **kwargs)
     
     def get_error(self, truth, pred=None, norm='rms'):
         
@@ -240,7 +237,7 @@ class PHELPH_ivp_integrator(ivp_integrator):
         elif norm == 'I_max':
             err = (I_pred.max()- I_truth.max())
         elif norm == 'I_max_pos':
-            err = (np.argmax(I_pred)-np.argmax(I_truth))
+            err = (np.argmax(I_pred)-np.argmax(I_truth))*self.dt_out
         elif norm == 'I_area':
             err = (np.sum(I_pred) - np.sum(I_truth))
         else:
