@@ -1,13 +1,18 @@
 import numpy as np
 
-import derrom_dim_reducers as dim_reducers
-import derrom_optimizers as optimizers
-import derrom_scalers as scalers
-import derrom_transformers as transformers
-import derrom_utils as utils
+# import derrom_dim_reducers as dim_reducers
+# import derrom_optimizers as optimizers
+# import derrom_scalers as scalers
+# import derrom_transformers as transformers
+# import derrom_utils as utils
+
+import derrom.optimizers as optimizers
 
 
 class derrom:
+    """
+    delay embedded regressive reduced order model
+    """
   
     def __init__(self, rdim = 1, DE_l = 1, full_hist=False, intercept = False, dim_reducer = None, scaler = None, NL_transformer = None, optimizer = None):
         
