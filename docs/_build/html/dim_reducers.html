@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dimensionality Reducers &mdash; derrom  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Feature Scalers" href="scalers.html" />
+    <link rel="prev" title="Derrom Estimator" href="estimator.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            derrom
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="estimator.html">Derrom Estimator</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Dimensionality Reducers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.dim_reducers.DFT"><code class="docutils literal notranslate"><span class="pre">DFT</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.dim_reducers.DFT.reconstruct"><code class="docutils literal notranslate"><span class="pre">DFT.reconstruct()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.dim_reducers.DFT.reduce"><code class="docutils literal notranslate"><span class="pre">DFT.reduce()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.dim_reducers.DFT.train"><code class="docutils literal notranslate"><span class="pre">DFT.train()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.dim_reducers.Hermite"><code class="docutils literal notranslate"><span class="pre">Hermite</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.dim_reducers.Hermite.reconstruct"><code class="docutils literal notranslate"><span class="pre">Hermite.reconstruct()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.dim_reducers.Hermite.reduce"><code class="docutils literal notranslate"><span class="pre">Hermite.reduce()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.dim_reducers.Hermite.train"><code class="docutils literal notranslate"><span class="pre">Hermite.train()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.dim_reducers.SVD"><code class="docutils literal notranslate"><span class="pre">SVD</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.dim_reducers.SVD.reconstruct"><code class="docutils literal notranslate"><span class="pre">SVD.reconstruct()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.dim_reducers.SVD.reduce"><code class="docutils literal notranslate"><span class="pre">SVD.reduce()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.dim_reducers.SVD.train"><code class="docutils literal notranslate"><span class="pre">SVD.train()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.dim_reducers.base_dim_reducer"><code class="docutils literal notranslate"><span class="pre">base_dim_reducer</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.dim_reducers.base_dim_reducer.reconstruct"><code class="docutils literal notranslate"><span class="pre">base_dim_reducer.reconstruct()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.dim_reducers.base_dim_reducer.reduce"><code class="docutils literal notranslate"><span class="pre">base_dim_reducer.reduce()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.dim_reducers.base_dim_reducer.train"><code class="docutils literal notranslate"><span class="pre">base_dim_reducer.train()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="scalers.html">Feature Scalers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transformers.html">Transformers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimizers.html">Optimizers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">derrom</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Dimensionality Reducers</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/dim_reducers.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-derrom.dim_reducers">
+<span id="dimensionality-reducers"></span><h1>Dimensionality Reducers<a class="headerlink" href="#module-derrom.dim_reducers" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="derrom.dim_reducers.DFT">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.dim_reducers.</span></span><span class="sig-name descname"><span class="pre">DFT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sorted</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#DFT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.DFT" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#derrom.dim_reducers.base_dim_reducer" title="derrom.dim_reducers.base_dim_reducer"><code class="xref py py-class docutils literal notranslate"><span class="pre">base_dim_reducer</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.dim_reducers.DFT.reconstruct">
+<span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reduced_data_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#DFT.reconstruct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.DFT.reconstruct" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.dim_reducers.DFT.reduce">
+<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#DFT.reduce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.DFT.reduce" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.dim_reducers.DFT.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#DFT.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.DFT.train" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="derrom.dim_reducers.Hermite">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.dim_reducers.</span></span><span class="sig-name descname"><span class="pre">Hermite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sorted</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orthogonalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_rdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#Hermite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.Hermite" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#derrom.dim_reducers.base_dim_reducer" title="derrom.dim_reducers.base_dim_reducer"><code class="xref py py-class docutils literal notranslate"><span class="pre">base_dim_reducer</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.dim_reducers.Hermite.reconstruct">
+<span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reduced_data_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#Hermite.reconstruct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.Hermite.reconstruct" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.dim_reducers.Hermite.reduce">
+<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#Hermite.reduce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.Hermite.reduce" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.dim_reducers.Hermite.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#Hermite.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.Hermite.train" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="derrom.dim_reducers.SVD">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.dim_reducers.</span></span><span class="sig-name descname"><span class="pre">SVD</span></span><a class="reference internal" href="_modules/derrom/dim_reducers.html#SVD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.SVD" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#derrom.dim_reducers.base_dim_reducer" title="derrom.dim_reducers.base_dim_reducer"><code class="xref py py-class docutils literal notranslate"><span class="pre">base_dim_reducer</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.dim_reducers.SVD.reconstruct">
+<span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reduced_data_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#SVD.reconstruct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.SVD.reconstruct" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.dim_reducers.SVD.reduce">
+<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#SVD.reduce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.SVD.reduce" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.dim_reducers.SVD.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#SVD.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.SVD.train" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="derrom.dim_reducers.base_dim_reducer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.dim_reducers.</span></span><span class="sig-name descname"><span class="pre">base_dim_reducer</span></span><a class="reference internal" href="_modules/derrom/dim_reducers.html#base_dim_reducer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.base_dim_reducer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.dim_reducers.base_dim_reducer.reconstruct">
+<span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#base_dim_reducer.reconstruct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.base_dim_reducer.reconstruct" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.dim_reducers.base_dim_reducer.reduce">
+<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#base_dim_reducer.reduce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.base_dim_reducer.reduce" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.dim_reducers.base_dim_reducer.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#base_dim_reducer.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.base_dim_reducer.train" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="estimator.html" class="btn btn-neutral float-left" title="Derrom Estimator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="scalers.html" class="btn btn-neutral float-right" title="Feature Scalers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Stefan Meinecke, Felix Köster.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

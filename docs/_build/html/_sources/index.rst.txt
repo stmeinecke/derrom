@@ -6,10 +6,20 @@
 Welcome to derrom's documentation!
 ==================================
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
 
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Contents:
+   
+   estimator
+   dim_reducers
+   scalers
+   transformers
+   optimizers
+   utils
+
+ 
 
 
 Indices and tables
@@ -18,3 +28,4 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+

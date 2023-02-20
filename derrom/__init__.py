@@ -1,6 +1,5 @@
-# from derrom.derrom import derrom
 
-from derrom.estimator import derrom as estimator
+from derrom.estimator import derrom_estimator as estimator
 from derrom import dim_reducers
 from derrom import optimizers
 from derrom import scalers

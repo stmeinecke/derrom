@@ -1,20 +1,49 @@
 import numpy as np
 
-# import derrom_dim_reducers as dim_reducers
-# import derrom_optimizers as optimizers
-# import derrom_scalers as scalers
-# import derrom_transformers as transformers
-# import derrom_utils as utils
+from sklearn.base import BaseEstimator
 
 import derrom.optimizers as optimizers
 
 
-class derrom:
+class derrom_estimator(BaseEstimator):
     """
-    delay embedded regressive reduced order model
+    Delay Embedded Regressive Reduced Order Model (derrom)
+    
+    This is the estimator class with facilitates the training of the model, and the prediction and scoring of trajectories. It is designed to be modular, such that different approaches for the dimensionality reduction, feature scaling, nonlinear transformation and regression weight optimization can be passed via objects that implement the appropriate methods. 
+    
+    Parameters
+    ----------
+    rdim : int
+        number of reduced latent space dimensions. The default rdim = 1 is most likely an inappropriate choice...
+    DE_l : int
+        delay embedding length. The default DE_l = 1 corresponds to no embedding, i.e., only the most recent system state is used.
+    full_hist : bool
+        If set to False (default), the delay embedding is padded with the least recent state if no sufficient system history is available
+    intercept : bool
+        If set to True, a bias/intercept term is added to the regression step.
+    dim_reducer : dim_reducer object
+        Object that implements the train, reduce, and reconstruct methods. If set to None, no dimensionality reduction is performed
+    scaler : scaler object
+        Object that implements the train, transform, and inverse transform methods. If set to None, no feature scaling is performed
+    NL_transformer : transformer object
+        Object that implements the setup and transform methods. If set to None, no nonlinear transform of the delay-embedded system state is performed.
+    optimizer : optimizer object
+        Object that implements the solve method. In set to None, a least-squares method is applied.
+    
+    
+    Class attributes: (attributes, which are generated during the initialization are omitted.)
+    
+    Attributes
+    ----------
+    w : numpy.ndarray
+        Regression weights obtained from the fit method contained in a matrix (2D numpy.ndarray)
+    reg_mode : str 
+        Regression mode. Can be set to 'AR' (autoregression) by the fit method. Toggles the predict method to forecast in autonomous mode, i.e., to feed its own output back as an input.
+    
     """
   
     def __init__(self, rdim = 1, DE_l = 1, full_hist=False, intercept = False, dim_reducer = None, scaler = None, NL_transformer = None, optimizer = None):
+        
         
         self.w = None
         self.reg_mode = None
@@ -125,7 +154,20 @@ class derrom:
 
   
     def fit(self, trajectories, targets='AR', rdim = None, DE_l = None, intercept=None, full_hist=None, dim_reducer = None, scaler = None, NL_transformer = None, optimizer = None):
+        """
+        fit a derrom model
         
+        Parameters
+        ----------
+        trajectories : list
+            A list of the training trajectories, where each element of the list is expected to be a 2D numpy.ndarray that represents an individual trajectories. Time slices must be stored in the rows (first index) and the system state variables in the columns (second index). All trajectories must have the same number of variables (columns), the number of time slices, however, may vary.
+        targets : 'AR', list
+            A list of the training targets, where each element is an numpy.ndarray that corresponds to training trajectory with the identical list index. Each element must have the same number of rows as the corresponding trajectory. If set to 'AR', i.e., autoregression, the targets are automatically generated from the time-shifted trajectories and the last and first time slices are dropped from the training and target data, respectively.
+
+
+        The remaining parameters are identical to the init method
+        
+        """
 
         n_trajectories = len(trajectories)
         
@@ -203,6 +245,22 @@ class derrom:
     
     
     def predict(self, trajectory):
+        """
+        Predicts targets for each snapshot of the input trajectory. In autoregression mode, the first time slice is used (the first DE_l in the case of full_hist = True) as initial conditions to generate a prediction with the same length (rows) as the input trajectory.
+        
+        
+        Parameters
+        ----------
+        trajectory : 2D numpy.ndarray
+            Trajectory where the time slices are stored in the rows (first index) and the state variables in the columns (second indx)
+            
+            
+        Returns
+        -------
+            matrix : (2D numpy.ndarray)
+                Calculated prediction
+        """
+        
         
         if self.reg_mode == 'AR':
             return self.forecast(trajectory,trajectory.shape[0])
@@ -246,6 +304,24 @@ class derrom:
     
     
     def forecast(self,init,n_steps):
+        """
+        Forecast n steps into the future in autoregression mode
+        
+        Parameters
+        ----------
+        
+        init : 2D numpy.ndarray
+            Initial condition. For full_hist = False, only the first snapshot (first row) of is used. Otherwise the first DE_l snapshots are used. 
+        n_steps : int
+            Length of the forecasted trajectory. The initial condition is thus included in n_steps
+            
+            
+        Returns
+        -------
+            matrix : (2D numpy.ndarray)
+                Forecasted trajectory
+        """
+        
         
         assert self.reg_mode == 'AR'
         
@@ -301,6 +377,19 @@ class derrom:
         
     
     def get_error(self, trajectory=None, truth=None, pred=None, norm='rms'):
+        """
+        Computes the regression error
+        
+        Parameters
+        ----------
+        trajectory : 2D numpy.ndarray
+            If no prediction is supplied, it can be computed from the trajectory. Interchangeable with truth in autoregression (AR) mode
+        truth : 2D numpy.ndarray
+            Ground truth, against which the prediction is compared. Interchangeable with trajectory in autoregression (AR) mode
+        pred : 2D numpy.ndarray
+            Prediction corresponding to the truth. 
+        
+        """
         
         if self.reg_mode == 'AR':
             if truth is None and trajectory is None:
@@ -355,6 +444,9 @@ class derrom:
     
                 
     def print_status(self):
+        """
+        print values of the relevant class attributes
+        """
         
         assert self.w is not None
         
