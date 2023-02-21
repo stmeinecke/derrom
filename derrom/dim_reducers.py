@@ -16,16 +16,66 @@ class base_dim_reducer:
         
         
 class SVD(base_dim_reducer):
+    r"""
+    Singular value decomposition (SVD) based linear dimensionality reduction.
+    
+    The SVD :math:`X^T = U \Sigma V^T` provides an orthonormal basis for the transposed data matrix :math:`X^T` via the unitary matrix :math:`U`. Note that the data vectors :math:`x_n` are stored in the rows of :math:`X` and the data matrix is then transposed to conform to the typical SVD literature.
+    The dimensionality reduction is achieved by projecting new data onto the first :math:`r` left singular vectors :math:`u_{l}` of the training data matrix, i.e., onto the truncated basis :math:`U_r`.
+    
+    
+    Class attributes
+    
+    Attributes
+    ----------
+    U : 2D numpy.ndarray
+        :math:`U` matrix of the SVD, where the columns are the left singular vectors :math:`u_{l}`.
+    S : 2D numpy.ndarray
+        Diagonal matrix containing the singular values :math:`\sigma_l` in descending order.
+    
+    """
+    
     def __init__(self):
+        self.U = None
+        self.S = None
         pass
     
     def train(self, data_matrix, rdim):
+        r"""
+        Training method that computes the SVD and stores the :math:`U` matrix and the singular values :math:`\Sigma` in U and S for the reduction and reconstruction and analysis.
+        
+        Parameters
+        ----------
+        data_matrix : 2D numpy.ndarray
+            The data vectors are expected to be stored in the rows (first index). The training data matrix is typically composed of multiple concatenated trajectories.
+        """
         self.U,self.S = np.linalg.svd(data_matrix.T, full_matrices=False)[:2] #SVD of the transposed data matrix since the data is stored in row vectors
         
     def reduce(self, data_matrix, rdim):
+        r"""
+        Projects the input into a latent space with reduced dimensionality.
+        
+        Computes :math:`R = X U_r`, where :math:`X` is the data matrix and :math:`R` the reduced data matrix. Note, that the data vectors are stored in the rows here.
+        
+        Parameters
+        ----------
+        data_matrix : 2D numpy.ndarray
+            The high dimensional trajectory, which is to be reduced.
+        """
         return data_matrix @ self.U[:,:rdim] #project the data matrix onto the first rdim left singular vectors. The reduced data matrix then carries rdim coefficients in its rows
     
     def reconstruct(self, reduced_data_matrix):
+        r"""
+        Reconstructs the reduced data matrix by expanding it in the truncated basis.
+        
+        Computes :math:`\tilde{X} = R U_r^T`, where :math:`\tilde{X}` is the reconstructed data matrix and :math:`R` the reduced data matrix
+        
+        
+        Parameters
+        ----------
+        reduced_data_matrix : 2D numpy.ndarray
+            The reduced dimensianal trajectory to be reconstructed.
+        """
+        
         dim = reduced_data_matrix.shape[1]
         return reduced_data_matrix @ self.U[:,:dim].T 
       

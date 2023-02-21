@@ -15,6 +15,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -58,6 +59,8 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#derrom.dim_reducers.SVD"><code class="docutils literal notranslate"><span class="pre">SVD</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.dim_reducers.SVD.U"><code class="docutils literal notranslate"><span class="pre">SVD.U</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.dim_reducers.SVD.S"><code class="docutils literal notranslate"><span class="pre">SVD.S</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#derrom.dim_reducers.SVD.reconstruct"><code class="docutils literal notranslate"><span class="pre">SVD.reconstruct()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#derrom.dim_reducers.SVD.reduce"><code class="docutils literal notranslate"><span class="pre">SVD.reduce()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#derrom.dim_reducers.SVD.train"><code class="docutils literal notranslate"><span class="pre">SVD.train()</span></code></a></li>
@@ -149,20 +152,66 @@
 <dt class="sig sig-object py" id="derrom.dim_reducers.SVD">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.dim_reducers.</span></span><span class="sig-name descname"><span class="pre">SVD</span></span><a class="reference internal" href="_modules/derrom/dim_reducers.html#SVD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.SVD" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#derrom.dim_reducers.base_dim_reducer" title="derrom.dim_reducers.base_dim_reducer"><code class="xref py py-class docutils literal notranslate"><span class="pre">base_dim_reducer</span></code></a></p>
+<p>Singular value decomposition (SVD) based linear dimensionality reduction.</p>
+<p>The SVD <span class="math notranslate nohighlight">\(X^T = U \Sigma V^T\)</span> provides an orthonormal basis for the transposed data matrix <span class="math notranslate nohighlight">\(X^T\)</span> via the unitary matrix <span class="math notranslate nohighlight">\(U\)</span>. Note that the data vectors <span class="math notranslate nohighlight">\(x_n\)</span> are stored in the rows of <span class="math notranslate nohighlight">\(X\)</span> and the data matrix is then transposed to conform to the typical SVD literature.
+The dimensionality reduction is achieved by projecting new data onto the first <span class="math notranslate nohighlight">\(r\)</span> left singular vectors <span class="math notranslate nohighlight">\(u_{l}\)</span> of the training data matrix, i.e., onto the truncated basis <span class="math notranslate nohighlight">\(U_r\)</span>.</p>
+<p>Class attributes</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="derrom.dim_reducers.SVD.U">
+<span class="sig-name descname"><span class="pre">U</span></span><a class="headerlink" href="#derrom.dim_reducers.SVD.U" title="Permalink to this definition"></a></dt>
+<dd><p><span class="math notranslate nohighlight">\(U\)</span> matrix of the SVD, where the columns are the left singular vectors <span class="math notranslate nohighlight">\(u_{l}\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2D numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="derrom.dim_reducers.SVD.S">
+<span class="sig-name descname"><span class="pre">S</span></span><a class="headerlink" href="#derrom.dim_reducers.SVD.S" title="Permalink to this definition"></a></dt>
+<dd><p>Diagonal matrix containing the singular values <span class="math notranslate nohighlight">\(\sigma_l\)</span> in descending order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2D numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="derrom.dim_reducers.SVD.reconstruct">
 <span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reduced_data_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#SVD.reconstruct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.SVD.reconstruct" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Reconstructs the reduced data matrix by expanding it in the truncated basis.</p>
+<p>Computes <span class="math notranslate nohighlight">\(\tilde{X} = R U_r^T\)</span>, where <span class="math notranslate nohighlight">\(\tilde{X}\)</span> is the reconstructed data matrix and <span class="math notranslate nohighlight">\(R\)</span> the reduced data matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>reduced_data_matrix</strong> (<em>2D numpy.ndarray</em>) – The reduced dimensianal trajectory to be reconstructed.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="derrom.dim_reducers.SVD.reduce">
 <span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#SVD.reduce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.SVD.reduce" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Projects the input into a latent space with reduced dimensionality.</p>
+<p>Computes <span class="math notranslate nohighlight">\(R = X U_r\)</span>, where <span class="math notranslate nohighlight">\(X\)</span> is the data matrix and <span class="math notranslate nohighlight">\(R\)</span> the reduced data matrix. Note, that the data vectors are stored in the rows here.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_matrix</strong> (<em>2D numpy.ndarray</em>) – The high dimensional trajectory, which is to be reduced.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="derrom.dim_reducers.SVD.train">
 <span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#SVD.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.SVD.train" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Training method that computes the SVD and stores the <span class="math notranslate nohighlight">\(U\)</span> matrix and the singular values <span class="math notranslate nohighlight">\(\Sigma\)</span> in U and S for the reduction and reconstruction and analysis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_matrix</strong> (<em>2D numpy.ndarray</em>) – The data vectors are expected to be stored in the rows (first index). The training data matrix is typically composed of multiple concatenated trajectories.</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
