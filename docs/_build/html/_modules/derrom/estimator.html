@@ -332,7 +332,7 @@
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">            matrix : (2D numpy.ndarray)</span>
+<span class="sd">            matrix : 2D numpy.ndarray</span>
 <span class="sd">                Calculated prediction</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         
@@ -393,7 +393,7 @@
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">            matrix : (2D numpy.ndarray)</span>
+<span class="sd">            matrix : 2D numpy.ndarray</span>
 <span class="sd">                Forecasted trajectory</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         
@@ -452,6 +452,29 @@
         
     
 <div class="viewcode-block" id="derrom_estimator.get_error"><a class="viewcode-back" href="../../estimator.html#derrom.estimator.derrom_estimator.get_error">[docs]</a>    <span class="k">def</span> <span class="nf">get_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">truth</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pred</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="s1">&#39;rms&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the regression error</span>
+<span class="sd">        </span>
+<span class="sd">        If no prediction is supplied, but the the trajectory, the corresponding prediction is computed first.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        trajectory : 2D numpy.ndarray</span>
+<span class="sd">            If no prediction is supplied, it can be computed from the trajectory. Interchangeable with truth in autoregression (AR) mode</span>
+<span class="sd">        truth : 2D numpy.ndarray</span>
+<span class="sd">            Ground truth, against which the prediction is compared. Interchangeable with trajectory in autoregression (AR) mode</span>
+<span class="sd">        pred : 2D numpy.ndarray</span>
+<span class="sd">            Prediction corresponding to the truth. </span>
+<span class="sd">        norm : str, &quot;rms&quot;, &quot;fro&quot;, &quot;ma&quot;</span>
+<span class="sd">            Error norm chosen by the corresponding string. &quot;rms&quot; refers to the root-mean-squared error regarding all matrix elements, &quot;fro&quot; refers to the frobenius norm (proportional to the rms error, but not normalized to the number of matrix elements), and &quot;max&quot; refers to the maximum absolute error regarding all matrix elements.</span>
+<span class="sd">            </span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        regression error : float</span>
+<span class="sd">            the regression error for a valid norm and -1 for an invalid norm.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
         
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_mode</span> <span class="o">==</span> <span class="s1">&#39;AR&#39;</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">truth</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">trajectory</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -485,6 +508,29 @@
                 
                 
 <div class="viewcode-block" id="derrom_estimator.score_multiple_trajectories"><a class="viewcode-back" href="../../estimator.html#derrom.estimator.derrom_estimator.score_multiple_trajectories">[docs]</a>    <span class="k">def</span> <span class="nf">score_multiple_trajectories</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">trajectories</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">predictions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        helper function to obtain error scores for multiple trajectories. Used by the derrom.utils.get.get_KFold_CV_scores function.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        trajectories : list</span>
+<span class="sd">            A list of the trajectories to be scored, where each element of the list is expected to be a 2D numpy.ndarray that represents an individual trajectories. Time slices must be stored in the rows (first index) and the system state variables in the columns (second index). All trajectories must have the same number of variables (columns), the number of time slices, however, may vary.</span>
+<span class="sd">        targets : list</span>
+<span class="sd">            A list of the targets, where each element is an numpy.ndarray that corresponds to the trajectory with the identical list index. Each element must have the same number of rows as the corresponding trajectory. If set to &#39;AR&#39;, i.e., autoregression, no targets are required.</span>
+<span class="sd">        predictions : list</span>
+<span class="sd">            A list of the predictions, where each element is an numpy.ndarray that corresponds to the trajectory with the identical list index. Supplying predictions reduces computaion time if derrom.utils.get.get_KFold_CV_scores is to be evaluated for multiple error norms. </span>
+<span class="sd">            </span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mean : float</span>
+<span class="sd">            mean regression error from all supplied trajectories</span>
+<span class="sd">        scores : list</span>
+<span class="sd">            list of all individual regression errors</span>
+<span class="sd">            </span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
         <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
         
         <span class="k">if</span> <span class="n">predictions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -506,6 +552,9 @@
     
                 
 <div class="viewcode-block" id="derrom_estimator.print_status"><a class="viewcode-back" href="../../estimator.html#derrom.estimator.derrom_estimator.print_status">[docs]</a>    <span class="k">def</span> <span class="nf">print_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        print values of the relevant class attributes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         

@@ -257,7 +257,7 @@ class derrom_estimator(BaseEstimator):
             
         Returns
         -------
-            matrix : (2D numpy.ndarray)
+            matrix : 2D numpy.ndarray
                 Calculated prediction
         """
         
@@ -318,7 +318,7 @@ class derrom_estimator(BaseEstimator):
             
         Returns
         -------
-            matrix : (2D numpy.ndarray)
+            matrix : 2D numpy.ndarray
                 Forecasted trajectory
         """
         
@@ -380,6 +380,8 @@ class derrom_estimator(BaseEstimator):
         """
         Computes the regression error
         
+        If no prediction is supplied, but the the trajectory, the corresponding prediction is computed first.
+        
         Parameters
         ----------
         trajectory : 2D numpy.ndarray
@@ -388,6 +390,14 @@ class derrom_estimator(BaseEstimator):
             Ground truth, against which the prediction is compared. Interchangeable with trajectory in autoregression (AR) mode
         pred : 2D numpy.ndarray
             Prediction corresponding to the truth. 
+        norm : str, "rms", "fro", "ma"
+            Error norm chosen by the corresponding string. "rms" refers to the root-mean-squared error regarding all matrix elements, "fro" refers to the frobenius norm (proportional to the rms error, but not normalized to the number of matrix elements), and "max" refers to the maximum absolute error regarding all matrix elements.
+            
+            
+        Returns
+        -------
+        regression error : float
+            the regression error for a valid norm and -1 for an invalid norm.
         
         """
         
@@ -423,6 +433,29 @@ class derrom_estimator(BaseEstimator):
                 
                 
     def score_multiple_trajectories(self,trajectories, targets=None, predictions=None, **kwargs):
+        """
+        helper function to obtain error scores for multiple trajectories. Used by the derrom.utils.get.get_KFold_CV_scores function.
+        
+        Parameters
+        ----------
+        trajectories : list
+            A list of the trajectories to be scored, where each element of the list is expected to be a 2D numpy.ndarray that represents an individual trajectories. Time slices must be stored in the rows (first index) and the system state variables in the columns (second index). All trajectories must have the same number of variables (columns), the number of time slices, however, may vary.
+        targets : list
+            A list of the targets, where each element is an numpy.ndarray that corresponds to the trajectory with the identical list index. Each element must have the same number of rows as the corresponding trajectory. If set to 'AR', i.e., autoregression, no targets are required.
+        predictions : list
+            A list of the predictions, where each element is an numpy.ndarray that corresponds to the trajectory with the identical list index. Supplying predictions reduces computaion time if derrom.utils.get.get_KFold_CV_scores is to be evaluated for multiple error norms. 
+            
+            
+        Returns
+        -------
+        mean : float
+            mean regression error from all supplied trajectories
+        scores : list
+            list of all individual regression errors
+            
+            
+        """
+        
         scores = []
         
         if predictions is None:
