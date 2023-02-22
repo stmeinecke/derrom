@@ -38,7 +38,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Library Documentation:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../estimator.html">Derrom Estimator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dim_reducers.html">Dimensionality Reducers</a></li>
@@ -80,13 +80,13 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
     
-<div class="viewcode-block" id="base_dim_reducer.train"><a class="viewcode-back" href="../../dim_reducers.html#derrom.dim_reducers.base_dim_reducer.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="base_dim_reducer.train"><a class="viewcode-back" href="../../dim_reducers.html#derrom.dim_reducers.base_dim_reducer.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_matrix</span><span class="p">,</span> <span class="n">rdim</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
         
-<div class="viewcode-block" id="base_dim_reducer.reduce"><a class="viewcode-back" href="../../dim_reducers.html#derrom.dim_reducers.base_dim_reducer.reduce">[docs]</a>    <span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="base_dim_reducer.reduce"><a class="viewcode-back" href="../../dim_reducers.html#derrom.dim_reducers.base_dim_reducer.reduce">[docs]</a>    <span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_matrix</span><span class="p">,</span> <span class="n">rdim</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
         
-<div class="viewcode-block" id="base_dim_reducer.reconstruct"><a class="viewcode-back" href="../../dim_reducers.html#derrom.dim_reducers.base_dim_reducer.reconstruct">[docs]</a>    <span class="k">def</span> <span class="nf">reconstruct</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="base_dim_reducer.reconstruct"><a class="viewcode-back" href="../../dim_reducers.html#derrom.dim_reducers.base_dim_reducer.reconstruct">[docs]</a>    <span class="k">def</span> <span class="nf">reconstruct</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reduced_data_matrix</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
         
         
@@ -122,6 +122,8 @@
 <span class="sd">        ----------</span>
 <span class="sd">        data_matrix : 2D numpy.ndarray</span>
 <span class="sd">            The data vectors are expected to be stored in the rows (first index). The training data matrix is typically composed of multiple concatenated trajectories.</span>
+<span class="sd">        rdim : int</span>
+<span class="sd">            Number of latent space dimensions, to which the trajectory is to be reduced. Not used by the SVD reducer.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">U</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">data_matrix</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">full_matrices</span><span class="o">=</span><span class="kc">False</span><span class="p">)[:</span><span class="mi">2</span><span class="p">]</span> <span class="c1">#SVD of the transposed data matrix since the data is stored in row vectors</span></div>
         
@@ -135,12 +137,20 @@
 <span class="sd">        ----------</span>
 <span class="sd">        data_matrix : 2D numpy.ndarray</span>
 <span class="sd">            The high dimensional trajectory, which is to be reduced.</span>
+<span class="sd">        rdim : int</span>
+<span class="sd">            Number of latent space dimensions, to which the trajectory is to be reduced.</span>
+<span class="sd">            </span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        reduced_data_matrix : 2D numpy.ndarray</span>
+<span class="sd">            The reduced dimensionality trajectory</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">data_matrix</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">U</span><span class="p">[:,:</span><span class="n">rdim</span><span class="p">]</span> <span class="c1">#project the data matrix onto the first rdim left singular vectors. The reduced data matrix then carries rdim coefficients in its rows</span></div>
     
 <div class="viewcode-block" id="SVD.reconstruct"><a class="viewcode-back" href="../../dim_reducers.html#derrom.dim_reducers.SVD.reconstruct">[docs]</a>    <span class="k">def</span> <span class="nf">reconstruct</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reduced_data_matrix</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Reconstructs the reduced data matrix by expanding it in the truncated basis.</span>
+<span class="sd">        Reconstructs the data matrix by expanding it in the truncated basis.</span>
 <span class="sd">        </span>
 <span class="sd">        Computes :math:`\tilde{X} = R U_r^T`, where :math:`\tilde{X}` is the reconstructed data matrix and :math:`R` the reduced data matrix</span>
 <span class="sd">        </span>
@@ -149,6 +159,13 @@
 <span class="sd">        ----------</span>
 <span class="sd">        reduced_data_matrix : 2D numpy.ndarray</span>
 <span class="sd">            The reduced dimensianal trajectory to be reconstructed.</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        reconstructed_data_matrix : 2D numpy.ndarray</span>
+<span class="sd">            The reconstructed/expanded trajectory</span>
+<span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         
         <span class="n">dim</span> <span class="o">=</span> <span class="n">reduced_data_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -156,11 +173,36 @@
       
       
 <div class="viewcode-block" id="DFT"><a class="viewcode-back" href="../../dim_reducers.html#derrom.dim_reducers.DFT">[docs]</a><span class="k">class</span> <span class="nc">DFT</span><span class="p">(</span><span class="n">base_dim_reducer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dimensionality reduction with Fourier modes.</span>
+<span class="sd">    </span>
+<span class="sd">    The dimensionality reduction is achieved by projecting the data onto a reduced number of fourier modes. The latent space description thus consists of the considered Fourier coefficients. The complex coeffiecients are thereby split into their real and imaginary parts.</span>
+<span class="sd">    Implemented via the Fast Fourier Transform (FFT).</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sorted : bool</span>
+<span class="sd">        If set to False, the low frequency modes are used and and the high frequency modes are discarded (cutoff controlled by the reduced dimension :math:`r`.) If set to True, the Fourier coefficients are evaluated for the training data and sorted in descending order of their mean. The dimensionality reduction then utilizes the corresponding first :math:`r` modes with the largest mean coefficients.</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">sorted</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sorted</span> <span class="o">=</span> <span class="nb">sorted</span>
         <span class="k">pass</span>
     
 <div class="viewcode-block" id="DFT.train"><a class="viewcode-back" href="../../dim_reducers.html#derrom.dim_reducers.DFT.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_matrix</span><span class="p">,</span> <span class="n">rdim</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the mean Fourier coefficients to generated arrays with the sorting and unsorting indices if sorted is set to True.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data_matrix : 2D numpy.ndarray</span>
+<span class="sd">            The data vectors are expected to be stored in the rows (first index). The training data matrix is typically composed of multiple concatenated trajectories.</span>
+<span class="sd">        rdim : int</span>
+<span class="sd">            Number of latent space dimensions, to which the trajectory is to be reduced. Not used by the DFT reducer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">full_dim</span> <span class="o">=</span> <span class="n">data_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sorted</span><span class="p">:</span>
@@ -178,7 +220,23 @@
         
         
 <div class="viewcode-block" id="DFT.reduce"><a class="viewcode-back" href="../../dim_reducers.html#derrom.dim_reducers.DFT.reduce">[docs]</a>    <span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_matrix</span><span class="p">,</span> <span class="n">rdim</span><span class="p">):</span>
-        
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Projects the data into the truncated Fourier space via the FFT.</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data_matrix : 2D numpy.ndarray</span>
+<span class="sd">            The high dimensional trajectory, which is to be reduced.</span>
+<span class="sd">        rdim : int</span>
+<span class="sd">            Number of latent space dimensions, to which the trajectory is to be reduced.</span>
+<span class="sd">            </span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        reduced_data_matrix : 2D numpy.ndarray</span>
+<span class="sd">            The reduced dimensionality trajectory</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">FT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfft</span><span class="p">(</span><span class="n">data_matrix</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
   
         <span class="n">real_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">FT</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">FT</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">))</span>
@@ -192,7 +250,22 @@
             <span class="k">return</span> <span class="n">real_matrix</span><span class="p">[:,:</span><span class="n">rdim</span><span class="p">]</span></div>
     
 <div class="viewcode-block" id="DFT.reconstruct"><a class="viewcode-back" href="../../dim_reducers.html#derrom.dim_reducers.DFT.reconstruct">[docs]</a>    <span class="k">def</span> <span class="nf">reconstruct</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reduced_data_matrix</span><span class="p">):</span>
-        
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reconstructs the data matrix by expanding it in the truncated Fourier basis via the FFT.</span>
+<span class="sd">                </span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        reduced_data_matrix : 2D numpy.ndarray</span>
+<span class="sd">            The reduced dimensianal trajectory to be reconstructed.</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        reconstructed_data_matrix : 2D numpy.ndarray</span>
+<span class="sd">            The reconstructed/expanded trajectory</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sorted</span><span class="p">:</span>
             <span class="n">real_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">reduced_data_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_dim</span><span class="p">))</span>
             <span class="n">real_matrix</span><span class="p">[:,:</span><span class="n">reduced_data_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">reduced_data_matrix</span>
@@ -210,6 +283,14 @@
 <span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">eval_hermite</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize_scalar</span>
 <div class="viewcode-block" id="Hermite"><a class="viewcode-back" href="../../dim_reducers.html#derrom.dim_reducers.Hermite">[docs]</a><span class="k">class</span> <span class="nc">Hermite</span><span class="p">(</span><span class="n">base_dim_reducer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dimensionality reduction bases on sampled Gauss-Hermite functions.</span>
+<span class="sd">    </span>
+<span class="sd">    This reduction scheme is physically motivated and custom tailored to describe perturbations of Fermi-distributions.</span>
+<span class="sd">    </span>
+<span class="sd">    Refer to the publication [] and the code for more details.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_max</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="nb">sorted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">orthogonalize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">train_rdim</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sample_max</span> <span class="o">=</span> <span class="n">sample_max</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sorted</span> <span class="o">=</span> <span class="nb">sorted</span>

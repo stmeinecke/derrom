@@ -103,10 +103,10 @@
 <li><p><strong>DE_l</strong> (<em>int</em>) – delay embedding length. The default DE_l = 1 corresponds to no embedding, i.e., only the most recent system state is used.</p></li>
 <li><p><strong>full_hist</strong> (<em>bool</em>) – If set to False (default), the delay embedding is padded with the least recent state if no sufficient system history is available</p></li>
 <li><p><strong>intercept</strong> (<em>bool</em>) – If set to True, a bias/intercept term is added to the regression step.</p></li>
-<li><p><strong>dim_reducer</strong> (<em>dim_reducer object</em>) – Object that implements the train, reduce, and reconstruct methods. If set to None, no dimensionality reduction is performed</p></li>
-<li><p><strong>scaler</strong> (<em>scaler object</em>) – Object that implements the train, transform, and inverse transform methods. If set to None, no feature scaling is performed</p></li>
-<li><p><strong>NL_transformer</strong> (<em>transformer object</em>) – Object that implements the setup and transform methods. If set to None, no nonlinear transform of the delay-embedded system state is performed.</p></li>
-<li><p><strong>optimizer</strong> (<em>optimizer object</em>) – Object that implements the solve method. In set to None, a least-squares method is applied.</p></li>
+<li><p><strong>dim_reducer</strong> (<em>dim_reducer object</em>) – Object that implements the train, reduce, and reconstruct methods. If set to None, no dimensionality reduction is performed. More details on the dimensionality reduction implementation in <a class="reference internal" href="dim_reducers.html"><span class="doc">Dimensionality Reducers</span></a>.</p></li>
+<li><p><strong>scaler</strong> (<em>scaler object</em>) – Object that implements the train, transform, and inverse transform methods. If set to None, no feature scaling is performed. More details on the feature scaler implementation in <a class="reference internal" href="scalers.html"><span class="doc">Feature Scalers</span></a>.</p></li>
+<li><p><strong>NL_transformer</strong> (<em>transformer object</em>) – Object that implements the setup and transform methods. If set to None, no nonlinear transform of the delay-embedded system state is performed. More details on the nonlinear transformer implementation in <a class="reference internal" href="transformers.html"><span class="doc">Transformers</span></a>.</p></li>
+<li><p><strong>optimizer</strong> (<em>optimizer object</em>) – Object that implements the solve method. In set to None, a least-squares method is applied. More details on the optimizer implementation in <a class="reference internal" href="optimizers.html"><span class="doc">Optimizers</span></a>.</p></li>
 </ul>
 </dd>
 </dl>

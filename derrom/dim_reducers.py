@@ -5,13 +5,13 @@ class base_dim_reducer:
     def __init__(self):
         pass
     
-    def train(self):
+    def train(self, data_matrix, rdim):
         raise NotImplementedError
         
-    def reduce(self):
+    def reduce(self, data_matrix, rdim):
         raise NotImplementedError
         
-    def reconstruct(self):
+    def reconstruct(self, reduced_data_matrix):
         raise NotImplementedError
         
         
@@ -47,6 +47,8 @@ class SVD(base_dim_reducer):
         ----------
         data_matrix : 2D numpy.ndarray
             The data vectors are expected to be stored in the rows (first index). The training data matrix is typically composed of multiple concatenated trajectories.
+        rdim : int
+            Number of latent space dimensions, to which the trajectory is to be reduced. Not used by the SVD reducer.
         """
         self.U,self.S = np.linalg.svd(data_matrix.T, full_matrices=False)[:2] #SVD of the transposed data matrix since the data is stored in row vectors
         
@@ -60,12 +62,20 @@ class SVD(base_dim_reducer):
         ----------
         data_matrix : 2D numpy.ndarray
             The high dimensional trajectory, which is to be reduced.
+        rdim : int
+            Number of latent space dimensions, to which the trajectory is to be reduced.
+            
+            
+        Returns
+        -------
+        reduced_data_matrix : 2D numpy.ndarray
+            The reduced dimensionality trajectory
         """
         return data_matrix @ self.U[:,:rdim] #project the data matrix onto the first rdim left singular vectors. The reduced data matrix then carries rdim coefficients in its rows
     
     def reconstruct(self, reduced_data_matrix):
         r"""
-        Reconstructs the reduced data matrix by expanding it in the truncated basis.
+        Reconstructs the data matrix by expanding it in the truncated basis.
         
         Computes :math:`\tilde{X} = R U_r^T`, where :math:`\tilde{X}` is the reconstructed data matrix and :math:`R` the reduced data matrix
         
@@ -74,6 +84,13 @@ class SVD(base_dim_reducer):
         ----------
         reduced_data_matrix : 2D numpy.ndarray
             The reduced dimensianal trajectory to be reconstructed.
+        
+        
+        Returns
+        -------
+        reconstructed_data_matrix : 2D numpy.ndarray
+            The reconstructed/expanded trajectory
+        
         """
         
         dim = reduced_data_matrix.shape[1]
@@ -81,11 +98,36 @@ class SVD(base_dim_reducer):
       
       
 class DFT(base_dim_reducer):
+    """
+    Dimensionality reduction with Fourier modes.
+    
+    The dimensionality reduction is achieved by projecting the data onto a reduced number of fourier modes. The latent space description thus consists of the considered Fourier coefficients. The complex coeffiecients are thereby split into their real and imaginary parts.
+    Implemented via the Fast Fourier Transform (FFT).
+    
+    
+    Parameters
+    ----------
+    sorted : bool
+        If set to False, the low frequency modes are used and and the high frequency modes are discarded (cutoff controlled by the reduced dimension :math:`r`.) If set to True, the Fourier coefficients are evaluated for the training data and sorted in descending order of their mean. The dimensionality reduction then utilizes the corresponding first :math:`r` modes with the largest mean coefficients.
+        
+    """
+    
     def __init__(self, sorted=False):
         self.sorted = sorted
         pass
     
     def train(self, data_matrix, rdim):
+        """
+        Computes the mean Fourier coefficients to generated arrays with the sorting and unsorting indices if sorted is set to True.
+        
+        Parameters
+        ----------
+        data_matrix : 2D numpy.ndarray
+            The data vectors are expected to be stored in the rows (first index). The training data matrix is typically composed of multiple concatenated trajectories.
+        rdim : int
+            Number of latent space dimensions, to which the trajectory is to be reduced. Not used by the DFT reducer.
+        """
+        
         self.full_dim = data_matrix.shape[1]
         
         if self.sorted:
@@ -103,7 +145,23 @@ class DFT(base_dim_reducer):
         
         
     def reduce(self, data_matrix, rdim):
+        r"""
+        Projects the data into the truncated Fourier space via the FFT.
         
+        
+        Parameters
+        ----------
+        data_matrix : 2D numpy.ndarray
+            The high dimensional trajectory, which is to be reduced.
+        rdim : int
+            Number of latent space dimensions, to which the trajectory is to be reduced.
+            
+            
+        Returns
+        -------
+        reduced_data_matrix : 2D numpy.ndarray
+            The reduced dimensionality trajectory
+        """
         FT = np.fft.rfft(data_matrix, axis=1)
   
         real_matrix = np.zeros((FT.shape[0],FT.shape[1]*2))
@@ -117,7 +175,22 @@ class DFT(base_dim_reducer):
             return real_matrix[:,:rdim]
     
     def reconstruct(self, reduced_data_matrix):
+        r"""
+        Reconstructs the data matrix by expanding it in the truncated Fourier basis via the FFT.
+                
         
+        Parameters
+        ----------
+        reduced_data_matrix : 2D numpy.ndarray
+            The reduced dimensianal trajectory to be reconstructed.
+        
+        
+        Returns
+        -------
+        reconstructed_data_matrix : 2D numpy.ndarray
+            The reconstructed/expanded trajectory
+        
+        """
         if self.sorted:
             real_matrix = np.zeros((reduced_data_matrix.shape[0],2 * self.full_dim))
             real_matrix[:,:reduced_data_matrix.shape[1]] = reduced_data_matrix
@@ -135,6 +208,14 @@ class DFT(base_dim_reducer):
 from scipy.special import eval_hermite
 from scipy.optimize import minimize_scalar
 class Hermite(base_dim_reducer):
+    """
+    Dimensionality reduction bases on sampled Gauss-Hermite functions.
+    
+    This reduction scheme is physically motivated and custom tailored to describe perturbations of Fermi-distributions.
+    
+    Refer to the publication [] and the code for more details.
+    """
+    
     def __init__(self, sample_max = 1.0, sorted=False, optimize=False, orthogonalize=False, train_rdim=None):
         self.sample_max = sample_max
         self.sorted = sorted

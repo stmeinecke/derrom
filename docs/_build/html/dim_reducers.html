@@ -42,7 +42,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Library Documentation:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="estimator.html">Derrom Estimator</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Dimensionality Reducers</a><ul>
@@ -110,20 +110,64 @@
 <dt class="sig sig-object py" id="derrom.dim_reducers.DFT">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.dim_reducers.</span></span><span class="sig-name descname"><span class="pre">DFT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sorted</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#DFT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.DFT" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#derrom.dim_reducers.base_dim_reducer" title="derrom.dim_reducers.base_dim_reducer"><code class="xref py py-class docutils literal notranslate"><span class="pre">base_dim_reducer</span></code></a></p>
+<p>Dimensionality reduction with Fourier modes.</p>
+<p>The dimensionality reduction is achieved by projecting the data onto a reduced number of fourier modes. The latent space description thus consists of the considered Fourier coefficients. The complex coeffiecients are thereby split into their real and imaginary parts.
+Implemented via the Fast Fourier Transform (FFT).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sorted</strong> (<em>bool</em>) – If set to False, the low frequency modes are used and and the high frequency modes are discarded (cutoff controlled by the reduced dimension <span class="math notranslate nohighlight">\(r\)</span>.) If set to True, the Fourier coefficients are evaluated for the training data and sorted in descending order of their mean. The dimensionality reduction then utilizes the corresponding first <span class="math notranslate nohighlight">\(r\)</span> modes with the largest mean coefficients.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="derrom.dim_reducers.DFT.reconstruct">
 <span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reduced_data_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#DFT.reconstruct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.DFT.reconstruct" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Reconstructs the data matrix by expanding it in the truncated Fourier basis via the FFT.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>reduced_data_matrix</strong> (<em>2D numpy.ndarray</em>) – The reduced dimensianal trajectory to be reconstructed.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>reconstructed_data_matrix</strong> – The reconstructed/expanded trajectory</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2D numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="derrom.dim_reducers.DFT.reduce">
 <span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#DFT.reduce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.DFT.reduce" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Projects the data into the truncated Fourier space via the FFT.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_matrix</strong> (<em>2D numpy.ndarray</em>) – The high dimensional trajectory, which is to be reduced.</p></li>
+<li><p><strong>rdim</strong> (<em>int</em>) – Number of latent space dimensions, to which the trajectory is to be reduced.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>reduced_data_matrix</strong> – The reduced dimensionality trajectory</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2D numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="derrom.dim_reducers.DFT.train">
 <span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#DFT.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.DFT.train" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Computes the mean Fourier coefficients to generated arrays with the sorting and unsorting indices if sorted is set to True.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_matrix</strong> (<em>2D numpy.ndarray</em>) – The data vectors are expected to be stored in the rows (first index). The training data matrix is typically composed of multiple concatenated trajectories.</p></li>
+<li><p><strong>rdim</strong> (<em>int</em>) – Number of latent space dimensions, to which the trajectory is to be reduced. Not used by the DFT reducer.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -131,6 +175,9 @@
 <dt class="sig sig-object py" id="derrom.dim_reducers.Hermite">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.dim_reducers.</span></span><span class="sig-name descname"><span class="pre">Hermite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sorted</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orthogonalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_rdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#Hermite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.Hermite" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#derrom.dim_reducers.base_dim_reducer" title="derrom.dim_reducers.base_dim_reducer"><code class="xref py py-class docutils literal notranslate"><span class="pre">base_dim_reducer</span></code></a></p>
+<p>Dimensionality reduction bases on sampled Gauss-Hermite functions.</p>
+<p>This reduction scheme is physically motivated and custom tailored to describe perturbations of Fermi-distributions.</p>
+<p>Refer to the publication [] and the code for more details.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="derrom.dim_reducers.Hermite.reconstruct">
 <span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reduced_data_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#Hermite.reconstruct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.Hermite.reconstruct" title="Permalink to this definition"></a></dt>
@@ -181,11 +228,17 @@ The dimensionality reduction is achieved by projecting new data onto the first <
 <dl class="py method">
 <dt class="sig sig-object py" id="derrom.dim_reducers.SVD.reconstruct">
 <span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reduced_data_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#SVD.reconstruct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.SVD.reconstruct" title="Permalink to this definition"></a></dt>
-<dd><p>Reconstructs the reduced data matrix by expanding it in the truncated basis.</p>
+<dd><p>Reconstructs the data matrix by expanding it in the truncated basis.</p>
 <p>Computes <span class="math notranslate nohighlight">\(\tilde{X} = R U_r^T\)</span>, where <span class="math notranslate nohighlight">\(\tilde{X}\)</span> is the reconstructed data matrix and <span class="math notranslate nohighlight">\(R\)</span> the reduced data matrix</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>reduced_data_matrix</strong> (<em>2D numpy.ndarray</em>) – The reduced dimensianal trajectory to be reconstructed.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>reconstructed_data_matrix</strong> – The reconstructed/expanded trajectory</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2D numpy.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -197,7 +250,16 @@ The dimensionality reduction is achieved by projecting new data onto the first <
 <p>Computes <span class="math notranslate nohighlight">\(R = X U_r\)</span>, where <span class="math notranslate nohighlight">\(X\)</span> is the data matrix and <span class="math notranslate nohighlight">\(R\)</span> the reduced data matrix. Note, that the data vectors are stored in the rows here.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data_matrix</strong> (<em>2D numpy.ndarray</em>) – The high dimensional trajectory, which is to be reduced.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_matrix</strong> (<em>2D numpy.ndarray</em>) – The high dimensional trajectory, which is to be reduced.</p></li>
+<li><p><strong>rdim</strong> (<em>int</em>) – Number of latent space dimensions, to which the trajectory is to be reduced.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>reduced_data_matrix</strong> – The reduced dimensionality trajectory</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2D numpy.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -208,7 +270,10 @@ The dimensionality reduction is achieved by projecting new data onto the first <
 <dd><p>Training method that computes the SVD and stores the <span class="math notranslate nohighlight">\(U\)</span> matrix and the singular values <span class="math notranslate nohighlight">\(\Sigma\)</span> in U and S for the reduction and reconstruction and analysis.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data_matrix</strong> (<em>2D numpy.ndarray</em>) – The data vectors are expected to be stored in the rows (first index). The training data matrix is typically composed of multiple concatenated trajectories.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_matrix</strong> (<em>2D numpy.ndarray</em>) – The data vectors are expected to be stored in the rows (first index). The training data matrix is typically composed of multiple concatenated trajectories.</p></li>
+<li><p><strong>rdim</strong> (<em>int</em>) – Number of latent space dimensions, to which the trajectory is to be reduced. Not used by the SVD reducer.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -221,17 +286,17 @@ The dimensionality reduction is achieved by projecting new data onto the first <
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="derrom.dim_reducers.base_dim_reducer.reconstruct">
-<span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#base_dim_reducer.reconstruct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.base_dim_reducer.reconstruct" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reduced_data_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#base_dim_reducer.reconstruct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.base_dim_reducer.reconstruct" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="derrom.dim_reducers.base_dim_reducer.reduce">
-<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#base_dim_reducer.reduce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.base_dim_reducer.reduce" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#base_dim_reducer.reduce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.base_dim_reducer.reduce" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="derrom.dim_reducers.base_dim_reducer.train">
-<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#base_dim_reducer.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.base_dim_reducer.train" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/dim_reducers.html#base_dim_reducer.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.dim_reducers.base_dim_reducer.train" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>

@@ -22,13 +22,13 @@ class derrom_estimator(BaseEstimator):
     intercept : bool
         If set to True, a bias/intercept term is added to the regression step.
     dim_reducer : dim_reducer object
-        Object that implements the train, reduce, and reconstruct methods. If set to None, no dimensionality reduction is performed
+        Object that implements the train, reduce, and reconstruct methods. If set to None, no dimensionality reduction is performed. More details on the dimensionality reduction implementation in :doc:`dim_reducers`.
     scaler : scaler object
-        Object that implements the train, transform, and inverse transform methods. If set to None, no feature scaling is performed
+        Object that implements the train, transform, and inverse transform methods. If set to None, no feature scaling is performed. More details on the feature scaler implementation in :doc:`scalers`.
     NL_transformer : transformer object
-        Object that implements the setup and transform methods. If set to None, no nonlinear transform of the delay-embedded system state is performed.
+        Object that implements the setup and transform methods. If set to None, no nonlinear transform of the delay-embedded system state is performed. More details on the nonlinear transformer implementation in :doc:`transformers`.
     optimizer : optimizer object
-        Object that implements the solve method. In set to None, a least-squares method is applied.
+        Object that implements the solve method. In set to None, a least-squares method is applied. More details on the optimizer implementation in :doc:`optimizers`.
     
     
     Class attributes: (attributes, which are generated during the initialization are omitted.)

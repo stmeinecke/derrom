@@ -10,7 +10,7 @@ Welcome to derrom's documentation!
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
+   :caption: Library Documentation:
    
    estimator
    dim_reducers
