@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>derrom.estimator &mdash; derrom  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            derrom
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../estimator.html">Derrom Estimator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dim_reducers.html">Dimensionality Reducers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scalers.html">Feature Scalers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transformers.html">Transformers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../optimizers.html">Optimizers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">derrom</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">derrom.estimator</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for derrom.estimator</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">BaseEstimator</span>
+
+<span class="kn">import</span> <span class="nn">derrom.optimizers</span> <span class="k">as</span> <span class="nn">optimizers</span>
+
+
+<div class="viewcode-block" id="derrom_estimator"><a class="viewcode-back" href="../../estimator.html#derrom.estimator.derrom_estimator">[docs]</a><span class="k">class</span> <span class="nc">derrom_estimator</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Delay Embedded Regressive Reduced Order Model (derrom)</span>
+<span class="sd">    </span>
+<span class="sd">    This is the estimator class with facilitates the training of the model, and the prediction and scoring of trajectories. It is designed to be modular, such that different approaches for the dimensionality reduction, feature scaling, nonlinear transformation and regression weight optimization can be passed via objects that implement the appropriate methods. </span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rdim : int</span>
+<span class="sd">        number of reduced latent space dimensions. The default rdim = 1 is most likely an inappropriate choice...</span>
+<span class="sd">    DE_l : int</span>
+<span class="sd">        delay embedding length. The default DE_l = 1 corresponds to no embedding, i.e., only the most recent system state is used.</span>
+<span class="sd">    full_hist : bool</span>
+<span class="sd">        If set to False (default), the delay embedding is padded with the least recent state if no sufficient system history is available</span>
+<span class="sd">    intercept : bool</span>
+<span class="sd">        If set to True, a bias/intercept term is added to the regression step.</span>
+<span class="sd">    dim_reducer : dim_reducer object</span>
+<span class="sd">        Object that implements the train, reduce, and reconstruct methods. If set to None, no dimensionality reduction is performed. More details on the dimensionality reduction implementation in :doc:`dim_reducers`.</span>
+<span class="sd">    scaler : scaler object</span>
+<span class="sd">        Object that implements the train, transform, and inverse transform methods. If set to None, no feature scaling is performed. More details on the feature scaler implementation in :doc:`scalers`.</span>
+<span class="sd">    NL_transformer : transformer object</span>
+<span class="sd">        Object that implements the setup and transform methods. If set to None, no nonlinear transform of the delay-embedded system state is performed. More details on the nonlinear transformer implementation in :doc:`transformers`.</span>
+<span class="sd">    optimizer : optimizer object</span>
+<span class="sd">        Object that implements the solve method. In set to None, a least-squares method is applied. More details on the optimizer implementation in :doc:`optimizers`.</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    Class attributes: (attributes, which are generated during the initialization are omitted.)</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    w : numpy.ndarray</span>
+<span class="sd">        Regression weights obtained from the fit method contained in a matrix (2D numpy.ndarray)</span>
+<span class="sd">    reg_mode : str </span>
+<span class="sd">        Regression mode. Can be set to &#39;AR&#39; (autoregression) by the fit method. Toggles the predict method to forecast in autonomous mode, i.e., to feed its own output back as an input.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+  
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rdim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">DE_l</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">full_hist</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">intercept</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">dim_reducer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">scaler</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">NL_transformer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">optimizer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reg_mode</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_target_vars</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">rdim</span> <span class="o">=</span> <span class="n">rdim</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">DE_l</span> <span class="o">=</span> <span class="n">DE_l</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">intercept</span> <span class="o">=</span> <span class="n">intercept</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">full_hist</span> <span class="o">=</span> <span class="n">full_hist</span>
+        
+        <span class="k">if</span> <span class="n">dim_reducer</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dim_reducer</span> <span class="o">=</span> <span class="n">dim_reducer</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reduce_dim</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reduce_dim</span> <span class="o">=</span> <span class="kc">False</span>
+        
+        <span class="k">if</span> <span class="n">scaler</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span> <span class="o">=</span> <span class="n">scaler</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">standardize</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">standardize</span> <span class="o">=</span> <span class="kc">False</span>
+            
+        <span class="k">if</span> <span class="n">NL_transformer</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">NL_transformer</span> <span class="o">=</span> <span class="n">NL_transformer</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">NL_transform</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">NL_transform</span> <span class="o">=</span> <span class="kc">False</span>
+            
+        <span class="k">if</span> <span class="n">optimizer</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizers</span><span class="o">.</span><span class="n">lstsqrs</span><span class="p">()</span>
+ 
+    
+    
+    <span class="k">def</span> <span class="nf">__compare_trajectories_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">trajectories</span><span class="p">,</span><span class="n">targets</span><span class="p">):</span>
+        <span class="n">n_trajectory_data_vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">trajectory</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">trajectory</span> <span class="ow">in</span> <span class="n">trajectories</span><span class="p">])</span>
+        <span class="n">n_target_data_vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">])</span>
+        
+        <span class="k">if</span> <span class="p">(</span><span class="n">n_trajectory_data_vectors</span> <span class="o">==</span> <span class="n">n_target_data_vectors</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    
+    
+    <span class="k">def</span> <span class="nf">__build_DE_vec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">matrix</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">DE_l</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">DE_l</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">matrix</span><span class="p">[</span><span class="n">row</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">DE_vec</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">DE_l</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">row</span><span class="o">+</span><span class="n">k</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">DE_vec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">DE_vec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">matrix</span><span class="p">[</span><span class="n">row</span><span class="o">+</span><span class="n">k</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">DE_vec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    
+    
+    <span class="k">def</span> <span class="nf">__build_DE_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reduced_trajectories</span><span class="p">):</span>
+        
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">DE_l</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">DE_l</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">reduced_trajectories</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">DE_matrix</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">reduced_trajectories</span><span class="p">)):</span>
+
+                <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">full_hist</span> <span class="o">==</span> <span class="kc">False</span><span class="p">):</span>
+                    <span class="n">nRows</span> <span class="o">=</span> <span class="n">reduced_trajectories</span><span class="p">[</span><span class="n">r</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">Delta_j</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DE_l</span><span class="o">-</span><span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">nRows</span> <span class="o">=</span> <span class="n">reduced_trajectories</span><span class="p">[</span><span class="n">r</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DE_l</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="n">Delta_j</span> <span class="o">=</span> <span class="mi">0</span>
+                    
+                <span class="n">nCols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rdim</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">DE_l</span>
+
+                <span class="n">run_DE_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nRows</span><span class="p">,</span><span class="n">nCols</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nRows</span><span class="p">):</span>
+                    <span class="n">run_DE_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span> <span class="n">__build_DE_vec</span><span class="p">(</span><span class="n">reduced_trajectories</span><span class="p">[</span><span class="n">r</span><span class="p">][:,:</span><span class="bp">self</span><span class="o">.</span><span class="n">rdim</span><span class="p">],</span> <span class="n">j</span><span class="o">-</span><span class="n">Delta_j</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">DE_l</span><span class="p">)</span>
+
+                <span class="n">DE_matrix</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">run_DE_matrix</span><span class="p">)</span>
+
+            <span class="n">DE_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">DE_matrix</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">DE_matrix</span>
+    
+    
+    <span class="k">def</span> <span class="nf">__build_target_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_hist</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">target_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">DE_l</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            
+            <span class="n">target_matrix</span> <span class="o">=</span> <span class="p">[]</span>
+            
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">targets</span><span class="p">)):</span>
+                <span class="n">target_matrix</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">targets</span><span class="p">[</span><span class="n">r</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">DE_l</span><span class="o">-</span><span class="mi">1</span><span class="p">:])</span>
+                
+            <span class="n">target_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">target_matrix</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">target_matrix</span>
+
+  
+<div class="viewcode-block" id="derrom_estimator.fit"><a class="viewcode-back" href="../../estimator.html#derrom.estimator.derrom_estimator.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="s1">&#39;AR&#39;</span><span class="p">,</span> <span class="n">rdim</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">DE_l</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">intercept</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">full_hist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dim_reducer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">scaler</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">NL_transformer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">optimizer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        fit a derrom model</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        trajectories : list</span>
+<span class="sd">            A list of the training trajectories, where each element of the list is expected to be a 2D numpy.ndarray that represents an individual trajectories. Time slices must be stored in the rows (first index) and the system state variables in the columns (second index). All trajectories must have the same number of variables (columns), the number of time slices, however, may vary.</span>
+<span class="sd">        targets : &#39;AR&#39;, list</span>
+<span class="sd">            A list of the training targets, where each element is an numpy.ndarray that corresponds to training trajectory with the identical list index. Each element must have the same number of rows as the corresponding trajectory. If set to &#39;AR&#39;, i.e., autoregression, the targets are automatically generated from the time-shifted trajectories and the last and first time slices are dropped from the training and target data, respectively.</span>
+
+
+<span class="sd">        The remaining parameters are identical to the init method</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">n_trajectories</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">trajectories</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">targets</span> <span class="o">==</span> <span class="s1">&#39;AR&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reg_mode</span> <span class="o">=</span> <span class="s1">&#39;AR&#39;</span>
+        
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reg_mode</span> <span class="o">=</span> <span class="s1">&#39;reg&#39;</span>
+            <span class="n">n_targets</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_target_vars</span> <span class="o">=</span> <span class="n">targets</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
+        
+            <span class="c1">### check data consistency</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">__compare_trajectories_targets</span><span class="p">(</span><span class="n">trajectories</span><span class="p">,</span><span class="n">targets</span><span class="p">)</span>
+        
+        
+        <span class="k">if</span> <span class="n">rdim</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rdim</span> <span class="o">=</span> <span class="n">rdim</span>
+        
+        <span class="k">if</span> <span class="n">DE_l</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">DE_l</span> <span class="o">=</span> <span class="n">DE_l</span>
+        <span class="k">if</span> <span class="n">intercept</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">intercept</span> <span class="o">=</span> <span class="n">intercept</span>
+        <span class="k">if</span> <span class="n">full_hist</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">full_hist</span> <span class="o">=</span> <span class="n">full_hist</span>
+        
+        <span class="k">if</span> <span class="n">dim_reducer</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dim_reducer</span> <span class="o">=</span> <span class="n">dim_reducer</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reduce_dim</span> <span class="o">=</span> <span class="kc">True</span>
+        
+        <span class="k">if</span> <span class="n">scaler</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span> <span class="o">=</span> <span class="n">scaler</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">standardize</span> <span class="o">=</span> <span class="kc">True</span>
+            
+        <span class="k">if</span> <span class="n">NL_transformer</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">NL_transformer</span> <span class="o">=</span> <span class="n">NL_transformer</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">NL_transform</span> <span class="o">=</span> <span class="kc">True</span>
+            
+        <span class="k">if</span> <span class="n">optimizer</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+        
+        <span class="c1">#apply the dimensionality reduction to get the reduced coefficient matrix with rdim features via the dim_reducer object</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduce_dim</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dim_reducer</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">trajectories</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">rdim</span><span class="p">)</span>
+            <span class="n">reduced_trajectories</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dim_reducer</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">trajectory</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">rdim</span><span class="p">)</span> <span class="k">for</span> <span class="n">trajectory</span> <span class="ow">in</span> <span class="n">trajectories</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">reduced_trajectories</span> <span class="o">=</span> <span class="n">trajectories</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rdim</span> <span class="o">=</span> <span class="n">trajectories</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1">#apply data/feature scaling via scaler object</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">standardize</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">reduced_trajectories</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+            <span class="n">reduced_trajectories</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">reduced_trajectory</span><span class="p">)</span> <span class="k">for</span> <span class="n">reduced_trajectory</span> <span class="ow">in</span> <span class="n">reduced_trajectories</span><span class="p">]</span>
+           
+        <span class="c1">#create training data matrices</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_mode</span> <span class="o">==</span> <span class="s1">&#39;reg&#39;</span><span class="p">:</span>
+            <span class="n">training_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_DE_matrix</span><span class="p">(</span><span class="n">reduced_trajectories</span><span class="p">)</span>    
+            <span class="n">target_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_target_matrix</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">training_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_DE_matrix</span><span class="p">(</span> <span class="p">[</span><span class="n">reduced_trajectory</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">reduced_trajectory</span> <span class="ow">in</span> <span class="n">reduced_trajectories</span><span class="p">]</span> <span class="p">)</span> 
+            <span class="n">target_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_target_matrix</span><span class="p">(</span> <span class="p">[</span><span class="n">reduced_trajectory</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">for</span> <span class="n">reduced_trajectory</span> <span class="ow">in</span> <span class="n">reduced_trajectories</span><span class="p">]</span> <span class="p">)</span>
+        
+        
+        <span class="c1">#apply transformation to the DE state</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">NL_transform</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">NL_transformer</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">training_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">training_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">NL_transformer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">training_matrix</span><span class="p">)</span>
+
+        <span class="c1">#add bias/intercept</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">intercept</span><span class="p">:</span>
+            <span class="n">training_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">[</span> <span class="n">training_matrix</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span> <span class="p">(</span><span class="n">training_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">1</span><span class="p">)</span> <span class="p">)</span> <span class="p">]</span> <span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span> <span class="p">)</span>
+
+        <span class="c1">#calculate weight matrix via optimizer object</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">training_matrix</span><span class="p">,</span> <span class="n">target_matrix</span><span class="p">)</span></div>
+    
+    
+    
+<div class="viewcode-block" id="derrom_estimator.predict"><a class="viewcode-back" href="../../estimator.html#derrom.estimator.derrom_estimator.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectory</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Predicts targets for each snapshot of the input trajectory. In autoregression mode, the first time slice is used (the first DE_l in the case of full_hist = True) as initial conditions to generate a prediction with the same length (rows) as the input trajectory.</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        trajectory : 2D numpy.ndarray</span>
+<span class="sd">            Trajectory where the time slices are stored in the rows (first index) and the state variables in the columns (second indx)</span>
+<span class="sd">            </span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">            matrix : 2D numpy.ndarray</span>
+<span class="sd">                Calculated prediction</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_mode</span> <span class="o">==</span> <span class="s1">&#39;AR&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">forecast</span><span class="p">(</span><span class="n">trajectory</span><span class="p">,</span><span class="n">trajectory</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">trajectory</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">trajectory</span> <span class="o">=</span> <span class="n">trajectory</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            
+            <span class="c1">#apply the dimensionality reduction to the trajectory</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduce_dim</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">reduced_trajectory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim_reducer</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">trajectory</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">rdim</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">reduced_trajectory</span> <span class="o">=</span> <span class="n">trajectory</span>
+            
+            <span class="c1">#apply data/feature scaling</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">standardize</span><span class="p">:</span>
+                <span class="n">reduced_trajectory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">reduced_trajectory</span><span class="p">)</span>
+
+            <span class="c1">#setup numpy array for the prediction</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_hist</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">pred_length</span> <span class="o">=</span> <span class="n">trajectory</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DE_l</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_hist</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">pred_length</span> <span class="o">=</span> <span class="n">trajectory</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            
+            <span class="n">pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">pred_length</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">n_target_vars</span><span class="p">))</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">NL_transform</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">feature_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">NL_transformer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__build_DE_matrix</span><span class="p">([</span><span class="n">reduced_trajectory</span><span class="p">]))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">feature_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_DE_matrix</span><span class="p">([</span><span class="n">reduced_trajectory</span><span class="p">])</span>
+            
+            <span class="c1">#add bias/intercept </span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">intercept</span><span class="p">:</span>
+                <span class="n">feature_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">[</span> <span class="n">feature_matrix</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span> <span class="p">(</span><span class="n">feature_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">1</span><span class="p">)</span> <span class="p">)</span> <span class="p">]</span> <span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span> <span class="p">)</span>
+      
+            <span class="c1">#let the machine predict the dynamics</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pred</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="c1">#predict the next step</span>
+                <span class="n">pred</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span>
+
+            <span class="k">return</span> <span class="n">pred</span></div>
+    
+    
+<div class="viewcode-block" id="derrom_estimator.forecast"><a class="viewcode-back" href="../../estimator.html#derrom.estimator.derrom_estimator.forecast">[docs]</a>    <span class="k">def</span> <span class="nf">forecast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">init</span><span class="p">,</span><span class="n">n_steps</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forecast n steps into the future in autoregression mode</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        </span>
+<span class="sd">        init : 2D numpy.ndarray</span>
+<span class="sd">            Initial condition. For full_hist = False, only the first snapshot (first row) of is used. Otherwise the first DE_l snapshots are used. </span>
+<span class="sd">        n_steps : int</span>
+<span class="sd">            Length of the forecasted trajectory. The initial condition is thus included in n_steps</span>
+<span class="sd">            </span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">            matrix : 2D numpy.ndarray</span>
+<span class="sd">                Forecasted trajectory</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_mode</span> <span class="o">==</span> <span class="s1">&#39;AR&#39;</span>
+        
+        <span class="c1">#apply the dimensionality reduction to the initital conditions</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduce_dim</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">reduced_init</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim_reducer</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">init</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">rdim</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">reduced_init</span> <span class="o">=</span> <span class="n">init</span>
+        
+        <span class="c1">#apply data/feature scaling</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">standardize</span><span class="p">:</span>
+            <span class="n">reduced_init</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">reduced_init</span><span class="p">)</span>
+
+        <span class="c1">#setup numpy array for the auto prediction</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_steps</span><span class="p">,</span><span class="n">reduced_init</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="c1">#build initial condition for the auto predictions</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">full_hist</span> <span class="o">==</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">j_start</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">pred</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">reduced_init</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">j_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DE_l</span>
+            <span class="n">pred</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">DE_l</span><span class="p">]</span> <span class="o">=</span> <span class="n">reduced_init</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">DE_l</span><span class="p">]</span>
+        
+        <span class="c1">#let the machine predict the dynamics</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">j_start</span><span class="p">,</span><span class="n">pred</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        
+            <span class="c1">#build the DE vector from the past steps</span>
+            <span class="n">DE_vec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_DE_vec</span><span class="p">(</span><span class="n">pred</span><span class="p">[:,:</span><span class="bp">self</span><span class="o">.</span><span class="n">rdim</span><span class="p">],</span> <span class="n">j</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">DE_l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">DE_l</span><span class="p">)</span>
+            <span class="n">DE_vec</span> <span class="o">=</span> <span class="n">DE_vec</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="n">DE_vec</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+            
+            <span class="c1">#apply transformation to the DE state</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">NL_transform</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">transform</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">NL_transformer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">DE_vec</span><span class="p">)</span>
+
+            <span class="c1">#add intercept/bias</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">intercept</span><span class="p">:</span>
+                <span class="n">transform</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+                          
+            <span class="c1">#predict the next step</span>
+            <span class="n">pred</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">transform</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span>
+
+        <span class="c1">#undo the data/feature scaling</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">standardize</span><span class="p">:</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
+        
+        <span class="c1">#reconstruct the full from the reduced representation</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduce_dim</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim_reducer</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pred</span></div>
+        
+        
+    
+<div class="viewcode-block" id="derrom_estimator.get_error"><a class="viewcode-back" href="../../estimator.html#derrom.estimator.derrom_estimator.get_error">[docs]</a>    <span class="k">def</span> <span class="nf">get_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">truth</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pred</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="s1">&#39;rms&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the regression error</span>
+<span class="sd">        </span>
+<span class="sd">        If no prediction is supplied, but the the trajectory, the corresponding prediction is computed first.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        trajectory : 2D numpy.ndarray</span>
+<span class="sd">            If no prediction is supplied, it can be computed from the trajectory. Interchangeable with truth in autoregression (AR) mode</span>
+<span class="sd">        truth : 2D numpy.ndarray</span>
+<span class="sd">            Ground truth, against which the prediction is compared. Interchangeable with trajectory in autoregression (AR) mode</span>
+<span class="sd">        pred : 2D numpy.ndarray</span>
+<span class="sd">            Prediction corresponding to the truth. </span>
+<span class="sd">        norm : str, &quot;rms&quot;, &quot;fro&quot;, &quot;ma&quot;</span>
+<span class="sd">            Error norm chosen by the corresponding string. &quot;rms&quot; refers to the root-mean-squared error regarding all matrix elements, &quot;fro&quot; refers to the frobenius norm (proportional to the rms error, but not normalized to the number of matrix elements), and &quot;max&quot; refers to the maximum absolute error regarding all matrix elements.</span>
+<span class="sd">            </span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        regression error : float</span>
+<span class="sd">            the regression error for a valid norm and -1 for an invalid norm.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_mode</span> <span class="o">==</span> <span class="s1">&#39;AR&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">truth</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">trajectory</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;no trajectory supplied&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">truth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">truth</span> <span class="o">=</span> <span class="n">trajectory</span>
+            <span class="k">elif</span> <span class="n">trajectory</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">trajectory</span> <span class="o">=</span> <span class="n">truth</span>
+                
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">truth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;no truth supplied&#39;</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="n">pred</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">trajectory</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">trajectory</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;no trajectory supplied to compute prediction&#39;</span><span class="p">)</span>
+        
+        <span class="n">err</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span>
+        <span class="k">if</span> <span class="n">norm</span> <span class="o">==</span><span class="s1">&#39;rms&#39;</span><span class="p">:</span> <span class="c1">#normalized Frobenius norm</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">truth</span><span class="o">-</span><span class="n">pred</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span> <span class="s1">&#39;fro&#39;</span><span class="p">:</span> <span class="c1">#Frobenius norm</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">truth</span><span class="o">-</span><span class="n">pred</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s1">&#39;fro&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span><span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="c1">#absolute max norm</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">truth</span><span class="o">-</span><span class="n">pred</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;unknown norm&#39;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">err</span></div>
+                
+                
+<div class="viewcode-block" id="derrom_estimator.score_multiple_trajectories"><a class="viewcode-back" href="../../estimator.html#derrom.estimator.derrom_estimator.score_multiple_trajectories">[docs]</a>    <span class="k">def</span> <span class="nf">score_multiple_trajectories</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">trajectories</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">predictions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        helper function to obtain error scores for multiple trajectories. Used by the derrom.utils.get.get_KFold_CV_scores function.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        trajectories : list</span>
+<span class="sd">            A list of the trajectories to be scored, where each element of the list is expected to be a 2D numpy.ndarray that represents an individual trajectories. Time slices must be stored in the rows (first index) and the system state variables in the columns (second index). All trajectories must have the same number of variables (columns), the number of time slices, however, may vary.</span>
+<span class="sd">        targets : list</span>
+<span class="sd">            A list of the targets, where each element is an numpy.ndarray that corresponds to the trajectory with the identical list index. Each element must have the same number of rows as the corresponding trajectory. If set to &#39;AR&#39;, i.e., autoregression, no targets are required.</span>
+<span class="sd">        predictions : list</span>
+<span class="sd">            A list of the predictions, where each element is an numpy.ndarray that corresponds to the trajectory with the identical list index. Supplying predictions reduces computaion time if derrom.utils.get.get_KFold_CV_scores is to be evaluated for multiple error norms. </span>
+<span class="sd">            </span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mean : float</span>
+<span class="sd">            mean regression error from all supplied trajectories</span>
+<span class="sd">        scores : list</span>
+<span class="sd">            list of all individual regression errors</span>
+<span class="sd">            </span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">if</span> <span class="n">predictions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trajectories</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">targets</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_mode</span><span class="o">==</span><span class="s1">&#39;AR&#39;</span><span class="p">:</span>
+                    <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_error</span><span class="p">(</span><span class="n">trajectory</span><span class="o">=</span><span class="n">trajectories</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_error</span><span class="p">(</span><span class="n">trajectory</span><span class="o">=</span><span class="n">trajectories</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">truth</span><span class="o">=</span><span class="n">targets</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trajectories</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">targets</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_mode</span><span class="o">==</span><span class="s1">&#39;AR&#39;</span><span class="p">:</span>
+                    <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_error</span><span class="p">(</span><span class="n">trajectory</span><span class="o">=</span><span class="n">trajectories</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">pred</span><span class="o">=</span><span class="n">predictions</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_error</span><span class="p">(</span><span class="n">trajectory</span><span class="o">=</span><span class="n">trajectories</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">truth</span><span class="o">=</span><span class="n">targets</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">pred</span><span class="o">=</span><span class="n">predictions</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+        
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">scores</span></div>
+    
+    
+                
+<div class="viewcode-block" id="derrom_estimator.print_status"><a class="viewcode-back" href="../../estimator.html#derrom.estimator.derrom_estimator.print_status">[docs]</a>    <span class="k">def</span> <span class="nf">print_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        print values of the relevant class attributes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;full_hist: &#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_hist</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;intercept: &#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intercept</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;standardize: &#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">standardize</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;rdim: &#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rdim</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;DE_l: &#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">DE_l</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;weights shape: &#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span></div></div>
+        
+        
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Stefan Meinecke, Felix Köster.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
