@@ -38,7 +38,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Library Documentation:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../estimator.html">Derrom Estimator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dim_reducers.html">Dimensionality Reducers</a></li>
@@ -91,13 +91,30 @@
         
 
 <div class="viewcode-block" id="standardize_scaler"><a class="viewcode-back" href="../../scalers.html#derrom.scalers.standardize_scaler">[docs]</a><span class="k">class</span> <span class="nc">standardize_scaler</span><span class="p">(</span><span class="n">data_scaler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Feature scaler which subtracts the mean and devices by the standard deviation for each feature.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rel_scale : float</span>
+<span class="sd">        Standard deviation of the resulting scaled features. Default is 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rel_scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span> 
         <span class="bp">self</span><span class="o">.</span><span class="n">rel_scale</span> <span class="o">=</span> <span class="n">rel_scale</span>
    
 <div class="viewcode-block" id="standardize_scaler.train"><a class="viewcode-back" href="../../scalers.html#derrom.scalers.standardize_scaler.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_matrix</span><span class="p">):</span>
-        <span class="n">data_matrix</span> <span class="o">=</span> <span class="n">data_matrix</span>
-      
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the mean and standard deviation of each feature. </span>
+<span class="sd">        </span>
+<span class="sd">        Detects quasi-constant features, i.e. features with a standard deviation &lt; 1e-8 and does not scale them.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data_matrix : 2D numpy.ndarray</span>
+<span class="sd">            Training data matrix, where the data vectors are stored in the rows (first index). Hence, the features are defined by their column index (second index).</span>
+<span class="sd">        &quot;&quot;&quot;</span>      
         <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">data_matrix</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">data_matrix</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">rel_scale</span>
         
@@ -107,18 +124,63 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span></div>
         
 <div class="viewcode-block" id="standardize_scaler.transform"><a class="viewcode-back" href="../../scalers.html#derrom.scalers.standardize_scaler.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_matrix</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies standardization to each feature.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data_matrix : 2D numpy.ndarray</span>
+<span class="sd">            unscaled data matrix with the datavectors as rows.</span>
+<span class="sd">            </span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        scaled_data_matrix : 2D numpy.ndarray</span>
+<span class="sd">            scaled data matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">data_matrix</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span></div>
     
 <div class="viewcode-block" id="standardize_scaler.inverse_transform"><a class="viewcode-back" href="../../scalers.html#derrom.scalers.standardize_scaler.inverse_transform">[docs]</a>    <span class="k">def</span> <span class="nf">inverse_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_matrix</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reverses standardization of each feature by multiplying by the standard deviation and adding the mean (of the training data)</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data_matrix : 2D numpy.ndarray</span>
+<span class="sd">            scaled data matrix with the datavectors as rows.</span>
+<span class="sd">            </span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        scaled_data_matrix : 2D numpy.ndarray</span>
+<span class="sd">            unscaled data matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">data_matrix</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span></div></div>
     
 <div class="viewcode-block" id="normalize_scaler"><a class="viewcode-back" href="../../scalers.html#derrom.scalers.normalize_scaler">[docs]</a><span class="k">class</span> <span class="nc">normalize_scaler</span><span class="p">(</span><span class="n">data_scaler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Feature scaler which linearly maps each feature to a specified symmetric range around the origin.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rel_scale : float</span>
+<span class="sd">        Range to which the features are mapped. The default rel_scale = 1.0 maps to :math:`[-0.5,0.5]`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rel_scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rel_scale</span> <span class="o">=</span> <span class="n">rel_scale</span>
    
 <div class="viewcode-block" id="normalize_scaler.train"><a class="viewcode-back" href="../../scalers.html#derrom.scalers.normalize_scaler.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_matrix</span><span class="p">):</span>
-        
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines the range if each feature, i.e., the maximum and minimum value.</span>
+<span class="sd">        </span>
+<span class="sd">        Detects quasi-constant features, i.e. features with a standard deviation &lt; 1e-8 and does not scale them.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data_matrix : 2D numpy.ndarray</span>
+<span class="sd">            Training data matrix, where the data vectors are stored in the rows (first index). Hence, the features are defined by their column index (second index).</span>
+<span class="sd">        &quot;&quot;&quot;</span>  
         <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">data_matrix</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">data_matrix</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">rel_scale</span>
@@ -131,9 +193,37 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">rel_scale_vec</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span></div>
         
 <div class="viewcode-block" id="normalize_scaler.transform"><a class="viewcode-back" href="../../scalers.html#derrom.scalers.normalize_scaler.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_matrix</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies normalization to each feature.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data_matrix : 2D numpy.ndarray</span>
+<span class="sd">            unscaled data matrix with the datavectors as rows.</span>
+<span class="sd">            </span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        scaled_data_matrix : 2D numpy.ndarray</span>
+<span class="sd">            scaled data matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span> <span class="p">(</span> <span class="p">(</span><span class="n">data_matrix</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">rel_scale_vec</span><span class="p">)</span></div>
     
 <div class="viewcode-block" id="normalize_scaler.inverse_transform"><a class="viewcode-back" href="../../scalers.html#derrom.scalers.normalize_scaler.inverse_transform">[docs]</a>    <span class="k">def</span> <span class="nf">inverse_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_matrix</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reverses normalization of each feature</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data_matrix : 2D numpy.ndarray</span>
+<span class="sd">            scaled data matrix with the datavectors as rows.</span>
+<span class="sd">            </span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        scaled_data_matrix : 2D numpy.ndarray</span>
+<span class="sd">            unscaled data matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span> <span class="p">(</span> <span class="p">(</span><span class="n">data_matrix</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">rel_scale_vec</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">min</span> <span class="p">)</span></div></div>
       
       
