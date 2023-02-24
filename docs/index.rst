@@ -6,7 +6,13 @@
 Welcome to derrom's documentation!
 ==================================
 
+This library provides a **D**\elay **E**\mbedded **R**\egressive **R**\educed **O**\rder **M**\odel. 
 
+
+The model is designed to perform computationally efficient regression on high-dimensional time-series data. 
+This is achieved by projecting the past :math:`\ell` system states (delay embedding) into a reduced dimensionality (order) latent space, which is then followed by a nonlinear transformation to obtain the feature vector for the linear regression step.
+
+The model is trained with the supervised paradigm
 
 .. toctree::
    :maxdepth: 1

@@ -15,6 +15,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -76,6 +77,10 @@
              
   <section id="welcome-to-derrom-s-documentation">
 <h1>Welcome to derrom’s documentation!<a class="headerlink" href="#welcome-to-derrom-s-documentation" title="Permalink to this heading"></a></h1>
+<p>This library provides a <strong>D</strong>elay <strong>E</strong>mbedded <strong>R</strong>egressive <strong>R</strong>educed <strong>O</strong>rder <strong>M</strong>odel.</p>
+<p>The model is designed to perform computationally efficient regression on high-dimensional time-series data.
+This is achieved by projecting the past <span class="math notranslate nohighlight">\(\ell\)</span> system states (delay embedding) into a reduced dimensionality (order) latent space, which is then followed by a nonlinear transformation to obtain the feature vector for the linear regression step.</p>
+<p>The model is trained with the supervised paradigm</p>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Library Documentation:</span></p>
 <ul>
