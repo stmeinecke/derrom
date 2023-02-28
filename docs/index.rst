@@ -14,12 +14,12 @@ The model is trained with the supervised paradigm, where a set of existing input
    :maxdepth: 1
    :caption: Library Documentation:
    
-   estimator
-   dim_reducers
-   scalers
-   transformers
-   optimizers
-   utils
+   API/estimator
+   API/dim_reducers
+   API/scalers
+   API/transformers
+   API/optimizers
+   API/utils
 
 
 What is it good for?:

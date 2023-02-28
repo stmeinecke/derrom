@@ -7,8 +7,9 @@ name = "derrom"
 version = "0.1"
 authors = [
   { name="Stefan Meinecke", email="stefan.meinecke@posteo.de" },
+  { name="Felix Köster", email="Felix-Koester@hotmail.com" },
 ]
-description = "Delay Embedded Regressive Reduced Order Model "
+description = "derrom is a delay embedded regressive reduced order model "
 readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [
