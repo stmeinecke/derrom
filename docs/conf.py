@@ -16,8 +16,7 @@ author = 'Stefan Meinecke, Felix Köster'
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.napoleon',
-              'sphinx.ext.mathjax',
-              'sphinx.fail_on_warning']
+              'sphinx.ext.mathjax',]
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
