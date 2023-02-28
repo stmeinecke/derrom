@@ -80,15 +80,6 @@
 <p><strong>derrom</strong> is a <strong>D</strong>elay <strong>E</strong>mbedded <strong>R</strong>egressive <strong>R</strong>educed <strong>O</strong>rder <strong>M</strong>odel.
 It provides a modular package, which is designed to perform computationally efficient regression on high-dimensional time-series data.
 The model is trained with the supervised paradigm, where a set of existing input-output pairs is used to optimize the model parameters to obtain the desired regression performance.</p>
-<section id="what-is-it-good-for">
-<h2>What is it good for?:<a class="headerlink" href="#what-is-it-good-for" title="Permalink to this heading"></a></h2>
-<p><strong>derrom</strong> was conceptualized to accelerate multi-phyisics simulation code. To achieve this, a trained model replaces the direct simulation of some degree’s of freedom, which themselves are not of primary interested, but are required to compute the time evolution of the relevant observables.</p>
-<p>Note that a sufficient amount of training data must, nonetheless, be generated via the potentially expensive full simulation of the system. However, if relatively few trajectories are sufficient for a well trained model and many more are to be simulated, the <strong>derrom</strong> approach quickly becomes worth the trouble.</p>
-<p>A good example is the stochastic simulation of a semiconductor lasers’ photon field. In that case, one likely must simulate many stochastic realizations to obtain enough samples for good statistics. The underlying charge-carrier dynamics are required for the photon field evolution and are expensive to microscopically simulate, but are not the observable of interest. Instead of resorting to rough analytic approximations, one may fully simulate the system for the first few realizations and then use the generated data to train <strong>derrom</strong> and use it for the remaining realizations.</p>
-</section>
-<section id="how-does-it-work">
-<h2>How does it work:<a class="headerlink" href="#how-does-it-work" title="Permalink to this heading"></a></h2>
-<p>This is achieved by projecting the past <span class="math notranslate nohighlight">\(\ell\)</span> system states (delay embedding) into a reduced dimensionality (order) latent space, which is then followed by a nonlinear transformation to obtain the feature vector for a linear regression step.</p>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Library Documentation:</span></p>
 <ul>
@@ -100,6 +91,23 @@ The model is trained with the supervised paradigm, where a set of existing input
 <li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
 </ul>
 </div>
+<section id="what-is-it-good-for">
+<h2>What is it good for?:<a class="headerlink" href="#what-is-it-good-for" title="Permalink to this heading"></a></h2>
+<p><strong>derrom</strong> was conceptualized to accelerate multi-phyisics simulation code. To achieve this, a trained model replaces the direct simulation of some degree’s of freedom, which themselves are not of primary interested, but are required to compute the time evolution of the relevant observables. Moreover, the delay embedding permits to omit the degree’s of freedom, which do not couple to the considered observables, altogether, but keep their effect in the trained model.</p>
+<p>Note that a sufficient amount of training data must, nonetheless, be generated via the potentially expensive full simulation of the system. However, if relatively few trajectories are sufficient for a well trained model and many more are to be simulated, the <strong>derrom</strong> approach quickly becomes worth the trouble.</p>
+<p>A good example is the stochastic simulation of a semiconductor lasers’ photon field. In that case, one likely must simulate many stochastic realizations to obtain enough samples for good statistics. The underlying charge-carrier dynamics are required for the photon field evolution and are expensive to microscopically simulate, but are not the observable of interest. Instead of resorting to rough analytic approximations, one may fully simulate the system for the first few realizations and then use the generated data to train <strong>derrom</strong> and use it for the remaining realizations.</p>
+</section>
+<section id="how-does-it-work">
+<h2>How does it work?:<a class="headerlink" href="#how-does-it-work" title="Permalink to this heading"></a></h2>
+<p><strong>derrom</strong> first projects the past <span class="math notranslate nohighlight">\(\ell\)</span> system states (delay embedding) into a reduced dimensionality (order) latent space. This step is designed retain the dominant patterns of the trajectories and get rid of redundant and irrelevant information. This both mitigates the curse of dimensionality and promotes robust regression. Next, the latent space features are scaled to appropriate magnitudes. Then, the past <span class="math notranslate nohighlight">\(\ell\)</span> scaled reduced system states are subject to a nonlinear transformation, which yields <strong>derrom</strong>'s feature vector. Lastly, the regression step is taken via a linear map, i.e., a matrix multiplication.</p>
+</section>
+<section id="installation">
+<h2>Installation:<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h2>
+<p>Clone the repository:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">stmeinecke</span><span class="o">/</span><span class="n">derrom</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<p>Make sure you fulfill all requirements and you’re ready to go!</p>
 </section>
 </section>
 <section id="indices-and-tables">
