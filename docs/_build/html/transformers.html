@@ -46,24 +46,7 @@
 <li class="toctree-l1"><a class="reference internal" href="estimator.html">Derrom Estimator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dim_reducers.html">Dimensionality Reducers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scalers.html">Feature Scalers</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Transformers</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#derrom.transformers.ELM_features"><code class="docutils literal notranslate"><span class="pre">ELM_features</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#derrom.transformers.ELM_features.setup"><code class="docutils literal notranslate"><span class="pre">ELM_features.setup()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#derrom.transformers.ELM_features.transform"><code class="docutils literal notranslate"><span class="pre">ELM_features.transform()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#derrom.transformers.base_transformer"><code class="docutils literal notranslate"><span class="pre">base_transformer</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#derrom.transformers.base_transformer.setup"><code class="docutils literal notranslate"><span class="pre">base_transformer.setup()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#derrom.transformers.base_transformer.transform"><code class="docutils literal notranslate"><span class="pre">base_transformer.transform()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#derrom.transformers.polynomial_features"><code class="docutils literal notranslate"><span class="pre">polynomial_features</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#derrom.transformers.polynomial_features.setup"><code class="docutils literal notranslate"><span class="pre">polynomial_features.setup()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#derrom.transformers.polynomial_features.transform"><code class="docutils literal notranslate"><span class="pre">polynomial_features.transform()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Transformers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="optimizers.html">Optimizers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
 </ul>
@@ -92,56 +75,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-derrom.transformers">
-<span id="transformers"></span><h1>Transformers<a class="headerlink" href="#module-derrom.transformers" title="Permalink to this heading"></a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="derrom.transformers.ELM_features">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.transformers.</span></span><span class="sig-name descname"><span class="pre">ELM_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ELM_nodes=200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ELM_weights_mean=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ELM_weights_std=1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed=817</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation_function=&lt;ufunc</span> <span class="pre">'tanh'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/transformers.html#ELM_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.transformers.ELM_features" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#derrom.transformers.base_transformer" title="derrom.transformers.base_transformer"><code class="xref py py-class docutils literal notranslate"><span class="pre">base_transformer</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="derrom.transformers.ELM_features.setup">
-<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_VAR_features</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/transformers.html#ELM_features.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.transformers.ELM_features.setup" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="derrom.transformers.ELM_features.transform">
-<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">VAR_state_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/transformers.html#ELM_features.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.transformers.ELM_features.transform" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="derrom.transformers.base_transformer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.transformers.</span></span><span class="sig-name descname"><span class="pre">base_transformer</span></span><a class="reference internal" href="_modules/derrom/transformers.html#base_transformer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.transformers.base_transformer" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="derrom.transformers.base_transformer.setup">
-<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/transformers.html#base_transformer.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.transformers.base_transformer.setup" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="derrom.transformers.base_transformer.transform">
-<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/transformers.html#base_transformer.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.transformers.base_transformer.transform" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="derrom.transformers.polynomial_features">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.transformers.</span></span><span class="sig-name descname"><span class="pre">polynomial_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/transformers.html#polynomial_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.transformers.polynomial_features" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#derrom.transformers.base_transformer" title="derrom.transformers.base_transformer"><code class="xref py py-class docutils literal notranslate"><span class="pre">base_transformer</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="derrom.transformers.polynomial_features.setup">
-<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_VAR_features</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/transformers.html#polynomial_features.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.transformers.polynomial_features.setup" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="derrom.transformers.polynomial_features.transform">
-<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">VAR_state_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/transformers.html#polynomial_features.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.transformers.polynomial_features.transform" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+  <section id="transformers">
+<h1>Transformers<a class="headerlink" href="#transformers" title="Permalink to this heading"></a></h1>
 </section>
 
 

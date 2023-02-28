@@ -15,7 +15,6 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
-        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -46,33 +45,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="estimator.html">Derrom Estimator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dim_reducers.html">Dimensionality Reducers</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Feature Scalers</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#derrom.scalers.data_scaler"><code class="docutils literal notranslate"><span class="pre">data_scaler</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#derrom.scalers.data_scaler.inverse_transform"><code class="docutils literal notranslate"><span class="pre">data_scaler.inverse_transform()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#derrom.scalers.data_scaler.train"><code class="docutils literal notranslate"><span class="pre">data_scaler.train()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#derrom.scalers.data_scaler.transform"><code class="docutils literal notranslate"><span class="pre">data_scaler.transform()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#derrom.scalers.normalize_scaler"><code class="docutils literal notranslate"><span class="pre">normalize_scaler</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#derrom.scalers.normalize_scaler.inverse_transform"><code class="docutils literal notranslate"><span class="pre">normalize_scaler.inverse_transform()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#derrom.scalers.normalize_scaler.train"><code class="docutils literal notranslate"><span class="pre">normalize_scaler.train()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#derrom.scalers.normalize_scaler.transform"><code class="docutils literal notranslate"><span class="pre">normalize_scaler.transform()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#derrom.scalers.standardize_scaler"><code class="docutils literal notranslate"><span class="pre">standardize_scaler</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#derrom.scalers.standardize_scaler.inverse_transform"><code class="docutils literal notranslate"><span class="pre">standardize_scaler.inverse_transform()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#derrom.scalers.standardize_scaler.train"><code class="docutils literal notranslate"><span class="pre">standardize_scaler.train()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#derrom.scalers.standardize_scaler.transform"><code class="docutils literal notranslate"><span class="pre">standardize_scaler.transform()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#derrom.scalers.tanh_scaler"><code class="docutils literal notranslate"><span class="pre">tanh_scaler</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#derrom.scalers.tanh_scaler.inverse_transform"><code class="docutils literal notranslate"><span class="pre">tanh_scaler.inverse_transform()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#derrom.scalers.tanh_scaler.train"><code class="docutils literal notranslate"><span class="pre">tanh_scaler.train()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#derrom.scalers.tanh_scaler.transform"><code class="docutils literal notranslate"><span class="pre">tanh_scaler.transform()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Feature Scalers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transformers.html">Transformers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="optimizers.html">Optimizers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
@@ -102,166 +75,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-derrom.scalers">
-<span id="feature-scalers"></span><h1>Feature Scalers<a class="headerlink" href="#module-derrom.scalers" title="Permalink to this heading"></a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="derrom.scalers.data_scaler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.scalers.</span></span><span class="sig-name descname"><span class="pre">data_scaler</span></span><a class="reference internal" href="_modules/derrom/scalers.html#data_scaler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.scalers.data_scaler" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="derrom.scalers.data_scaler.inverse_transform">
-<span class="sig-name descname"><span class="pre">inverse_transform</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/scalers.html#data_scaler.inverse_transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.scalers.data_scaler.inverse_transform" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="derrom.scalers.data_scaler.train">
-<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/scalers.html#data_scaler.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.scalers.data_scaler.train" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="derrom.scalers.data_scaler.transform">
-<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/scalers.html#data_scaler.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.scalers.data_scaler.transform" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="derrom.scalers.normalize_scaler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.scalers.</span></span><span class="sig-name descname"><span class="pre">normalize_scaler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rel_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/scalers.html#normalize_scaler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.scalers.normalize_scaler" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#derrom.scalers.data_scaler" title="derrom.scalers.data_scaler"><code class="xref py py-class docutils literal notranslate"><span class="pre">data_scaler</span></code></a></p>
-<p>Feature scaler which linearly maps each feature to a specified symmetric range around the origin.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>rel_scale</strong> (<em>float</em>) – Range to which the features are mapped. The default rel_scale = 1.0 maps to <span class="math notranslate nohighlight">\([-0.5,0.5]\)</span></p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="derrom.scalers.normalize_scaler.inverse_transform">
-<span class="sig-name descname"><span class="pre">inverse_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/scalers.html#normalize_scaler.inverse_transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.scalers.normalize_scaler.inverse_transform" title="Permalink to this definition"></a></dt>
-<dd><p>Reverses normalization of each feature</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data_matrix</strong> (<em>2D numpy.ndarray</em>) – scaled data matrix with the datavectors as rows.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>scaled_data_matrix</strong> – unscaled data matrix</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>2D numpy.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="derrom.scalers.normalize_scaler.train">
-<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/scalers.html#normalize_scaler.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.scalers.normalize_scaler.train" title="Permalink to this definition"></a></dt>
-<dd><p>Determines the range if each feature, i.e., the maximum and minimum value.</p>
-<p>Detects quasi-constant features, i.e. features with a standard deviation &lt; 1e-8 and does not scale them.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data_matrix</strong> (<em>2D numpy.ndarray</em>) – Training data matrix, where the data vectors are stored in the rows (first index). Hence, the features are defined by their column index (second index).</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="derrom.scalers.normalize_scaler.transform">
-<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/scalers.html#normalize_scaler.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.scalers.normalize_scaler.transform" title="Permalink to this definition"></a></dt>
-<dd><p>Applies normalization to each feature.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data_matrix</strong> (<em>2D numpy.ndarray</em>) – unscaled data matrix with the datavectors as rows.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>scaled_data_matrix</strong> – scaled data matrix</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>2D numpy.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="derrom.scalers.standardize_scaler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.scalers.</span></span><span class="sig-name descname"><span class="pre">standardize_scaler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rel_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/scalers.html#standardize_scaler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.scalers.standardize_scaler" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#derrom.scalers.data_scaler" title="derrom.scalers.data_scaler"><code class="xref py py-class docutils literal notranslate"><span class="pre">data_scaler</span></code></a></p>
-<p>Feature scaler which subtracts the mean and devices by the standard deviation for each feature.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>rel_scale</strong> (<em>float</em>) – Standard deviation of the resulting scaled features. Default is 1.</p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="derrom.scalers.standardize_scaler.inverse_transform">
-<span class="sig-name descname"><span class="pre">inverse_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/scalers.html#standardize_scaler.inverse_transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.scalers.standardize_scaler.inverse_transform" title="Permalink to this definition"></a></dt>
-<dd><p>Reverses standardization of each feature by multiplying by the standard deviation and adding the mean (of the training data)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data_matrix</strong> (<em>2D numpy.ndarray</em>) – scaled data matrix with the datavectors as rows.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>scaled_data_matrix</strong> – unscaled data matrix</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>2D numpy.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="derrom.scalers.standardize_scaler.train">
-<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/scalers.html#standardize_scaler.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.scalers.standardize_scaler.train" title="Permalink to this definition"></a></dt>
-<dd><p>Computes the mean and standard deviation of each feature.</p>
-<p>Detects quasi-constant features, i.e. features with a standard deviation &lt; 1e-8 and does not scale them.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data_matrix</strong> (<em>2D numpy.ndarray</em>) – Training data matrix, where the data vectors are stored in the rows (first index). Hence, the features are defined by their column index (second index).</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="derrom.scalers.standardize_scaler.transform">
-<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/scalers.html#standardize_scaler.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.scalers.standardize_scaler.transform" title="Permalink to this definition"></a></dt>
-<dd><p>Applies standardization to each feature.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data_matrix</strong> (<em>2D numpy.ndarray</em>) – unscaled data matrix with the datavectors as rows.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>scaled_data_matrix</strong> – scaled data matrix</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>2D numpy.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="derrom.scalers.tanh_scaler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.scalers.</span></span><span class="sig-name descname"><span class="pre">tanh_scaler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/scalers.html#tanh_scaler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.scalers.tanh_scaler" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#derrom.scalers.data_scaler" title="derrom.scalers.data_scaler"><code class="xref py py-class docutils literal notranslate"><span class="pre">data_scaler</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="derrom.scalers.tanh_scaler.inverse_transform">
-<span class="sig-name descname"><span class="pre">inverse_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/scalers.html#tanh_scaler.inverse_transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.scalers.tanh_scaler.inverse_transform" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="derrom.scalers.tanh_scaler.train">
-<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/scalers.html#tanh_scaler.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.scalers.tanh_scaler.train" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="derrom.scalers.tanh_scaler.transform">
-<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/scalers.html#tanh_scaler.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.scalers.tanh_scaler.transform" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+  <section id="feature-scalers">
+<h1>Feature Scalers<a class="headerlink" href="#feature-scalers" title="Permalink to this heading"></a></h1>
 </section>
 
 
