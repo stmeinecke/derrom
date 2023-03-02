@@ -1,3 +1,9 @@
+### oh well... this code has seen some stuff...
+### its been refactored from some C++ code, which I originally got from Benjamin Lingnau, who supposedly refactoted some old Fortran code from Weng Chow...
+### Anyways, it does the job.
+### ToDo: english comments
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 

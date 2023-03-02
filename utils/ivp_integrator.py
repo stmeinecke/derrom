@@ -1,3 +1,5 @@
+### ode integrator classe, which allow for the integration of derrom.
+
 import numpy as np
 
 class ivp_integrator:

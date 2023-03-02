@@ -115,10 +115,10 @@ import matplotlib.colors as colors
 def plot_trajectory(data,title='trajectory'):
     plt.imshow(data, aspect='auto', interpolation='none',origin='lower',cmap='Reds')
     plt.title(title)
-    plt.ylabel(r'time $t_n$')
-    plt.xlabel(r'electron momentum $k_n$')
+    plt.ylabel(r'time $t$')
+    plt.xlabel(r'state variable $s_n$')
     cb = plt.colorbar()
-    cb.set_label('occupation')
+    cb.set_label('value')
     plt.show()
 
     
@@ -128,8 +128,8 @@ def plot_difference(test,truth,title='difference'):
     
     plt.imshow(err, aspect='auto', interpolation='none',origin='lower',cmap='bwr', norm=colors.CenteredNorm(vcenter=0.0))
     plt.title(title)
-    plt.ylabel(r'time $t_n$')
-    plt.xlabel(r'electron momentum $t_n$')
+    plt.ylabel(r'time $t$')
+    plt.xlabel(r'state variable $s_n$')
     cb = plt.colorbar()
     cb.set_label('error')
     plt.show()
