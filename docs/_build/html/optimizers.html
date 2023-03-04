@@ -47,7 +47,21 @@
 <li class="toctree-l1"><a class="reference internal" href="dim_reducers.html">Dimensionality Reducers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scalers.html">Feature Scalers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transformers.html">Transformers</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Optimizers</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Optimizers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.optimizers.base_optimizer"><code class="docutils literal notranslate"><span class="pre">base_optimizer</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.optimizers.base_optimizer.solve"><code class="docutils literal notranslate"><span class="pre">base_optimizer.solve()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.optimizers.lstsqrs"><code class="docutils literal notranslate"><span class="pre">lstsqrs</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.optimizers.lstsqrs.solve"><code class="docutils literal notranslate"><span class="pre">lstsqrs.solve()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.optimizers.ridge"><code class="docutils literal notranslate"><span class="pre">ridge</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.optimizers.ridge.solve"><code class="docutils literal notranslate"><span class="pre">ridge.solve()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
 </ul>
 
@@ -75,8 +89,79 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="optimizers">
-<h1>Optimizers<a class="headerlink" href="#optimizers" title="Permalink to this heading"></a></h1>
+  <section id="module-derrom.optimizers">
+<span id="optimizers"></span><h1>Optimizers<a class="headerlink" href="#module-derrom.optimizers" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="derrom.optimizers.base_optimizer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.optimizers.</span></span><span class="sig-name descname"><span class="pre">base_optimizer</span></span><a class="reference internal" href="_modules/derrom/optimizers.html#base_optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.optimizers.base_optimizer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class to define the methods, which are to implemented</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.optimizers.base_optimizer.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/optimizers.html#base_optimizer.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.optimizers.base_optimizer.solve" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="derrom.optimizers.lstsqrs">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.optimizers.</span></span><span class="sig-name descname"><span class="pre">lstsqrs</span></span><a class="reference internal" href="_modules/derrom/optimizers.html#lstsqrs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.optimizers.lstsqrs" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#derrom.optimizers.base_optimizer" title="derrom.optimizers.base_optimizer"><code class="xref py py-class docutils literal notranslate"><span class="pre">base_optimizer</span></code></a></p>
+<p>Least squares optimizer.</p>
+<p>This optimizer pipes the training data to numpy.linalg.lstsq. This can be understood as the most simple optimizer. Use with strong caution because no regularization is applied, which poses the risk of overfitting and bad out-of-sample predictions</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.optimizers.lstsqrs.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/optimizers.html#lstsqrs.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.optimizers.lstsqrs.solve" title="Permalink to this definition"></a></dt>
+<dd><p>Solver, which is invoked by derrom’s fit method.</p>
+<section id="parameters">
+<h2>Parameters:<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
+<blockquote>
+<div><dl class="simple">
+<dt>feature_matrix<span class="classifier">2D numpy.ndarray</span></dt><dd><p>Feature matrix with the feature vectors stored in the rows. The feature matrix is automatically generated by derrom’s fit method</p>
+</dd>
+<dt>target_matrix<span class="classifier">2D numpy.ndarray</span></dt><dd><p>Target matrix with the target vectors stored in the rows. The target matrix is automatically generated by derrom’s fit method</p>
+</dd>
+</dl>
+</div></blockquote>
+</section>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="derrom.optimizers.ridge">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.optimizers.</span></span><span class="sig-name descname"><span class="pre">ridge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/optimizers.html#ridge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.optimizers.ridge" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#derrom.optimizers.base_optimizer" title="derrom.optimizers.base_optimizer"><code class="xref py py-class docutils literal notranslate"><span class="pre">base_optimizer</span></code></a></p>
+<p>Regularized least squares optimizer. Rigde regression.</p>
+<p>This optimizer applies L2/Thikonov regularization to the regression weights. This approach counters overfitting and helps to improve out-of-sample predictions. It can be understood as sacrificing the models specificity to improve its ability to generalize. A balance between these two, i.e., an optimal alpha must be found to optimize the regression performance.</p>
+<section id="id1">
+<h2>Parameters:<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
+<blockquote>
+<div><dl class="simple">
+<dt>alpha<span class="classifier">float</span></dt><dd><p>Regularization parameter. Larger values impose a stronger regularization. alpha = 0 eliminates the regularization und yields the least-squares estimator.</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.optimizers.ridge.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/optimizers.html#ridge.solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.optimizers.ridge.solve" title="Permalink to this definition"></a></dt>
+<dd><p>Solver, which is invoked by derrom’s fit method.</p>
+<section id="id2">
+<h3>Parameters:<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h3>
+<blockquote>
+<div><dl class="simple">
+<dt>feature_matrix<span class="classifier">2D numpy.ndarray</span></dt><dd><p>Feature matrix with the feature vectors stored in the rows. The feature matrix is automatically generated by derrom’s fit method</p>
+</dd>
+<dt>target_matrix<span class="classifier">2D numpy.ndarray</span></dt><dd><p>Target matrix with the target vectors stored in the rows. The target matrix is automatically generated by derrom’s fit method</p>
+</dd>
+</dl>
+</div></blockquote>
+</section>
+</dd></dl>
+
+</section>
+</dd></dl>
+
 </section>
 
 

@@ -2,6 +2,9 @@ import numpy as np
 
 
 class base_dim_reducer:
+    """
+    Base class to define the methods to be implemented
+    """
     def __init__(self):
         pass
     

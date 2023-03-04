@@ -47,7 +47,24 @@
 <li class="toctree-l1"><a class="reference internal" href="scalers.html">Feature Scalers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transformers.html">Transformers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="optimizers.html">Optimizers</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Utils</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.utils.get_KFold_CV_scores"><code class="docutils literal notranslate"><span class="pre">get_KFold_CV_scores()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.utils.get_KFolds"><code class="docutils literal notranslate"><span class="pre">get_KFolds()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.utils.load_model"><code class="docutils literal notranslate"><span class="pre">load_model()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.utils.load_trajectories"><code class="docutils literal notranslate"><span class="pre">load_trajectories()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.utils.plot_difference"><code class="docutils literal notranslate"><span class="pre">plot_difference()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.utils.plot_trajectory"><code class="docutils literal notranslate"><span class="pre">plot_trajectory()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.utils.reducer_helper_class"><code class="docutils literal notranslate"><span class="pre">reducer_helper_class</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.utils.reducer_helper_class.fit"><code class="docutils literal notranslate"><span class="pre">reducer_helper_class.fit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.utils.reducer_helper_class.get_error"><code class="docutils literal notranslate"><span class="pre">reducer_helper_class.get_error()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.utils.reducer_helper_class.predict"><code class="docutils literal notranslate"><span class="pre">reducer_helper_class.predict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.utils.reducer_helper_class.score_multiple_trajectories"><code class="docutils literal notranslate"><span class="pre">reducer_helper_class.score_multiple_trajectories()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.utils.save_model"><code class="docutils literal notranslate"><span class="pre">save_model()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.utils.save_trajectories"><code class="docutils literal notranslate"><span class="pre">save_trajectories()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
         </div>
@@ -74,8 +91,74 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="utils">
-<h1>Utils<a class="headerlink" href="#utils" title="Permalink to this heading"></a></h1>
+  <section id="module-derrom.utils">
+<span id="utils"></span><h1>Utils<a class="headerlink" href="#module-derrom.utils" title="Permalink to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="derrom.utils.get_KFold_CV_scores">
+<span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">get_KFold_CV_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trajectories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'AR'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">817</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['rms']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#get_KFold_CV_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.get_KFold_CV_scores" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="derrom.utils.get_KFolds">
+<span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">get_KFolds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#get_KFolds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.get_KFolds" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="derrom.utils.load_model">
+<span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'../model.obj'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#load_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.load_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="derrom.utils.load_trajectories">
+<span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">load_trajectories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'../trajectories.npz'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#load_trajectories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.load_trajectories" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="derrom.utils.plot_difference">
+<span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">plot_difference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">truth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'difference'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#plot_difference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.plot_difference" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="derrom.utils.plot_trajectory">
+<span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">plot_trajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'trajectory'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#plot_trajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.plot_trajectory" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="derrom.utils.reducer_helper_class">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">reducer_helper_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim_reducer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#reducer_helper_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.reducer_helper_class" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.utils.reducer_helper_class.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trajectories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'AR'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_reducer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#reducer_helper_class.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.reducer_helper_class.fit" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.utils.reducer_helper_class.get_error">
+<span class="sig-name descname"><span class="pre">get_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trajectory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rms'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#reducer_helper_class.get_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.reducer_helper_class.get_error" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.utils.reducer_helper_class.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#reducer_helper_class.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.reducer_helper_class.predict" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.utils.reducer_helper_class.score_multiple_trajectories">
+<span class="sig-name descname"><span class="pre">score_multiple_trajectories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trajectories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#reducer_helper_class.score_multiple_trajectories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.reducer_helper_class.score_multiple_trajectories" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="derrom.utils.save_model">
+<span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">save_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'../model.obj'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#save_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.save_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="derrom.utils.save_trajectories">
+<span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">save_trajectories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trajectories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'../trajectories'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#save_trajectories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.save_trajectories" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 </section>
 
 

@@ -38,7 +38,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Library Documentation:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../estimator.html">Derrom Estimator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dim_reducers.html">Dimensionality Reducers</a></li>
@@ -77,6 +77,9 @@
 
 
 <div class="viewcode-block" id="base_transformer"><a class="viewcode-back" href="../../transformers.html#derrom.transformers.base_transformer">[docs]</a><span class="k">class</span> <span class="nc">base_transformer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class to define the methods to be implemented.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
     
@@ -88,6 +91,28 @@
         
         
 <div class="viewcode-block" id="polynomial_features"><a class="viewcode-back" href="../../transformers.html#derrom.transformers.polynomial_features">[docs]</a><span class="k">class</span> <span class="nc">polynomial_features</span><span class="p">(</span><span class="n">base_transformer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Polynomial features transformation.</span>
+<span class="sd">    </span>
+<span class="sd">    Generates a feature vector with all monomials up to the specified order/degree. This includes mixed monomials for orders &gt; 1. </span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    Notes:</span>
+<span class="sd">    ------</span>
+<span class="sd">        * The size of the resulting feature vector scales with the power of order/degree.</span>
+<span class="sd">        * The generated features are not orthogonal.</span>
+<span class="sd">        * Polynomial (opposed to monomial features) are constructed by the linear combination in the regression step.</span>
+<span class="sd">        * The computation is implemented by iteratively computing the outer product (Tensor) product with the linear feature vector and then reshaping the resultung upper triangle (to avoid redundant features) back to a vector. Hence, more memory is allocated internally than one might infer from the resultung feature vector size.</span>
+<span class="sd">        </span>
+<span class="sd">   </span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">    order : int</span>
+<span class="sd">        Polynomial degree, to which features are to be generated.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
     
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
@@ -101,23 +126,26 @@
             <span class="n">VAR_p_Vec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">VARp</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">VAR_p_Vec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     
-<div class="viewcode-block" id="polynomial_features.transform"><a class="viewcode-back" href="../../transformers.html#derrom.transformers.polynomial_features.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">VAR_state_matrix</span><span class="p">):</span>
+<div class="viewcode-block" id="polynomial_features.transform"><a class="viewcode-back" href="../../transformers.html#derrom.transformers.polynomial_features.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">DE_state_matrix</span><span class="p">):</span>
         
-        <span class="k">if</span> <span class="n">VAR_state_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_VAR_p_Vec</span><span class="p">(</span><span class="n">VAR_state_matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">DE_state_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_VAR_p_Vec</span><span class="p">(</span><span class="n">DE_state_matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
           
         <span class="k">else</span><span class="p">:</span>        
-            <span class="n">nCols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_VAR_p_Vec</span><span class="p">(</span><span class="n">VAR_state_matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span><span class="o">.</span><span class="n">size</span>
-            <span class="n">nRows</span> <span class="o">=</span> <span class="n">VAR_state_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">nCols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_VAR_p_Vec</span><span class="p">(</span><span class="n">DE_state_matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span><span class="o">.</span><span class="n">size</span>
+            <span class="n">nRows</span> <span class="o">=</span> <span class="n">DE_state_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
           
             <span class="n">poly_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nRows</span><span class="p">,</span><span class="n">nCols</span><span class="p">))</span> 
           
-            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="n">VAR_state_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">):</span>
-                <span class="n">poly_features</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_VAR_p_Vec</span><span class="p">(</span><span class="n">VAR_state_matrix</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="n">DE_state_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">):</span>
+                <span class="n">poly_features</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_VAR_p_Vec</span><span class="p">(</span><span class="n">DE_state_matrix</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
 
             <span class="k">return</span> <span class="n">poly_features</span></div>
         
 <div class="viewcode-block" id="polynomial_features.setup"><a class="viewcode-back" href="../../transformers.html#derrom.transformers.polynomial_features.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_VAR_features</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Not required for this transformation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div></div>
         
         
@@ -137,9 +165,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">projection_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ELM_weights_mean</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ELM_weights_std</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_VAR_features</span><span class="p">),</span> <span class="p">(</span><span class="n">n_VAR_features</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ELM_nodes</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bias_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ELM_nodes</span><span class="p">)</span></div>
     
-<div class="viewcode-block" id="ELM_features.transform"><a class="viewcode-back" href="../../transformers.html#derrom.transformers.ELM_features.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">VAR_state_matrix</span><span class="p">):</span>
-        <span class="n">projected_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation_function</span><span class="p">(</span> <span class="n">VAR_state_matrix</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection_matrix</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias_matrix</span> <span class="p">)</span>
-        <span class="n">state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">[</span><span class="n">VAR_state_matrix</span><span class="p">,</span><span class="n">projected_data</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<div class="viewcode-block" id="ELM_features.transform"><a class="viewcode-back" href="../../transformers.html#derrom.transformers.ELM_features.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">DE_state_matrix</span><span class="p">):</span>
+        <span class="n">projected_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation_function</span><span class="p">(</span> <span class="n">DE_state_matrix</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection_matrix</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias_matrix</span> <span class="p">)</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">[</span><span class="n">DE_state_matrix</span><span class="p">,</span><span class="n">projected_data</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">state</span></div></div>
 </pre></div>

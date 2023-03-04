@@ -2,6 +2,9 @@ import numpy as np
 
 
 class data_scaler:
+    """
+    Base clase to define the methods to be implemented.
+    """
     def __init__(self):
         self.is_trained = False
         

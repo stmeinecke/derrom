@@ -43,7 +43,20 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Library Documentation:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Derrom Estimator</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Derrom Estimator</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.estimator.derrom_estimator"><code class="docutils literal notranslate"><span class="pre">derrom_estimator</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.estimator.derrom_estimator.w"><code class="docutils literal notranslate"><span class="pre">derrom_estimator.w</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.estimator.derrom_estimator.reg_mode"><code class="docutils literal notranslate"><span class="pre">derrom_estimator.reg_mode</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.estimator.derrom_estimator.fit"><code class="docutils literal notranslate"><span class="pre">derrom_estimator.fit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.estimator.derrom_estimator.forecast"><code class="docutils literal notranslate"><span class="pre">derrom_estimator.forecast()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.estimator.derrom_estimator.get_error"><code class="docutils literal notranslate"><span class="pre">derrom_estimator.get_error()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.estimator.derrom_estimator.predict"><code class="docutils literal notranslate"><span class="pre">derrom_estimator.predict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.estimator.derrom_estimator.print_status"><code class="docutils literal notranslate"><span class="pre">derrom_estimator.print_status()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.estimator.derrom_estimator.score_multiple_trajectories"><code class="docutils literal notranslate"><span class="pre">derrom_estimator.score_multiple_trajectories()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="dim_reducers.html">Dimensionality Reducers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scalers.html">Feature Scalers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transformers.html">Transformers</a></li>
@@ -75,8 +88,156 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="derrom-estimator">
-<h1>Derrom Estimator<a class="headerlink" href="#derrom-estimator" title="Permalink to this heading"></a></h1>
+  <section id="module-derrom.estimator">
+<span id="derrom-estimator"></span><h1>Derrom Estimator<a class="headerlink" href="#module-derrom.estimator" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="derrom.estimator.derrom_estimator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.estimator.</span></span><span class="sig-name descname"><span class="pre">derrom_estimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DE_l</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_hist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intercept</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_reducer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NL_transformer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/estimator.html#derrom_estimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.estimator.derrom_estimator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseEstimator</span></code></p>
+<p>Delay Embedded Regressive Reduced Order Model (derrom)</p>
+<p>This is the estimator class with facilitates the training of the model, and the prediction and scoring of trajectories. It is designed to be modular, such that different approaches for the dimensionality reduction, feature scaling, nonlinear transformation and regression weight optimization can be passed via objects that implement the appropriate methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rdim</strong> (<em>int</em>) – number of reduced latent space dimensions. The default rdim = 1 is most likely an inappropriate choice…</p></li>
+<li><p><strong>DE_l</strong> (<em>int</em>) – delay embedding length. The default DE_l = 1 corresponds to no embedding, i.e., only the most recent system state is used.</p></li>
+<li><p><strong>full_hist</strong> (<em>bool</em>) – If set to False (default), the delay embedding is padded with the least recent state if no sufficient system history is available</p></li>
+<li><p><strong>intercept</strong> (<em>bool</em>) – If set to True, a bias/intercept term is added to the regression step.</p></li>
+<li><p><strong>dim_reducer</strong> (<em>dim_reducer object</em>) – Object that implements the train, reduce, and reconstruct methods. If set to None, no dimensionality reduction is performed. More details on the dimensionality reduction implementation in <a class="reference internal" href="dim_reducers.html"><span class="doc">Dimensionality Reducers</span></a>.</p></li>
+<li><p><strong>scaler</strong> (<em>scaler object</em>) – Object that implements the train, transform, and inverse transform methods. If set to None, no feature scaling is performed. More details on the feature scaler implementation in <a class="reference internal" href="scalers.html"><span class="doc">Feature Scalers</span></a>.</p></li>
+<li><p><strong>NL_transformer</strong> (<em>transformer object</em>) – Object that implements the setup and transform methods. If set to None, no nonlinear transform of the delay-embedded system state is performed. More details on the nonlinear transformer implementation in <a class="reference internal" href="transformers.html"><span class="doc">Transformers</span></a>.</p></li>
+<li><p><strong>optimizer</strong> (<em>optimizer object</em>) – Object that implements the solve method. In set to None, a least-squares method is applied. More details on the optimizer implementation in <a class="reference internal" href="optimizers.html"><span class="doc">Optimizers</span></a>.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Class attributes: (attributes, which are generated during the initialization are omitted.)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="derrom.estimator.derrom_estimator.w">
+<span class="sig-name descname"><span class="pre">w</span></span><a class="headerlink" href="#derrom.estimator.derrom_estimator.w" title="Permalink to this definition"></a></dt>
+<dd><p>Regression weights obtained from the fit method contained in a matrix (2D numpy.ndarray)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="derrom.estimator.derrom_estimator.reg_mode">
+<span class="sig-name descname"><span class="pre">reg_mode</span></span><a class="headerlink" href="#derrom.estimator.derrom_estimator.reg_mode" title="Permalink to this definition"></a></dt>
+<dd><p>Regression mode. Can be set to ‘AR’ (autoregression) by the fit method. Toggles the predict method to forecast in autonomous mode, i.e., to feed its own output back as an input.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.estimator.derrom_estimator.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trajectories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'AR'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DE_l</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intercept</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_hist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_reducer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NL_transformer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/estimator.html#derrom_estimator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.estimator.derrom_estimator.fit" title="Permalink to this definition"></a></dt>
+<dd><p>fit a derrom model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trajectories</strong> (<em>list</em>) – A list of the training trajectories, where each element of the list is expected to be a 2D numpy.ndarray that represents an individual trajectories. Time slices must be stored in the rows (first index) and the system state variables in the columns (second index). All trajectories must have the same number of variables (columns), the number of time slices, however, may vary.</p></li>
+<li><p><strong>targets</strong> (<em>'AR'</em><em>, </em><em>list</em>) – A list of the training targets, where each element is an numpy.ndarray that corresponds to training trajectory with the identical list index. Each element must have the same number of rows as the corresponding trajectory. If set to ‘AR’, i.e., autoregression, the targets are automatically generated from the time-shifted trajectories and the last and first time slices are dropped from the training and target data, respectively.</p></li>
+</ul>
+</dd>
+</dl>
+<p>The remaining parameters are identical to the init method</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.estimator.derrom_estimator.forecast">
+<span class="sig-name descname"><span class="pre">forecast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/estimator.html#derrom_estimator.forecast"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.estimator.derrom_estimator.forecast" title="Permalink to this definition"></a></dt>
+<dd><p>Forecast n steps into the future in autoregression mode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>init</strong> (<em>2D numpy.ndarray</em>) – Initial condition. For full_hist = False, only the first snapshot (first row) of is used. Otherwise the first DE_l snapshots are used.</p></li>
+<li><p><strong>n_steps</strong> (<em>int</em>) – Length of the forecasted trajectory. The initial condition is thus included in n_steps</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>matrix</strong> – Forecasted trajectory</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2D numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.estimator.derrom_estimator.get_error">
+<span class="sig-name descname"><span class="pre">get_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trajectory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">truth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rms'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/estimator.html#derrom_estimator.get_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.estimator.derrom_estimator.get_error" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the regression error</p>
+<p>If no prediction is supplied, but the the trajectory, the corresponding prediction is computed first.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trajectory</strong> (<em>2D numpy.ndarray</em>) – If no prediction is supplied, it can be computed from the trajectory. Interchangeable with truth in autoregression (AR) mode</p></li>
+<li><p><strong>truth</strong> (<em>2D numpy.ndarray</em>) – Ground truth, against which the prediction is compared. Interchangeable with trajectory in autoregression (AR) mode</p></li>
+<li><p><strong>pred</strong> (<em>2D numpy.ndarray</em>) – Prediction corresponding to the truth.</p></li>
+<li><p><strong>norm</strong> (<em>str</em><em>, </em><em>&quot;rms&quot;</em><em>, </em><em>&quot;fro&quot;</em><em>, </em><em>&quot;ma&quot;</em>) – Error norm chosen by the corresponding string. “rms” refers to the root-mean-squared error regarding all matrix elements, “fro” refers to the frobenius norm (proportional to the rms error, but not normalized to the number of matrix elements), and “max” refers to the maximum absolute error regarding all matrix elements.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>regression error</strong> – the regression error for a valid norm and -1 for an invalid norm.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.estimator.derrom_estimator.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trajectory</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/estimator.html#derrom_estimator.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.estimator.derrom_estimator.predict" title="Permalink to this definition"></a></dt>
+<dd><p>Predicts targets for each snapshot of the input trajectory. In autoregression mode, the first time slice is used (the first DE_l in the case of full_hist = True) as initial conditions to generate a prediction with the same length (rows) as the input trajectory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>trajectory</strong> (<em>2D numpy.ndarray</em>) – Trajectory where the time slices are stored in the rows (first index) and the state variables in the columns (second indx)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>matrix</strong> – Calculated prediction</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2D numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.estimator.derrom_estimator.print_status">
+<span class="sig-name descname"><span class="pre">print_status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/estimator.html#derrom_estimator.print_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.estimator.derrom_estimator.print_status" title="Permalink to this definition"></a></dt>
+<dd><p>print values of the relevant class attributes</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.estimator.derrom_estimator.score_multiple_trajectories">
+<span class="sig-name descname"><span class="pre">score_multiple_trajectories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trajectories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/estimator.html#derrom_estimator.score_multiple_trajectories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.estimator.derrom_estimator.score_multiple_trajectories" title="Permalink to this definition"></a></dt>
+<dd><p>helper function to obtain error scores for multiple trajectories. Used by the derrom.utils.get.get_KFold_CV_scores function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trajectories</strong> (<em>list</em>) – A list of the trajectories to be scored, where each element of the list is expected to be a 2D numpy.ndarray that represents an individual trajectories. Time slices must be stored in the rows (first index) and the system state variables in the columns (second index). All trajectories must have the same number of variables (columns), the number of time slices, however, may vary.</p></li>
+<li><p><strong>targets</strong> (<em>list</em>) – A list of the targets, where each element is an numpy.ndarray that corresponds to the trajectory with the identical list index. Each element must have the same number of rows as the corresponding trajectory. If set to ‘AR’, i.e., autoregression, no targets are required.</p></li>
+<li><p><strong>predictions</strong> (<em>list</em>) – A list of the predictions, where each element is an numpy.ndarray that corresponds to the trajectory with the identical list index. Supplying predictions reduces computaion time if derrom.utils.get.get_KFold_CV_scores is to be evaluated for multiple error norms.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>mean</strong> (<em>float</em>) – mean regression error from all supplied trajectories</p></li>
+<li><p><strong>scores</strong> (<em>list</em>) – list of all individual regression errors</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
