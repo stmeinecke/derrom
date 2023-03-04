@@ -28,10 +28,15 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # html_theme = 'alabaster'
 html_theme = "sphinx_rtd_theme"
+
 # html_static_path = ['_static']
 html_static_path = [] #weird fix to find the _static folder...
 
+# import sys
+# sys.path.append("../")
+
+import os
 import sys
-sys.path.append("../")
+sys.path.insert(0, os.path.abspath('..'))
 
 

@@ -11,7 +11,7 @@ It provides a modular package, which is designed to perform computationally effi
 The model is trained with the supervised paradigm, where a set of existing input-output pairs is used to optimize the model parameters to obtain the desired regression performance.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Library Documentation:
    
    estimator

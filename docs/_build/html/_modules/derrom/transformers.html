@@ -103,6 +103,7 @@
 <span class="sd">        * The generated features are not orthogonal.</span>
 <span class="sd">        * Polynomial (opposed to monomial features) are constructed by the linear combination in the regression step.</span>
 <span class="sd">        * The computation is implemented by iteratively computing the outer product (Tensor) product with the linear feature vector and then reshaping the resultung upper triangle (to avoid redundant features) back to a vector. Hence, more memory is allocated internally than one might infer from the resultung feature vector size.</span>
+<span class="sd">        * The monomial features correspond the basis functions of a discrete Volterra series.</span>
 <span class="sd">        </span>
 <span class="sd">   </span>
 <span class="sd">    </span>
@@ -127,7 +128,14 @@
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">VAR_p_Vec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     
 <div class="viewcode-block" id="polynomial_features.transform"><a class="viewcode-back" href="../../transformers.html#derrom.transformers.polynomial_features.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">DE_state_matrix</span><span class="p">):</span>
-        
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Carries out the polynomial features transformation.</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">            DE_state_matrix : 2D numpy.ndarray</span>
+<span class="sd">                Delay embedded state matrix with the features in the rows, which is to be transformed. May only contain one row.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">DE_state_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_VAR_p_Vec</span><span class="p">(</span><span class="n">DE_state_matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
           
@@ -142,7 +150,7 @@
 
             <span class="k">return</span> <span class="n">poly_features</span></div>
         
-<div class="viewcode-block" id="polynomial_features.setup"><a class="viewcode-back" href="../../transformers.html#derrom.transformers.polynomial_features.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_VAR_features</span><span class="p">):</span>
+<div class="viewcode-block" id="polynomial_features.setup"><a class="viewcode-back" href="../../transformers.html#derrom.transformers.polynomial_features.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_DE_features</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Not required for this transformation.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -151,22 +159,67 @@
         
         
 <div class="viewcode-block" id="ELM_features"><a class="viewcode-back" href="../../transformers.html#derrom.transformers.ELM_features">[docs]</a><span class="k">class</span> <span class="nc">ELM_features</span><span class="p">(</span><span class="n">base_transformer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extreme Learning Machine (ELM) features transformation.</span>
+<span class="sd">    </span>
+<span class="sd">    Generates a feature vector, which concatenates the linear delay-embedded feature vector and the ELM transformation thereoff.</span>
+<span class="sd">    The ELM transform can be understood as sinle-layer feed-forward network. The inputs are subject to random linear projection, which are then combined with a random bias and fed into a (nonlinear) activation function.</span>
+<span class="sd">    </span>
+<span class="sd">    The weights of the random projection matrix are drawn from a normal distribution whose parameters can be specified. The elements of the bias vector are drawn from a uniform distribution whose parameters can be specified.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">    ELM_nodes : int</span>
+<span class="sd">        Number of ELM nodes/neurons.</span>
+<span class="sd">    ELM_weights_mean : float</span>
+<span class="sd">        Mean value for the randomly drawn projection weights.</span>
+<span class="sd">    ELM_weights_std : float</span>
+<span class="sd">        Standard deviation of the randomly drawn projection weights.</span>
+<span class="sd">    ELM_bias_low : float</span>
+<span class="sd">        Lower bound for the randomly drawn biases.</span>
+<span class="sd">    ELM_bias_high : float</span>
+<span class="sd">        Upper bound for the randomly drawn biases.</span>
+<span class="sd">    seed : int</span>
+<span class="sd">        Seed value for the random generator.</span>
+<span class="sd">    activation_function : callable</span>
+<span class="sd">        Activation function for the ELM neurons. Must act element-wise on 1D numpy.ndarrays.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ELM_nodes</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">ELM_weights_mean</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">ELM_weights_std</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">817</span><span class="p">,</span> <span class="n">activation_function</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ELM_nodes</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">ELM_weights_mean</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">ELM_weights_std</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">ELM_bias_low</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">ELM_bias_high</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>  <span class="n">seed</span><span class="o">=</span><span class="mi">817</span><span class="p">,</span> <span class="n">activation_function</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ELM_nodes</span> <span class="o">=</span> <span class="n">ELM_nodes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ELM_weights_mean</span> <span class="o">=</span> <span class="n">ELM_weights_mean</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ELM_weights_std</span> <span class="o">=</span> <span class="n">ELM_weights_std</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ELM_bias_low</span> <span class="o">=</span> <span class="n">ELM_bias_low</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ELM_bias_high</span> <span class="o">=</span> <span class="n">ELM_bias_high</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">projection_matrix</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bias_matrix</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bias_vector</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">activation_function</span> <span class="o">=</span> <span class="n">activation_function</span>
         
-<div class="viewcode-block" id="ELM_features.setup"><a class="viewcode-back" href="../../transformers.html#derrom.transformers.ELM_features.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_VAR_features</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">projection_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ELM_weights_mean</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ELM_weights_std</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_VAR_features</span><span class="p">),</span> <span class="p">(</span><span class="n">n_VAR_features</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ELM_nodes</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bias_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ELM_nodes</span><span class="p">)</span></div>
+<div class="viewcode-block" id="ELM_features.setup"><a class="viewcode-back" href="../../transformers.html#derrom.transformers.ELM_features.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_DE_features</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates the random projection matrix and the random bias vector and thereby defines the number of ELM nodes/neurons. </span>
+<span class="sd">        </span>
+<span class="sd">        Note that the standard deviation of the randomly drawn projection matrix is scaled with the square root of number of ELM roots. This ensures that the mean input a neuron receives is of the order of one.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">            n_DE_features : int</span>
+<span class="sd">                Number of delay embedded features, i.e., size the delay embedded feature vector. This is set by derrom&#39;s fit method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">projection_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ELM_weights_mean</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ELM_weights_std</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_DE_features</span><span class="p">),</span> <span class="p">(</span><span class="n">n_DE_features</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ELM_nodes</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bias_vector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ELM_bias_low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ELM_bias_high</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ELM_nodes</span><span class="p">)</span></div>
     
 <div class="viewcode-block" id="ELM_features.transform"><a class="viewcode-back" href="../../transformers.html#derrom.transformers.ELM_features.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">DE_state_matrix</span><span class="p">):</span>
-        <span class="n">projected_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation_function</span><span class="p">(</span> <span class="n">DE_state_matrix</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection_matrix</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias_matrix</span> <span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Carries out the ELM features transformation.</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">        Parameters:</span>
+<span class="sd">            DE_state_matrix : 2D numpy.ndarray</span>
+<span class="sd">                Delay embedded state matrix with the features in the rows, which is to be transformed. May only contain one row.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">projected_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation_function</span><span class="p">(</span> <span class="n">DE_state_matrix</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection_matrix</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias_vector</span> <span class="p">)</span>
         <span class="n">state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">[</span><span class="n">DE_state_matrix</span><span class="p">,</span><span class="n">projected_data</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">state</span></div></div>

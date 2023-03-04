@@ -46,7 +46,24 @@
 <li class="toctree-l1"><a class="reference internal" href="estimator.html">Derrom Estimator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dim_reducers.html">Dimensionality Reducers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scalers.html">Feature Scalers</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Transformers</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Transformers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.transformers.ELM_features"><code class="docutils literal notranslate"><span class="pre">ELM_features</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.transformers.ELM_features.setup"><code class="docutils literal notranslate"><span class="pre">ELM_features.setup()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.transformers.ELM_features.transform"><code class="docutils literal notranslate"><span class="pre">ELM_features.transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.transformers.base_transformer"><code class="docutils literal notranslate"><span class="pre">base_transformer</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.transformers.base_transformer.setup"><code class="docutils literal notranslate"><span class="pre">base_transformer.setup()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.transformers.base_transformer.transform"><code class="docutils literal notranslate"><span class="pre">base_transformer.transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.transformers.polynomial_features"><code class="docutils literal notranslate"><span class="pre">polynomial_features</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.transformers.polynomial_features.setup"><code class="docutils literal notranslate"><span class="pre">polynomial_features.setup()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.transformers.polynomial_features.transform"><code class="docutils literal notranslate"><span class="pre">polynomial_features.transform()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="optimizers.html">Optimizers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
 </ul>
@@ -75,8 +92,127 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="transformers">
-<h1>Transformers<a class="headerlink" href="#transformers" title="Permalink to this heading"></a></h1>
+  <section id="module-derrom.transformers">
+<span id="transformers"></span><h1>Transformers<a class="headerlink" href="#module-derrom.transformers" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="derrom.transformers.ELM_features">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.transformers.</span></span><span class="sig-name descname"><span class="pre">ELM_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ELM_nodes=200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ELM_weights_mean=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ELM_weights_std=1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ELM_bias_low=-1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ELM_bias_high=1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed=817</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation_function=&lt;ufunc</span> <span class="pre">'tanh'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/transformers.html#ELM_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.transformers.ELM_features" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#derrom.transformers.base_transformer" title="derrom.transformers.base_transformer"><code class="xref py py-class docutils literal notranslate"><span class="pre">base_transformer</span></code></a></p>
+<p>Extreme Learning Machine (ELM) features transformation.</p>
+<p>Generates a feature vector, which concatenates the linear delay-embedded feature vector and the ELM transformation thereoff.
+The ELM transform can be understood as sinle-layer feed-forward network. The inputs are subject to random linear projection, which are then combined with a random bias and fed into a (nonlinear) activation function.</p>
+<p>The weights of the random projection matrix are drawn from a normal distribution whose parameters can be specified. The elements of the bias vector are drawn from a uniform distribution whose parameters can be specified.</p>
+<section id="parameters">
+<h2>Parameters:<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt>ELM_nodes<span class="classifier">int</span></dt><dd><p>Number of ELM nodes/neurons.</p>
+</dd>
+<dt>ELM_weights_mean<span class="classifier">float</span></dt><dd><p>Mean value for the randomly drawn projection weights.</p>
+</dd>
+<dt>ELM_weights_std<span class="classifier">float</span></dt><dd><p>Standard deviation of the randomly drawn projection weights.</p>
+</dd>
+<dt>ELM_bias_low<span class="classifier">float</span></dt><dd><p>Lower bound for the randomly drawn biases.</p>
+</dd>
+<dt>ELM_bias_high<span class="classifier">float</span></dt><dd><p>Upper bound for the randomly drawn biases.</p>
+</dd>
+<dt>seed<span class="classifier">int</span></dt><dd><p>Seed value for the random generator.</p>
+</dd>
+<dt>activation_function<span class="classifier">callable</span></dt><dd><p>Activation function for the ELM neurons. Must act element-wise on 1D numpy.ndarrays.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.transformers.ELM_features.setup">
+<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_DE_features</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/transformers.html#ELM_features.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.transformers.ELM_features.setup" title="Permalink to this definition"></a></dt>
+<dd><p>Generates the random projection matrix and the random bias vector and thereby defines the number of ELM nodes/neurons.</p>
+<p>Note that the standard deviation of the randomly drawn projection matrix is scaled with the square root of number of ELM roots. This ensures that the mean input a neuron receives is of the order of one.</p>
+<section id="id1">
+<h3>Parameters:<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
+<blockquote>
+<div><dl class="simple">
+<dt>n_DE_features<span class="classifier">int</span></dt><dd><p>Number of delay embedded features, i.e., size the delay embedded feature vector. This is set by derrom’s fit method.</p>
+</dd>
+</dl>
+</div></blockquote>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.transformers.ELM_features.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">DE_state_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/transformers.html#ELM_features.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.transformers.ELM_features.transform" title="Permalink to this definition"></a></dt>
+<dd><p>Carries out the ELM features transformation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>DE_state_matrix</strong> – 2D numpy.ndarray
+Delay embedded state matrix with the features in the rows, which is to be transformed. May only contain one row.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="derrom.transformers.base_transformer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.transformers.</span></span><span class="sig-name descname"><span class="pre">base_transformer</span></span><a class="reference internal" href="_modules/derrom/transformers.html#base_transformer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.transformers.base_transformer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class to define the methods to be implemented.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.transformers.base_transformer.setup">
+<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/transformers.html#base_transformer.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.transformers.base_transformer.setup" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.transformers.base_transformer.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/transformers.html#base_transformer.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.transformers.base_transformer.transform" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="derrom.transformers.polynomial_features">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.transformers.</span></span><span class="sig-name descname"><span class="pre">polynomial_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/transformers.html#polynomial_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.transformers.polynomial_features" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#derrom.transformers.base_transformer" title="derrom.transformers.base_transformer"><code class="xref py py-class docutils literal notranslate"><span class="pre">base_transformer</span></code></a></p>
+<p>Polynomial features transformation.</p>
+<p>Generates a feature vector with all monomials up to the specified order/degree. This includes mixed monomials for orders &gt; 1.</p>
+<section id="notes">
+<h2>Notes:<a class="headerlink" href="#notes" title="Permalink to this heading"></a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><p>The size of the resulting feature vector scales with the power of order/degree.</p></li>
+<li><p>The generated features are not orthogonal.</p></li>
+<li><p>Polynomial (opposed to monomial features) are constructed by the linear combination in the regression step.</p></li>
+<li><p>The computation is implemented by iteratively computing the outer product (Tensor) product with the linear feature vector and then reshaping the resultung upper triangle (to avoid redundant features) back to a vector. Hence, more memory is allocated internally than one might infer from the resultung feature vector size.</p></li>
+<li><p>The monomial features correspond the basis functions of a discrete Volterra series.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="id2">
+<h2>Parameters:<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt>order<span class="classifier">int</span></dt><dd><p>Polynomial degree, to which features are to be generated.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.transformers.polynomial_features.setup">
+<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_DE_features</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/transformers.html#polynomial_features.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.transformers.polynomial_features.setup" title="Permalink to this definition"></a></dt>
+<dd><p>Not required for this transformation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.transformers.polynomial_features.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">DE_state_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/transformers.html#polynomial_features.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.transformers.polynomial_features.transform" title="Permalink to this definition"></a></dt>
+<dd><p>Carries out the polynomial features transformation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>DE_state_matrix</strong> – 2D numpy.ndarray
+Delay embedded state matrix with the features in the rows, which is to be transformed. May only contain one row.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</dd></dl>
+
 </section>
 
 
