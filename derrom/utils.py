@@ -72,15 +72,18 @@ def get_KFold_CV_scores(model, trajectories, targets='AR', folds=5, seed=817, no
 ### save and load models
 #######################################
 
-import pickle 
+import pickle
 
 def save_model(model,filename='../model.obj'):
     file = open(filename, 'wb') 
     pickle.dump(model, file)
 
+    
 def load_model(filename='../model.obj'):
     file = open(filename, 'rb') 
     return pickle.load(file)
+
+
 
 #######################################
 ### save and load trajectories
