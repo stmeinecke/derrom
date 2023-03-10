@@ -82,12 +82,53 @@
 <span class="c1">#######################################</span>
 
 <div class="viewcode-block" id="get_KFolds"><a class="viewcode-back" href="../../utils.html#derrom.utils.get_KFolds">[docs]</a><span class="k">def</span> <span class="nf">get_KFolds</span><span class="p">(</span><span class="n">data_list</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Split the given list of trajectories into K-folds for cross-validation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data_list : list</span>
+<span class="sd">        An list of trajectories, where each trajectory is a 2D numyp.ndarray.</span>
+<span class="sd">    folds : int, optional</span>
+<span class="sd">        The number of folds to create. Defaults to 5.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    folds : list</span>
+<span class="sd">        A list of K folds, where each fold is a list of trajectories.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
     <span class="n">KFolds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">data_list</span><span class="p">,</span> <span class="n">folds</span><span class="p">)</span> <span class="c1">#numpy returns list of ndarrays</span>
     <span class="n">KFolds</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">array</span><span class="p">)</span> <span class="k">for</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">KFolds</span><span class="p">]</span> <span class="c1">#covert ndarrays back to list such that KFolds is a list of lists of ndarrays (the individual trajectories)</span>
     <span class="k">return</span> <span class="n">KFolds</span></div>
   
   
 <div class="viewcode-block" id="get_KFold_CV_scores"><a class="viewcode-back" href="../../utils.html#derrom.utils.get_KFold_CV_scores">[docs]</a><span class="k">def</span> <span class="nf">get_KFold_CV_scores</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="s1">&#39;AR&#39;</span><span class="p">,</span> <span class="n">folds</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">817</span><span class="p">,</span> <span class="n">norms</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rms&#39;</span><span class="p">],</span> <span class="n">train_kwargs</span><span class="o">=</span><span class="p">{}):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Conduct K-fold cross-validation on the given model using the given trajectories and targets, and return the scores for each fold.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : object</span>
+<span class="sd">        An object that implements the `fit()` and `score_multiple_trajectories()` methods, which will be used to train and score the model.</span>
+<span class="sd">    trajectories : list</span>
+<span class="sd">        An list of trajectories, where each trajectory is a 2D numpy.ndarray.</span>
+<span class="sd">    targets : list or str, optional</span>
+<span class="sd">        An list of targets corresponding to the given trajectories, or &#39;AR&#39; for autoregression mode. Defaults to &#39;AR&#39;.</span>
+<span class="sd">    folds : int, optional</span>
+<span class="sd">        The number of folds to create for cross-validation. Defaults to 5.</span>
+<span class="sd">    seed : int, optional</span>
+<span class="sd">        The seed value to use for the random number generator when shuffling the trajectories. Defaults to 817.</span>
+<span class="sd">    norms : list of str, optional</span>
+<span class="sd">        A list of error norms to use for scoring the trajectories. Defaults to [&#39;rms&#39;].</span>
+<span class="sd">    train_kwargs : dict, optional</span>
+<span class="sd">        A dictionary of keyword arguments to pass to the `fit()` method when training the model. Defaults to {}.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    scores : list</span>
+<span class="sd">        A list of n lists, where n is the number of error norms specified in `norms`. Each list contains the scores for each each error norm.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="k">if</span> <span class="n">targets</span> <span class="o">!=</span> <span class="s1">&#39;AR&#39;</span><span class="p">:</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">trajectories</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
@@ -147,25 +188,73 @@
 <span class="c1">### save and load models</span>
 <span class="c1">#######################################</span>
 
-<span class="kn">import</span> <span class="nn">pickle</span> 
+<span class="kn">import</span> <span class="nn">pickle</span>
 
 <div class="viewcode-block" id="save_model"><a class="viewcode-back" href="../../utils.html#derrom.utils.save_model">[docs]</a><span class="k">def</span> <span class="nf">save_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;../model.obj&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Save a model object to a file using the pickle module.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : object</span>
+<span class="sd">        The model to be saved to a file.</span>
+<span class="sd">    filename : str, optional</span>
+<span class="sd">        The name of the file to save the object to. Defaults to &#39;../model.obj&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> 
     <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span></div>
 
+    
 <div class="viewcode-block" id="load_model"><a class="viewcode-back" href="../../utils.html#derrom.utils.load_model">[docs]</a><span class="k">def</span> <span class="nf">load_model</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;../model.obj&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load a Python object from a file using the pickle module.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str, optional</span>
+<span class="sd">        The name of the file to load the object from. Defaults to &#39;../model.obj&#39;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    model : object</span>
+<span class="sd">        The loaded model object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> 
     <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span></div>
+
+
 
 <span class="c1">#######################################</span>
 <span class="c1">### save and load trajectories</span>
 <span class="c1">#######################################</span>
 
 <div class="viewcode-block" id="save_trajectories"><a class="viewcode-back" href="../../utils.html#derrom.utils.save_trajectories">[docs]</a><span class="k">def</span> <span class="nf">save_trajectories</span><span class="p">(</span><span class="n">trajectories</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;../trajectories&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Save the given list of trajectories to a numpy .npz file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    trajectories : list</span>
+<span class="sd">        list of trajectories to save.</span>
+<span class="sd">    filename : str, optional</span>
+<span class="sd">        Name of the file to save the trajectories to. Defaults to &#39;../trajectories&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">)</span></div>
     
 <div class="viewcode-block" id="load_trajectories"><a class="viewcode-back" href="../../utils.html#derrom.utils.load_trajectories">[docs]</a><span class="k">def</span> <span class="nf">load_trajectories</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;../trajectories.npz&#39;</span><span class="p">):</span>
-    
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load a list of trajectories from a numpy .npz file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str, optional</span>
+<span class="sd">        Name of the file to load the trajectories from. Defaults to &#39;../trajectories.npz&#39;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    trajectories : list</span>
+<span class="sd">        List of loaded trajectories if file exists, otherwise None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">exists</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
@@ -188,6 +277,16 @@
 <span class="kn">import</span> <span class="nn">matplotlib.colors</span> <span class="k">as</span> <span class="nn">colors</span>
 
 <div class="viewcode-block" id="plot_trajectory"><a class="viewcode-back" href="../../utils.html#derrom.utils.plot_trajectory">[docs]</a><span class="k">def</span> <span class="nf">plot_trajectory</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;trajectory&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot a 2D trajectory using matplotlib.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : 2D numpy.ndarray</span>
+<span class="sd">        A 2D array of the trajectory to be plotted. Each row represents a time step and each column represents a state variable.</span>
+<span class="sd">    title : str, optional</span>
+<span class="sd">        The title of the plot. Defaults to &#39;trajectory&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span><span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;Reds&#39;</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;time $t$&#39;</span><span class="p">)</span>
@@ -198,7 +297,18 @@
 
     
 <div class="viewcode-block" id="plot_difference"><a class="viewcode-back" href="../../utils.html#derrom.utils.plot_difference">[docs]</a><span class="k">def</span> <span class="nf">plot_difference</span><span class="p">(</span><span class="n">test</span><span class="p">,</span><span class="n">truth</span><span class="p">,</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;difference&#39;</span><span class="p">):</span>
-    
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot the element-wise difference between two 2D arrays using matplotlib.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    test : numpy.ndarray</span>
+<span class="sd">        The first 2D array to be compared.</span>
+<span class="sd">    truth : numpy.ndarray</span>
+<span class="sd">        The second 2D array to be compared.</span>
+<span class="sd">    title : str, optional</span>
+<span class="sd">        The title of the plot. Defaults to &#39;difference&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">err</span> <span class="o">=</span> <span class="n">test</span><span class="o">-</span><span class="n">truth</span>
     
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span><span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;bwr&#39;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">colors</span><span class="o">.</span><span class="n">CenteredNorm</span><span class="p">(</span><span class="n">vcenter</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
@@ -215,7 +325,25 @@
 <span class="c1">#######################################</span>
 
 <div class="viewcode-block" id="reducer_helper_class"><a class="viewcode-back" href="../../utils.html#derrom.utils.reducer_helper_class">[docs]</a><span class="k">class</span> <span class="nc">reducer_helper_class</span><span class="p">:</span>
-    
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A helper class for benchmarking dimensionality reducers. Implements the `fit()` and `score_multiple()` methods to work with the `get_KFold_CV_scores()` function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dim_reducer : object or None, optional</span>
+<span class="sd">        The dimensionality reduction object</span>
+<span class="sd">    rdim : int, optional</span>
+<span class="sd">        The reduced dimensionality, i.e., the number of components to retain after dimensionality reduction. Default is 1.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rdim : int</span>
+<span class="sd">        The reduced dimensionality, i.e., the number of components to retain after dimensionality reduction.</span>
+<span class="sd">    dim_reducer : object</span>
+<span class="sd">        The dimensionality reduction object.</span>
+<span class="sd">    reg_mode : str</span>
+<span class="sd">        This string is set to &#39;AR&#39; to properly work the the KFold_CV function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim_reducer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rdim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">rdim</span> <span class="o">=</span> <span class="n">rdim</span>
@@ -278,6 +406,361 @@
         
         <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">scores</span></div></div>
+
+    
+<span class="c1">#######################################</span>
+<span class="c1">### ode integrator classes, which allow for the integration of derrom.</span>
+<span class="c1">#######################################</span>
+
+<div class="viewcode-block" id="ivp_integrator"><a class="viewcode-back" href="../../utils.html#derrom.utils.ivp_integrator">[docs]</a><span class="k">class</span> <span class="nc">ivp_integrator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Quick and dirty numerical integrator for solving initial value problems (IVPs), where either all or only parts of the right-hand-side of the equations of motion are provided by a data-driven model. Implements the `fit()` and `score_multiple()` methods to work with the `get_KFold_CV_scores()` function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : object</span>
+<span class="sd">        Model object with the methods &#39;predict&#39; and &#39;fit&#39;. &#39;predict&#39; provides either all or parts of the derivatives. The &#39;fit&#39; method can be invoked by the integrator during KFold_CV scoring.</span>
+<span class="sd">    derivs : function, optional</span>
+<span class="sd">        Function that calculates the system derivatives with</span>
+<span class="sd">        respect to time. Default is None, in which case the &#39;predict&#39; method</span>
+<span class="sd">        of the model object is used.</span>
+<span class="sd">    dt : float, optional</span>
+<span class="sd">        Time step for numerical integration. Default is 1.</span>
+<span class="sd">    dt_out : float, optional</span>
+<span class="sd">        Time step for saving output data. Default is 1.</span>
+<span class="sd">    method : {&#39;Heun&#39;, &#39;Euler&#39;}, optional</span>
+<span class="sd">        Numerical integration method to use. Default is &#39;Heun&#39;.</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model_hist_option : bool</span>
+<span class="sd">        Boolean indicating whether the model&#39;s &#39;full_hist&#39; attribute is True or</span>
+<span class="sd">        False.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">derivs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">dt_out</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;Heun&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt_out</span> <span class="o">=</span> <span class="n">dt_out</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="s1">&#39;AR&#39;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_hist_option</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">full_hist</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">full_hist</span> <span class="o">=</span> <span class="kc">True</span>
+        
+        <span class="k">if</span> <span class="n">derivs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">derivs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">derivs</span> <span class="o">=</span> <span class="n">derivs</span>
+    
+    
+<div class="viewcode-block" id="ivp_integrator.fit"><a class="viewcode-back" href="../../utils.html#derrom.utils.ivp_integrator.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        fits the data driven model to the training data presented via the `**kwargs`. Used by the KFold_CV function</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">full_hist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_hist_option</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">full_hist</span> <span class="o">=</span> <span class="kc">True</span></div>
+    
+    
+    <span class="k">def</span> <span class="nf">__Euler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">dt_out</span><span class="p">):</span>
+        
+        <span class="n">sol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_steps</span><span class="p">,</span><span class="n">init</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        
+        <span class="n">sol</span><span class="p">[:</span><span class="n">init</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">init</span>
+        
+        <span class="n">state</span> <span class="o">=</span> <span class="n">sol</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="n">j_out</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dt_out</span><span class="o">/</span><span class="n">dt</span><span class="p">)</span>
+        <span class="n">j_max</span> <span class="o">=</span> <span class="n">sol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">j_out</span>
+        
+        
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">sol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">j_out</span><span class="p">):</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">state</span> <span class="o">+</span> <span class="n">dt</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">derivs</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">j</span><span class="o">%</span><span class="n">j_out</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">sol</span><span class="p">[</span><span class="n">j</span><span class="o">//</span><span class="n">j_out</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span>
+                
+        <span class="k">return</span> <span class="n">sol</span>
+
+
+    <span class="k">def</span> <span class="nf">__Euler_wdelay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">dt_out</span><span class="p">):</span>
+        
+        <span class="n">sol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_steps</span><span class="p">,</span><span class="n">init</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        
+        <span class="n">sol</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">init</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="n">state</span> <span class="o">=</span> <span class="n">sol</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="n">j_out</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dt_out</span><span class="o">/</span><span class="n">dt</span><span class="p">)</span>
+        <span class="n">j_max</span> <span class="o">=</span> <span class="n">sol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">j_out</span>
+        
+        <span class="n">hist_length</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">DE_l</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">j_out</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">hist_ind</span> <span class="o">=</span> <span class="n">hist_length</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">hist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">hist_length</span><span class="p">,</span><span class="n">init</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">hist</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">hist</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">init</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">sol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">j_out</span><span class="p">):</span>
+            
+            <span class="n">vecs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span> <span class="p">[</span> <span class="n">hist</span><span class="p">[(</span><span class="n">hist_ind</span> <span class="o">-</span> <span class="n">n</span><span class="o">*</span><span class="n">j_out</span> <span class="o">+</span> <span class="n">hist_length</span><span class="p">)</span><span class="o">%</span><span class="n">hist_length</span><span class="p">]</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">DE_l</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span> <span class="p">)</span>
+            
+            <span class="n">state</span> <span class="o">=</span> <span class="n">state</span> <span class="o">+</span> <span class="n">dt</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">derivs</span><span class="p">(</span><span class="n">vecs</span><span class="p">)</span>
+            
+            <span class="n">hist_ind</span> <span class="o">=</span> <span class="p">(</span><span class="n">hist_ind</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="n">hist_length</span>
+            
+            <span class="n">hist</span><span class="p">[</span><span class="n">hist_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span>
+            
+            <span class="k">if</span> <span class="n">j</span><span class="o">%</span><span class="n">j_out</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">sol</span><span class="p">[</span><span class="n">j</span><span class="o">//</span><span class="n">j_out</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span>
+                
+        <span class="k">return</span> <span class="n">sol</span>
+    
+    
+    <span class="k">def</span> <span class="nf">__Heun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">dt_out</span><span class="p">):</span>
+        
+        <span class="n">sol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_steps</span><span class="p">,</span><span class="n">init</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        
+        <span class="n">sol</span><span class="p">[:</span><span class="n">init</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">init</span>
+        
+        <span class="n">state</span> <span class="o">=</span> <span class="n">sol</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="n">j_out</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dt_out</span><span class="o">/</span><span class="n">dt</span><span class="p">)</span>
+        <span class="n">j_max</span> <span class="o">=</span> <span class="n">sol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">j_out</span>
+        
+        
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">sol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">j_out</span><span class="p">):</span>
+            
+            <span class="n">f1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivs</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+            <span class="n">f2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivs</span><span class="p">(</span><span class="n">state</span> <span class="o">+</span> <span class="n">dt</span><span class="o">*</span><span class="n">f1</span><span class="p">)</span>
+            
+            <span class="n">state</span> <span class="o">=</span> <span class="n">state</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">dt</span><span class="o">*</span><span class="p">(</span><span class="n">f1</span><span class="o">+</span><span class="n">f2</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">j</span><span class="o">%</span><span class="n">j_out</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">sol</span><span class="p">[</span><span class="n">j</span><span class="o">//</span><span class="n">j_out</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span>
+                
+        <span class="k">return</span> <span class="n">sol</span>
+
+    
+    <span class="k">def</span> <span class="nf">__Heun_wdelay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">dt_out</span><span class="p">):</span>
+        
+        <span class="n">sol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_steps</span><span class="p">,</span><span class="n">init</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        
+        <span class="n">sol</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">init</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="n">state</span> <span class="o">=</span> <span class="n">sol</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="n">j_out</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dt_out</span><span class="o">/</span><span class="n">dt</span><span class="p">)</span>
+        <span class="n">j_max</span> <span class="o">=</span> <span class="n">sol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">j_out</span>
+        
+        <span class="n">hist_length</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">DE_l</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">j_out</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">hist_ind</span> <span class="o">=</span> <span class="n">hist_length</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">hist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">hist_length</span><span class="p">,</span><span class="n">init</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">hist</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">hist</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">init</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">sol</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">j_out</span><span class="p">):</span>
+            
+            <span class="n">vecs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span> <span class="p">[</span><span class="n">hist</span><span class="p">[(</span><span class="n">hist_ind</span> <span class="o">-</span> <span class="n">n</span><span class="o">*</span><span class="n">j_out</span> <span class="o">+</span> <span class="n">hist_length</span><span class="p">)</span><span class="o">%</span><span class="n">hist_length</span><span class="p">]</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">DE_l</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span> <span class="p">)</span>
+            
+            <span class="n">f1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivs</span><span class="p">(</span><span class="n">vecs</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+            
+            <span class="n">hist_ind</span> <span class="o">=</span> <span class="p">(</span><span class="n">hist_ind</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="n">hist_length</span>
+            
+            <span class="n">vecs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span> <span class="p">[</span><span class="n">hist</span><span class="p">[(</span><span class="n">hist_ind</span> <span class="o">-</span> <span class="n">n</span><span class="o">*</span><span class="n">j_out</span> <span class="o">+</span> <span class="n">hist_length</span><span class="p">)</span><span class="o">%</span><span class="n">hist_length</span><span class="p">]</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">DE_l</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span><span class="o">+</span><span class="p">[(</span><span class="n">state</span><span class="o">+</span><span class="n">dt</span><span class="o">*</span><span class="n">f1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()]</span> <span class="p">)</span>
+            
+            <span class="n">f2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivs</span><span class="p">(</span><span class="n">vecs</span><span class="p">)</span>
+            
+            <span class="n">state</span> <span class="o">=</span> <span class="n">state</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">dt</span><span class="o">*</span><span class="p">(</span><span class="n">f1</span><span class="o">+</span><span class="n">f2</span><span class="p">)</span>
+
+            <span class="n">hist</span><span class="p">[</span><span class="n">hist_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span>
+            
+            <span class="k">if</span> <span class="n">j</span><span class="o">%</span><span class="n">j_out</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">sol</span><span class="p">[</span><span class="n">j</span><span class="o">//</span><span class="n">j_out</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span>
+                
+        <span class="k">return</span> <span class="n">sol</span>
+    
+    
+<div class="viewcode-block" id="ivp_integrator.integrate"><a class="viewcode-back" href="../../utils.html#derrom.utils.ivp_integrator.integrate">[docs]</a>    <span class="k">def</span> <span class="nf">integrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dt_out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Integrate the differential equations using the specified method and time step.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        init : 2D numpy.ndarray</span>
+<span class="sd">            Initial state of the system.</span>
+<span class="sd">        n_steps : int</span>
+<span class="sd">            Number of integration steps to perform.</span>
+<span class="sd">        dt : float, optional</span>
+<span class="sd">            Time step for the integration. Defaults to `self.dt` if not specified.</span>
+<span class="sd">        dt_out : float, optional</span>
+<span class="sd">            Time step for outputting results. Defaults to `self.dt_out` if not specified.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        trajectory : 2D numpy.ndarray</span>
+<span class="sd">            Array containing the state of the system at each time step.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="n">dt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+        <span class="k">if</span> <span class="n">dt_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dt_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt_out</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;Heun&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">DE_l</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__Heun</span><span class="p">(</span><span class="n">init</span><span class="p">,</span><span class="n">n_steps</span><span class="p">,</span><span class="n">dt</span><span class="p">,</span><span class="n">dt_out</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__Heun_wdelay</span><span class="p">(</span><span class="n">init</span><span class="p">,</span><span class="n">n_steps</span><span class="p">,</span><span class="n">dt</span><span class="p">,</span><span class="n">dt_out</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;Euler&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">DE_l</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__Euler</span><span class="p">(</span><span class="n">init</span><span class="p">,</span><span class="n">n_steps</span><span class="p">,</span><span class="n">dt</span><span class="p">,</span><span class="n">dt_out</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__Euler_wdelay</span><span class="p">(</span><span class="n">init</span><span class="p">,</span><span class="n">n_steps</span><span class="p">,</span><span class="n">dt</span><span class="p">,</span><span class="n">dt_out</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;integration method &gt;&gt; &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">+</span> <span class="s1">&#39; &lt;&lt; does not exist&#39;</span><span class="p">)</span></div>
+    
+    
+<div class="viewcode-block" id="ivp_integrator.predict"><a class="viewcode-back" href="../../utils.html#derrom.utils.ivp_integrator.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectory</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Use the first time steps of the given trajectory as initial conditions and integrate the system to obtain a solution with identical length. Intended to score the solutions against the input trajectories.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        trajectory : 2D numpy.ndarray</span>
+<span class="sd">            Test trajectory, i.e., ground truth</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        prediction : 2D numpy.ndarray</span>
+<span class="sd">            An array containing the predicted trajectory of the system.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">trajectory</span><span class="p">,</span> <span class="n">trajectory</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+    
+    
+<div class="viewcode-block" id="ivp_integrator.get_error"><a class="viewcode-back" href="../../utils.html#derrom.utils.ivp_integrator.get_error">[docs]</a>    <span class="k">def</span> <span class="nf">get_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">truth</span><span class="p">,</span> <span class="n">pred</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="s1">&#39;rms&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates the error between the ground truth values and predicted values.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        truth: 2D numpy.ndarray</span>
+<span class="sd">            The ground truth values.</span>
+<span class="sd">        pred: 2D numpy.ndarray, optional</span>
+<span class="sd">            The predicted values. If not provided, the function uses the predict method of the class to make predictions.</span>
+<span class="sd">        norm: str, optional</span>
+<span class="sd">            The type of norm to be used to calculate the error. Default is &#39;rms&#39;.</span>
+<span class="sd">            Possible values are:</span>
+<span class="sd">            - &#39;rms&#39;: Normalized Frobenius norm</span>
+<span class="sd">            - &#39;fro&#39;: Frobenius norm</span>
+<span class="sd">            - &#39;max&#39;: Absolute maximum norm</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        error : float</span>
+<span class="sd">            The calculated error value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">pred</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">truth</span><span class="p">)</span>
+        
+        <span class="k">assert</span> <span class="n">pred</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">truth</span><span class="o">.</span><span class="n">shape</span>
+        
+        <span class="n">err</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span>
+        <span class="k">if</span> <span class="n">norm</span> <span class="o">==</span><span class="s1">&#39;rms&#39;</span><span class="p">:</span> <span class="c1">#normalized Frobenius norm</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">truth</span><span class="o">-</span><span class="n">pred</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span> <span class="s1">&#39;fro&#39;</span><span class="p">:</span> <span class="c1">#Frobenius norm</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">truth</span><span class="o">-</span><span class="n">pred</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s1">&#39;fro&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span><span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="c1">#absolute max norm</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">truth</span><span class="o">-</span><span class="n">pred</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;unknown norm&#39;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">err</span></div>
+    
+    
+<div class="viewcode-block" id="ivp_integrator.score_multiple_trajectories"><a class="viewcode-back" href="../../utils.html#derrom.utils.ivp_integrator.score_multiple_trajectories">[docs]</a>    <span class="k">def</span> <span class="nf">score_multiple_trajectories</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">predictions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        helper function to obtain error scores for multiple trajectories. Used by the derrom.utils.get.get_KFold_CV_scores function.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        trajectories : list</span>
+<span class="sd">            A list of the trajectories to be scored, where each element of the list is expected to be a 2D numpy.ndarray that represents an individual trajectories. Time slices must be stored in the rows (first index) and the system state variables in the columns (second index). All trajectories must have the same number of variables (columns), the number of time slices, however, may vary.</span>
+<span class="sd">        targets : list</span>
+<span class="sd">            A list of the targets, where each element is an numpy.ndarray that corresponds to the trajectory with the identical list index. Each element must have the same number of rows as the corresponding trajectory. If set to &#39;AR&#39;, i.e., autoregression, no targets are required.</span>
+<span class="sd">        predictions : list</span>
+<span class="sd">            A list of the predictions, where each element is an numpy.ndarray that corresponds to the trajectory with the identical list index. Supplying predictions reduces computaion time if derrom.utils.get.get_KFold_CV_scores is to be evaluated for multiple error norms. </span>
+<span class="sd">            </span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mean : float</span>
+<span class="sd">            mean regression error from all supplied trajectories</span>
+<span class="sd">        scores : list</span>
+<span class="sd">            list of all individual regression errors</span>
+<span class="sd">            </span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">if</span> <span class="n">predictions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trajectories</span><span class="p">)):</span>
+                <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_error</span><span class="p">(</span><span class="n">trajectories</span><span class="p">[</span><span class="n">k</span><span class="p">],</span><span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">trajectories</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trajectories</span><span class="p">)):</span>
+                <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_error</span><span class="p">(</span><span class="n">trajectories</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">pred</span><span class="o">=</span><span class="n">predictions</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+        
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">scores</span></div></div>
+    
+
+
+<div class="viewcode-block" id="PHELPH_ivp_integrator"><a class="viewcode-back" href="../../utils.html#derrom.utils.PHELPH_ivp_integrator">[docs]</a><span class="k">class</span> <span class="nc">PHELPH_ivp_integrator</span><span class="p">(</span><span class="n">ivp_integrator</span><span class="p">):</span>
+    
+<div class="viewcode-block" id="PHELPH_ivp_integrator.fit"><a class="viewcode-back" href="../../utils.html#derrom.utils.PHELPH_ivp_integrator.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">el_trajectories</span> <span class="o">=</span> <span class="p">[</span><span class="n">trajectory</span><span class="p">[:,:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">trajectory</span> <span class="ow">in</span> <span class="n">trajectories</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">el_trajectories</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="PHELPH_ivp_integrator.get_error"><a class="viewcode-back" href="../../utils.html#derrom.utils.PHELPH_ivp_integrator.get_error">[docs]</a>    <span class="k">def</span> <span class="nf">get_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">truth</span><span class="p">,</span> <span class="n">pred</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="s1">&#39;rms&#39;</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="n">pred</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">truth</span><span class="p">)</span>
+        
+        <span class="k">assert</span> <span class="n">pred</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">truth</span><span class="o">.</span><span class="n">shape</span>
+        
+        <span class="n">I_truth</span> <span class="o">=</span> <span class="n">truth</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">el_truth</span> <span class="o">=</span> <span class="n">truth</span><span class="p">[:,:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="n">I_pred</span> <span class="o">=</span> <span class="n">pred</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">el_pred</span> <span class="o">=</span> <span class="n">pred</span><span class="p">[:,:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        
+        
+        <span class="n">err</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span>
+        <span class="k">if</span> <span class="n">norm</span> <span class="o">==</span><span class="s1">&#39;rms&#39;</span><span class="p">:</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">el_truth</span><span class="o">-</span><span class="n">el_pred</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span><span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="c1">#absolute max norm</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">el_truth</span><span class="o">-</span><span class="n">el_pred</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span> <span class="s1">&#39;I_max&#39;</span><span class="p">:</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="p">(</span><span class="n">I_pred</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">-</span> <span class="n">I_truth</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span> <span class="s1">&#39;I_max_pos&#39;</span><span class="p">:</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">I_pred</span><span class="p">)</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">I_truth</span><span class="p">))</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_out</span>
+        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span> <span class="s1">&#39;I_area&#39;</span><span class="p">:</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">I_pred</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">I_truth</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;unknown norm&#39;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">err</span></div></div>
+
 </pre></div>
 
            </div>

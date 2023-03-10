@@ -48,13 +48,30 @@
 <li class="toctree-l1"><a class="reference internal" href="transformers.html">Transformers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="optimizers.html">Optimizers</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.utils.PHELPH_ivp_integrator"><code class="docutils literal notranslate"><span class="pre">PHELPH_ivp_integrator</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.utils.PHELPH_ivp_integrator.fit"><code class="docutils literal notranslate"><span class="pre">PHELPH_ivp_integrator.fit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.utils.PHELPH_ivp_integrator.get_error"><code class="docutils literal notranslate"><span class="pre">PHELPH_ivp_integrator.get_error()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#derrom.utils.get_KFold_CV_scores"><code class="docutils literal notranslate"><span class="pre">get_KFold_CV_scores()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#derrom.utils.get_KFolds"><code class="docutils literal notranslate"><span class="pre">get_KFolds()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#derrom.utils.ivp_integrator"><code class="docutils literal notranslate"><span class="pre">ivp_integrator</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.utils.ivp_integrator.model_hist_option"><code class="docutils literal notranslate"><span class="pre">ivp_integrator.model_hist_option</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.utils.ivp_integrator.fit"><code class="docutils literal notranslate"><span class="pre">ivp_integrator.fit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.utils.ivp_integrator.get_error"><code class="docutils literal notranslate"><span class="pre">ivp_integrator.get_error()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.utils.ivp_integrator.integrate"><code class="docutils literal notranslate"><span class="pre">ivp_integrator.integrate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.utils.ivp_integrator.predict"><code class="docutils literal notranslate"><span class="pre">ivp_integrator.predict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.utils.ivp_integrator.score_multiple_trajectories"><code class="docutils literal notranslate"><span class="pre">ivp_integrator.score_multiple_trajectories()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#derrom.utils.load_model"><code class="docutils literal notranslate"><span class="pre">load_model()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#derrom.utils.load_trajectories"><code class="docutils literal notranslate"><span class="pre">load_trajectories()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#derrom.utils.plot_difference"><code class="docutils literal notranslate"><span class="pre">plot_difference()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#derrom.utils.plot_trajectory"><code class="docutils literal notranslate"><span class="pre">plot_trajectory()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#derrom.utils.reducer_helper_class"><code class="docutils literal notranslate"><span class="pre">reducer_helper_class</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.utils.reducer_helper_class.rdim"><code class="docutils literal notranslate"><span class="pre">reducer_helper_class.rdim</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.utils.reducer_helper_class.dim_reducer"><code class="docutils literal notranslate"><span class="pre">reducer_helper_class.dim_reducer</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#derrom.utils.reducer_helper_class.reg_mode"><code class="docutils literal notranslate"><span class="pre">reducer_helper_class.reg_mode</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#derrom.utils.reducer_helper_class.fit"><code class="docutils literal notranslate"><span class="pre">reducer_helper_class.fit()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#derrom.utils.reducer_helper_class.get_error"><code class="docutils literal notranslate"><span class="pre">reducer_helper_class.get_error()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#derrom.utils.reducer_helper_class.predict"><code class="docutils literal notranslate"><span class="pre">reducer_helper_class.predict()</span></code></a></li>
@@ -93,40 +110,321 @@
              
   <section id="module-derrom.utils">
 <span id="utils"></span><h1>Utils<a class="headerlink" href="#module-derrom.utils" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="derrom.utils.PHELPH_ivp_integrator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">PHELPH_ivp_integrator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derivs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Heun'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#PHELPH_ivp_integrator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.PHELPH_ivp_integrator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#derrom.utils.ivp_integrator" title="derrom.utils.ivp_integrator"><code class="xref py py-class docutils literal notranslate"><span class="pre">ivp_integrator</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.utils.PHELPH_ivp_integrator.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trajectories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#PHELPH_ivp_integrator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.PHELPH_ivp_integrator.fit" title="Permalink to this definition"></a></dt>
+<dd><p>fits the data driven model to the training data presented via the <cite>**kwargs</cite>. Used by the KFold_CV function</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.utils.PHELPH_ivp_integrator.get_error">
+<span class="sig-name descname"><span class="pre">get_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">truth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rms'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#PHELPH_ivp_integrator.get_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.PHELPH_ivp_integrator.get_error" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the error between the ground truth values and predicted values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>truth</strong> (<em>2D numpy.ndarray</em>) – The ground truth values.</p></li>
+<li><p><strong>pred</strong> (<em>2D numpy.ndarray</em><em>, </em><em>optional</em>) – The predicted values. If not provided, the function uses the predict method of the class to make predictions.</p></li>
+<li><p><strong>norm</strong> (<em>str</em><em>, </em><em>optional</em>) – The type of norm to be used to calculate the error. Default is ‘rms’.
+Possible values are:
+- ‘rms’: Normalized Frobenius norm
+- ‘fro’: Frobenius norm
+- ‘max’: Absolute maximum norm</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>error</strong> – The calculated error value.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="derrom.utils.get_KFold_CV_scores">
 <span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">get_KFold_CV_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trajectories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'AR'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">817</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['rms']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#get_KFold_CV_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.get_KFold_CV_scores" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Conduct K-fold cross-validation on the given model using the given trajectories and targets, and return the scores for each fold.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>object</em>) – An object that implements the <cite>fit()</cite> and <cite>score_multiple_trajectories()</cite> methods, which will be used to train and score the model.</p></li>
+<li><p><strong>trajectories</strong> (<em>list</em>) – An list of trajectories, where each trajectory is a 2D numpy.ndarray.</p></li>
+<li><p><strong>targets</strong> (<em>list</em><em> or </em><em>str</em><em>, </em><em>optional</em>) – An list of targets corresponding to the given trajectories, or ‘AR’ for autoregression mode. Defaults to ‘AR’.</p></li>
+<li><p><strong>folds</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of folds to create for cross-validation. Defaults to 5.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – The seed value to use for the random number generator when shuffling the trajectories. Defaults to 817.</p></li>
+<li><p><strong>norms</strong> (<em>list</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – A list of error norms to use for scoring the trajectories. Defaults to [‘rms’].</p></li>
+<li><p><strong>train_kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – A dictionary of keyword arguments to pass to the <cite>fit()</cite> method when training the model. Defaults to {}.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>scores</strong> – A list of n lists, where n is the number of error norms specified in <cite>norms</cite>. Each list contains the scores for each each error norm.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="derrom.utils.get_KFolds">
 <span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">get_KFolds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#get_KFolds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.get_KFolds" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Split the given list of trajectories into K-folds for cross-validation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_list</strong> (<em>list</em>) – An list of trajectories, where each trajectory is a 2D numyp.ndarray.</p></li>
+<li><p><strong>folds</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of folds to create. Defaults to 5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>folds</strong> – A list of K folds, where each fold is a list of trajectories.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="derrom.utils.ivp_integrator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">ivp_integrator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derivs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Heun'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#ivp_integrator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.ivp_integrator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Quick and dirty numerical integrator for solving initial value problems (IVPs), where either all or only parts of the right-hand-side of the equations of motion are provided by a data-driven model. Implements the <cite>fit()</cite> and <cite>score_multiple()</cite> methods to work with the <cite>get_KFold_CV_scores()</cite> function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>object</em>) – Model object with the methods ‘predict’ and ‘fit’. ‘predict’ provides either all or parts of the derivatives. The ‘fit’ method can be invoked by the integrator during KFold_CV scoring.</p></li>
+<li><p><strong>derivs</strong> (<em>function</em><em>, </em><em>optional</em>) – Function that calculates the system derivatives with
+respect to time. Default is None, in which case the ‘predict’ method
+of the model object is used.</p></li>
+<li><p><strong>dt</strong> (<em>float</em><em>, </em><em>optional</em>) – Time step for numerical integration. Default is 1.</p></li>
+<li><p><strong>dt_out</strong> (<em>float</em><em>, </em><em>optional</em>) – Time step for saving output data. Default is 1.</p></li>
+<li><p><strong>method</strong> (<em>{'Heun'</em><em>, </em><em>'Euler'}</em><em>, </em><em>optional</em>) – Numerical integration method to use. Default is ‘Heun’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="derrom.utils.ivp_integrator.model_hist_option">
+<span class="sig-name descname"><span class="pre">model_hist_option</span></span><a class="headerlink" href="#derrom.utils.ivp_integrator.model_hist_option" title="Permalink to this definition"></a></dt>
+<dd><p>Boolean indicating whether the model’s ‘full_hist’ attribute is True or
+False.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.utils.ivp_integrator.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#ivp_integrator.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.ivp_integrator.fit" title="Permalink to this definition"></a></dt>
+<dd><p>fits the data driven model to the training data presented via the <cite>**kwargs</cite>. Used by the KFold_CV function</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.utils.ivp_integrator.get_error">
+<span class="sig-name descname"><span class="pre">get_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">truth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rms'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#ivp_integrator.get_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.ivp_integrator.get_error" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the error between the ground truth values and predicted values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>truth</strong> (<em>2D numpy.ndarray</em>) – The ground truth values.</p></li>
+<li><p><strong>pred</strong> (<em>2D numpy.ndarray</em><em>, </em><em>optional</em>) – The predicted values. If not provided, the function uses the predict method of the class to make predictions.</p></li>
+<li><p><strong>norm</strong> (<em>str</em><em>, </em><em>optional</em>) – The type of norm to be used to calculate the error. Default is ‘rms’.
+Possible values are:
+- ‘rms’: Normalized Frobenius norm
+- ‘fro’: Frobenius norm
+- ‘max’: Absolute maximum norm</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>error</strong> – The calculated error value.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.utils.ivp_integrator.integrate">
+<span class="sig-name descname"><span class="pre">integrate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#ivp_integrator.integrate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.ivp_integrator.integrate" title="Permalink to this definition"></a></dt>
+<dd><p>Integrate the differential equations using the specified method and time step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>init</strong> (<em>2D numpy.ndarray</em>) – Initial state of the system.</p></li>
+<li><p><strong>n_steps</strong> (<em>int</em>) – Number of integration steps to perform.</p></li>
+<li><p><strong>dt</strong> (<em>float</em><em>, </em><em>optional</em>) – Time step for the integration. Defaults to <cite>self.dt</cite> if not specified.</p></li>
+<li><p><strong>dt_out</strong> (<em>float</em><em>, </em><em>optional</em>) – Time step for outputting results. Defaults to <cite>self.dt_out</cite> if not specified.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>trajectory</strong> – Array containing the state of the system at each time step.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2D numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.utils.ivp_integrator.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trajectory</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#ivp_integrator.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.ivp_integrator.predict" title="Permalink to this definition"></a></dt>
+<dd><p>Use the first time steps of the given trajectory as initial conditions and integrate the system to obtain a solution with identical length. Intended to score the solutions against the input trajectories.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>trajectory</strong> (<em>2D numpy.ndarray</em>) – Test trajectory, i.e., ground truth</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>prediction</strong> – An array containing the predicted trajectory of the system.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2D numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="derrom.utils.ivp_integrator.score_multiple_trajectories">
+<span class="sig-name descname"><span class="pre">score_multiple_trajectories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trajectories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#ivp_integrator.score_multiple_trajectories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.ivp_integrator.score_multiple_trajectories" title="Permalink to this definition"></a></dt>
+<dd><p>helper function to obtain error scores for multiple trajectories. Used by the derrom.utils.get.get_KFold_CV_scores function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trajectories</strong> (<em>list</em>) – A list of the trajectories to be scored, where each element of the list is expected to be a 2D numpy.ndarray that represents an individual trajectories. Time slices must be stored in the rows (first index) and the system state variables in the columns (second index). All trajectories must have the same number of variables (columns), the number of time slices, however, may vary.</p></li>
+<li><p><strong>targets</strong> (<em>list</em>) – A list of the targets, where each element is an numpy.ndarray that corresponds to the trajectory with the identical list index. Each element must have the same number of rows as the corresponding trajectory. If set to ‘AR’, i.e., autoregression, no targets are required.</p></li>
+<li><p><strong>predictions</strong> (<em>list</em>) – A list of the predictions, where each element is an numpy.ndarray that corresponds to the trajectory with the identical list index. Supplying predictions reduces computaion time if derrom.utils.get.get_KFold_CV_scores is to be evaluated for multiple error norms.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>mean</strong> (<em>float</em>) – mean regression error from all supplied trajectories</p></li>
+<li><p><strong>scores</strong> (<em>list</em>) – list of all individual regression errors</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="derrom.utils.load_model">
 <span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'../model.obj'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#load_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.load_model" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Load a Python object from a file using the pickle module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the file to load the object from. Defaults to ‘../model.obj’.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>model</strong> – The loaded model object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="derrom.utils.load_trajectories">
 <span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">load_trajectories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'../trajectories.npz'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#load_trajectories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.load_trajectories" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Load a list of trajectories from a numpy .npz file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the file to load the trajectories from. Defaults to ‘../trajectories.npz’.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>trajectories</strong> – List of loaded trajectories if file exists, otherwise None.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="derrom.utils.plot_difference">
 <span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">plot_difference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">truth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'difference'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#plot_difference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.plot_difference" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Plot the element-wise difference between two 2D arrays using matplotlib.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>test</strong> (<em>numpy.ndarray</em>) – The first 2D array to be compared.</p></li>
+<li><p><strong>truth</strong> (<em>numpy.ndarray</em>) – The second 2D array to be compared.</p></li>
+<li><p><strong>title</strong> (<em>str</em><em>, </em><em>optional</em>) – The title of the plot. Defaults to ‘difference’.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="derrom.utils.plot_trajectory">
 <span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">plot_trajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'trajectory'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#plot_trajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.plot_trajectory" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Plot a 2D trajectory using matplotlib.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>2D numpy.ndarray</em>) – A 2D array of the trajectory to be plotted. Each row represents a time step and each column represents a state variable.</p></li>
+<li><p><strong>title</strong> (<em>str</em><em>, </em><em>optional</em>) – The title of the plot. Defaults to ‘trajectory’.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="derrom.utils.reducer_helper_class">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">reducer_helper_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim_reducer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#reducer_helper_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.reducer_helper_class" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A helper class for benchmarking dimensionality reducers. Implements the <cite>fit()</cite> and <cite>score_multiple()</cite> methods to work with the <cite>get_KFold_CV_scores()</cite> function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dim_reducer</strong> (<em>object</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – The dimensionality reduction object</p></li>
+<li><p><strong>rdim</strong> (<em>int</em><em>, </em><em>optional</em>) – The reduced dimensionality, i.e., the number of components to retain after dimensionality reduction. Default is 1.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="derrom.utils.reducer_helper_class.rdim">
+<span class="sig-name descname"><span class="pre">rdim</span></span><a class="headerlink" href="#derrom.utils.reducer_helper_class.rdim" title="Permalink to this definition"></a></dt>
+<dd><p>The reduced dimensionality, i.e., the number of components to retain after dimensionality reduction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="derrom.utils.reducer_helper_class.dim_reducer">
+<span class="sig-name descname"><span class="pre">dim_reducer</span></span><a class="headerlink" href="#derrom.utils.reducer_helper_class.dim_reducer" title="Permalink to this definition"></a></dt>
+<dd><p>The dimensionality reduction object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="derrom.utils.reducer_helper_class.reg_mode">
+<span class="sig-name descname"><span class="pre">reg_mode</span></span><a class="headerlink" href="#derrom.utils.reducer_helper_class.reg_mode" title="Permalink to this definition"></a></dt>
+<dd><p>This string is set to ‘AR’ to properly work the the KFold_CV function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="derrom.utils.reducer_helper_class.fit">
 <span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trajectories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'AR'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_reducer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#reducer_helper_class.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.reducer_helper_class.fit" title="Permalink to this definition"></a></dt>
@@ -152,12 +450,30 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="derrom.utils.save_model">
 <span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">save_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'../model.obj'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#save_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.save_model" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Save a model object to a file using the pickle module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>object</em>) – The model to be saved to a file.</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the file to save the object to. Defaults to ‘../model.obj’.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="derrom.utils.save_trajectories">
 <span class="sig-prename descclassname"><span class="pre">derrom.utils.</span></span><span class="sig-name descname"><span class="pre">save_trajectories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trajectories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'../trajectories'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/derrom/utils.html#save_trajectories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#derrom.utils.save_trajectories" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Save the given list of trajectories to a numpy .npz file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trajectories</strong> (<em>list</em>) – list of trajectories to save.</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the file to save the trajectories to. Defaults to ‘../trajectories’.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 

@@ -7,12 +7,53 @@ import numpy as np
 #######################################
 
 def get_KFolds(data_list, folds=5):
+    """
+    Split the given list of trajectories into K-folds for cross-validation.
+
+    Parameters
+    ----------
+    data_list : list
+        An list of trajectories, where each trajectory is a 2D numyp.ndarray.
+    folds : int, optional
+        The number of folds to create. Defaults to 5.
+
+    Returns
+    -------
+    folds : list
+        A list of K folds, where each fold is a list of trajectories.
+    """
+    
     KFolds = np.array_split(data_list, folds) #numpy returns list of ndarrays
     KFolds = [list(array) for array in KFolds] #covert ndarrays back to list such that KFolds is a list of lists of ndarrays (the individual trajectories)
     return KFolds
   
   
 def get_KFold_CV_scores(model, trajectories, targets='AR', folds=5, seed=817, norms = ['rms'], train_kwargs={}):
+    """
+    Conduct K-fold cross-validation on the given model using the given trajectories and targets, and return the scores for each fold.
+
+    Parameters
+    ----------
+    model : object
+        An object that implements the `fit()` and `score_multiple_trajectories()` methods, which will be used to train and score the model.
+    trajectories : list
+        An list of trajectories, where each trajectory is a 2D numpy.ndarray.
+    targets : list or str, optional
+        An list of targets corresponding to the given trajectories, or 'AR' for autoregression mode. Defaults to 'AR'.
+    folds : int, optional
+        The number of folds to create for cross-validation. Defaults to 5.
+    seed : int, optional
+        The seed value to use for the random number generator when shuffling the trajectories. Defaults to 817.
+    norms : list of str, optional
+        A list of error norms to use for scoring the trajectories. Defaults to ['rms'].
+    train_kwargs : dict, optional
+        A dictionary of keyword arguments to pass to the `fit()` method when training the model. Defaults to {}.
+
+    Returns
+    -------
+    scores : list
+        A list of n lists, where n is the number of error norms specified in `norms`. Each list contains the scores for each each error norm.
+    """
     
     if targets != 'AR':
         assert len(trajectories) == len(targets)
@@ -75,11 +116,34 @@ def get_KFold_CV_scores(model, trajectories, targets='AR', folds=5, seed=817, no
 import pickle
 
 def save_model(model,filename='../model.obj'):
+    """
+    Save a model object to a file using the pickle module.
+
+    Parameters
+    ----------
+    model : object
+        The model to be saved to a file.
+    filename : str, optional
+        The name of the file to save the object to. Defaults to '../model.obj'.
+    """
     file = open(filename, 'wb') 
     pickle.dump(model, file)
 
     
 def load_model(filename='../model.obj'):
+    """
+    Load a Python object from a file using the pickle module.
+
+    Parameters
+    ----------
+    filename : str, optional
+        The name of the file to load the object from. Defaults to '../model.obj'.
+
+    Returns
+    -------
+    model : object
+        The loaded model object.
+    """
     file = open(filename, 'rb') 
     return pickle.load(file)
 
@@ -90,10 +154,32 @@ def load_model(filename='../model.obj'):
 #######################################
 
 def save_trajectories(trajectories, filename='../trajectories'):
+    """
+    Save the given list of trajectories to a numpy .npz file.
+
+    Parameters
+    ----------
+    trajectories : list
+        list of trajectories to save.
+    filename : str, optional
+        Name of the file to save the trajectories to. Defaults to '../trajectories'.
+    """
     np.savez(filename, trajectories)
     
 def load_trajectories(filename='../trajectories.npz'):
-    
+    """
+    Load a list of trajectories from a numpy .npz file.
+
+    Parameters
+    ----------
+    filename : str, optional
+        Name of the file to load the trajectories from. Defaults to '../trajectories.npz'.
+
+    Returns
+    -------
+    trajectories : list
+        List of loaded trajectories if file exists, otherwise None.
+    """
     from os.path import exists
 
     if not exists(filename):
@@ -116,6 +202,16 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
 def plot_trajectory(data,title='trajectory'):
+    """
+    Plot a 2D trajectory using matplotlib.
+
+    Parameters
+    ----------
+    data : 2D numpy.ndarray
+        A 2D array of the trajectory to be plotted. Each row represents a time step and each column represents a state variable.
+    title : str, optional
+        The title of the plot. Defaults to 'trajectory'.
+    """
     plt.imshow(data, aspect='auto', interpolation='none',origin='lower',cmap='Reds')
     plt.title(title)
     plt.ylabel(r'time $t$')
@@ -126,7 +222,18 @@ def plot_trajectory(data,title='trajectory'):
 
     
 def plot_difference(test,truth,title='difference'):
-    
+    """
+    Plot the element-wise difference between two 2D arrays using matplotlib.
+
+    Parameters
+    ----------
+    test : numpy.ndarray
+        The first 2D array to be compared.
+    truth : numpy.ndarray
+        The second 2D array to be compared.
+    title : str, optional
+        The title of the plot. Defaults to 'difference'.
+    """
     err = test-truth
     
     plt.imshow(err, aspect='auto', interpolation='none',origin='lower',cmap='bwr', norm=colors.CenteredNorm(vcenter=0.0))
@@ -143,7 +250,25 @@ def plot_difference(test,truth,title='difference'):
 #######################################
 
 class reducer_helper_class:
-    
+    """
+    A helper class for benchmarking dimensionality reducers. Implements the `fit()` and `score_multiple()` methods to work with the `get_KFold_CV_scores()` function.
+
+    Parameters
+    ----------
+    dim_reducer : object or None, optional
+        The dimensionality reduction object
+    rdim : int, optional
+        The reduced dimensionality, i.e., the number of components to retain after dimensionality reduction. Default is 1.
+
+    Attributes
+    ----------
+    rdim : int
+        The reduced dimensionality, i.e., the number of components to retain after dimensionality reduction.
+    dim_reducer : object
+        The dimensionality reduction object.
+    reg_mode : str
+        This string is set to 'AR' to properly work the the KFold_CV function
+    """
     def __init__(self, dim_reducer = None, rdim = 1):
 
         self.rdim = rdim
@@ -213,6 +338,32 @@ class reducer_helper_class:
 #######################################
 
 class ivp_integrator:
+    """
+    Quick and dirty numerical integrator for solving initial value problems (IVPs), where either all or only parts of the right-hand-side of the equations of motion are provided by a data-driven model. Implements the `fit()` and `score_multiple()` methods to work with the `get_KFold_CV_scores()` function.
+
+    Parameters
+    ----------
+    model : object
+        Model object with the methods 'predict' and 'fit'. 'predict' provides either all or parts of the derivatives. The 'fit' method can be invoked by the integrator during KFold_CV scoring.
+    derivs : function, optional
+        Function that calculates the system derivatives with
+        respect to time. Default is None, in which case the 'predict' method
+        of the model object is used.
+    dt : float, optional
+        Time step for numerical integration. Default is 1.
+    dt_out : float, optional
+        Time step for saving output data. Default is 1.
+    method : {'Heun', 'Euler'}, optional
+        Numerical integration method to use. Default is 'Heun'.
+        
+        
+    Attributes
+    ----------
+    model_hist_option : bool
+        Boolean indicating whether the model's 'full_hist' attribute is True or
+        False.
+
+    """
     
     def __init__(self, model, derivs=None, dt=1., dt_out=1., method='Heun'):
         self.dt = dt
@@ -232,6 +383,9 @@ class ivp_integrator:
     
     
     def fit(self, **kwargs):
+        """
+        fits the data driven model to the training data presented via the `**kwargs`. Used by the KFold_CV function
+        """
         
         self.model.full_hist = self.model_hist_option
         
@@ -361,6 +515,25 @@ class ivp_integrator:
     
     
     def integrate(self, init, n_steps, dt=None, dt_out=None):
+        """
+        Integrate the differential equations using the specified method and time step.
+
+        Parameters
+        ----------
+        init : 2D numpy.ndarray
+            Initial state of the system.
+        n_steps : int
+            Number of integration steps to perform.
+        dt : float, optional
+            Time step for the integration. Defaults to `self.dt` if not specified.
+        dt_out : float, optional
+            Time step for outputting results. Defaults to `self.dt_out` if not specified.
+
+        Returns
+        -------
+        trajectory : 2D numpy.ndarray
+            Array containing the state of the system at each time step.
+        """
         
         if dt is None:
             dt = self.dt
@@ -382,11 +555,44 @@ class ivp_integrator:
     
     
     def predict(self, trajectory):
+        """
+        Use the first time steps of the given trajectory as initial conditions and integrate the system to obtain a solution with identical length. Intended to score the solutions against the input trajectories.
+        
+        Parameters
+        ----------
+        trajectory : 2D numpy.ndarray
+            Test trajectory, i.e., ground truth
+
+        Returns
+        -------
+        prediction : 2D numpy.ndarray
+            An array containing the predicted trajectory of the system.
+        """
         return self.integrate(trajectory, trajectory.shape[0])
     
     
     def get_error(self, truth, pred=None, norm='rms'):
-        
+        """
+        Calculates the error between the ground truth values and predicted values.
+
+        Parameters
+        ----------
+        truth: 2D numpy.ndarray
+            The ground truth values.
+        pred: 2D numpy.ndarray, optional
+            The predicted values. If not provided, the function uses the predict method of the class to make predictions.
+        norm: str, optional
+            The type of norm to be used to calculate the error. Default is 'rms'.
+            Possible values are:
+            - 'rms': Normalized Frobenius norm
+            - 'fro': Frobenius norm
+            - 'max': Absolute maximum norm
+
+        Returns
+        -------
+        error : float
+            The calculated error value.
+        """
         if pred is None:
             pred = self.predict(truth)
         
@@ -406,6 +612,29 @@ class ivp_integrator:
     
     
     def score_multiple_trajectories(self, trajectories, targets=None, predictions=None, **kwargs):
+        """
+        helper function to obtain error scores for multiple trajectories. Used by the derrom.utils.get.get_KFold_CV_scores function.
+        
+        Parameters
+        ----------
+        trajectories : list
+            A list of the trajectories to be scored, where each element of the list is expected to be a 2D numpy.ndarray that represents an individual trajectories. Time slices must be stored in the rows (first index) and the system state variables in the columns (second index). All trajectories must have the same number of variables (columns), the number of time slices, however, may vary.
+        targets : list
+            A list of the targets, where each element is an numpy.ndarray that corresponds to the trajectory with the identical list index. Each element must have the same number of rows as the corresponding trajectory. If set to 'AR', i.e., autoregression, no targets are required.
+        predictions : list
+            A list of the predictions, where each element is an numpy.ndarray that corresponds to the trajectory with the identical list index. Supplying predictions reduces computaion time if derrom.utils.get.get_KFold_CV_scores is to be evaluated for multiple error norms. 
+            
+            
+        Returns
+        -------
+        mean : float
+            mean regression error from all supplied trajectories
+        scores : list
+            list of all individual regression errors
+            
+            
+        """
+        
         scores = []
         
         if predictions is None:
