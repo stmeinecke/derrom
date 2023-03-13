@@ -1,6 +1,5 @@
 Delay Embedded Regressive Reduced Order Model (derrom)
-------------------------------------------------------
-------------------------------------------------------
+======================================================
 
 **derrom** is a **D**\elay **E**\mbedded **R**\egressive **R**\educed **O**\rder **M**\odel. 
 It provides a modular package, which is designed to perform computationally efficient regression on high-dimensional time-series data. 
@@ -10,7 +9,7 @@ The model is trained with the supervised paradigm, where a set of existing input
 Library Reference
 -----------------
 
-Can be found here::
+is hosted by readthedocs::
     
     https://derrom.readthedocs.io/en/latest/
 
