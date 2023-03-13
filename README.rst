@@ -9,7 +9,7 @@ The model is trained with the supervised paradigm, where a set of existing input
 Library Reference
 -----------------
 
-is hosted by readthedocs::
+is hosted by readthedocs:
     
     https://derrom.readthedocs.io/en/latest/
 

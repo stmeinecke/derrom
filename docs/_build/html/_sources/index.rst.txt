@@ -67,7 +67,7 @@ and you're ready to go!
 Examples:
 ---------
 
-A number of examples, which apply derrom to nonlinear solid-state transient dyanamics, are provided here::
+A number of examples, which apply derrom to nonlinear solid-state transient dyanamics, are provided here:
     
     https://github.com/stmeinecke/derrom/tree/main/examples
 
