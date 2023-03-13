@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "derrom"
-version = "0.2"
+version = "0.3.0"
 authors = [
   { name="Stefan Meinecke", email="stefan.meinecke@posteo.de" },
   { name="Felix Köster", email="Felix-Koester@hotmail.com" },
