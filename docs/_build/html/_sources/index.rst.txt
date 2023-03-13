@@ -10,6 +10,7 @@ Welcome to derrom's documentation!
 It provides a modular package, which is designed to perform computationally efficient regression on high-dimensional time-series data. 
 The model is trained with the supervised paradigm, where a set of existing input-output pairs is used to optimize the model parameters to obtain the desired regression performance.
 
+
 .. toctree::
    :maxdepth: 1
    :caption: Library Documentation:
@@ -32,6 +33,17 @@ Note that a sufficient amount of training data must, nonetheless, be generated v
 A good example is the stochastic simulation of a semiconductor lasers' photon field. In that case, one likely must simulate many stochastic realizations to obtain enough samples for good statistics. The underlying charge-carrier dynamics are required for the photon field evolution and are expensive to microscopically simulate, but are not the observable of interest. Instead of resorting to rough analytic approximations, one may fully simulate the system for the first few realizations and then use the generated data to train **derrom** and use it for the remaining realizations.
 
 
+Who is it for?:
+---------------
+
+The derrom package is intended for research/scientific use. Its focus is on easy experimentation, which is achieved via a modular implementation. E.g, further dimensionality reduction approaches and nonlinear transformations can be quickly integrated via additional moduls.
+
+Note that the code is not optimized for absolute computational speed and minimal memory usage. We assume, that once a well working derrom model is obtained, it would be integrated into an existing simulation code by reimplementing it within the code's framework.
+
+On a side note: If you are a PhD student or PostDoc, who is running a multi-physics simulation code, which must compute nonlinear transient dynamics, then the derrom package might be an easy way to get a `machine-learning` paper ;).
+
+
+
 How does it work?:
 ------------------
 
@@ -45,7 +57,19 @@ Clone the repository::
 
     git clone https://github.com/stmeinecke/derrom.git
     
-Make sure you fulfill all requirements and you're ready to go!
+Make sure you fulfill all requirements, e.g., via::
+
+    pip install -r requirements.txt
+
+and you're ready to go!
+
+
+Examples:
+---------
+
+A number of examples, which apply derrom to nonlinear solid-state transient dyanamics, are provided here::
+    
+    https://github.com/stmeinecke/derrom/tree/main/examples
 
 
 Indices and tables

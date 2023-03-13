@@ -97,6 +97,12 @@ The model is trained with the supervised paradigm, where a set of existing input
 <p>Note that a sufficient amount of training data must, nonetheless, be generated via the potentially expensive full simulation of the system. However, if relatively few trajectories are sufficient for a well trained model and many more are to be simulated, the <strong>derrom</strong> approach quickly becomes worth the trouble.</p>
 <p>A good example is the stochastic simulation of a semiconductor lasers’ photon field. In that case, one likely must simulate many stochastic realizations to obtain enough samples for good statistics. The underlying charge-carrier dynamics are required for the photon field evolution and are expensive to microscopically simulate, but are not the observable of interest. Instead of resorting to rough analytic approximations, one may fully simulate the system for the first few realizations and then use the generated data to train <strong>derrom</strong> and use it for the remaining realizations.</p>
 </section>
+<section id="who-is-it-for">
+<h2>Who is it for?:<a class="headerlink" href="#who-is-it-for" title="Permalink to this heading"></a></h2>
+<p>The derrom package is intended for research/scientific use. Its focus is on easy experimentation, which is achieved via a modular implementation. E.g, further dimensionality reduction approaches and nonlinear transformations can be quickly integrated via additional moduls.</p>
+<p>Note that the code is not optimized for absolute computational speed and minimal memory usage. We assume, that once a well working derrom model is obtained, it would be integrated into an existing simulation code by reimplementing it within the code’s framework.</p>
+<p>On a side note: If you are a PhD student or PostDoc, who is running a multi-physics simulation code, which must compute nonlinear transient dynamics, then the derrom package might be an easy way to get a <cite>machine-learning</cite> paper ;).</p>
+</section>
 <section id="how-does-it-work">
 <h2>How does it work?:<a class="headerlink" href="#how-does-it-work" title="Permalink to this heading"></a></h2>
 <p><strong>derrom</strong> first projects the past <span class="math notranslate nohighlight">\(\ell\)</span> system states (delay embedding) into a reduced dimensionality (order) latent space. This step is designed retain the dominant patterns of the trajectories and get rid of redundant and irrelevant information. This both mitigates the curse of dimensionality and promotes robust regression. Next, the latent space features are scaled to appropriate magnitudes. Then, the past <span class="math notranslate nohighlight">\(\ell\)</span> scaled reduced system states are subject to a nonlinear transformation, which yields <strong>derrom</strong>'s feature vector. Lastly, the regression step is taken via a linear map, i.e., a matrix multiplication.</p>
@@ -107,7 +113,18 @@ The model is trained with the supervised paradigm, where a set of existing input
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">stmeinecke</span><span class="o">/</span><span class="n">derrom</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
-<p>Make sure you fulfill all requirements and you’re ready to go!</p>
+<p>Make sure you fulfill all requirements, e.g., via:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+<p>and you’re ready to go!</p>
+</section>
+<section id="examples">
+<h2>Examples:<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
+<p>A number of examples, which apply derrom to nonlinear solid-state transient dyanamics, are provided here:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">stmeinecke</span><span class="o">/</span><span class="n">derrom</span><span class="o">/</span><span class="n">tree</span><span class="o">/</span><span class="n">main</span><span class="o">/</span><span class="n">examples</span>
+</pre></div>
+</div>
 </section>
 </section>
 <section id="indices-and-tables">

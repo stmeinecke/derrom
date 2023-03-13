@@ -157,6 +157,8 @@ class derrom_estimator(BaseEstimator):
         """
         fit a derrom model
         
+        The fit method takes care of the proper delay embedding.
+        
         Parameters
         ----------
         trajectories : list

@@ -1,26 +1,17 @@
-.. derrom documentation master file, created by
-   sphinx-quickstart on Fri Feb 10 13:00:45 2023.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to derrom's documentation!
-==================================
+Delay Embedded Regressive Reduced Order Model (derrom)
+------------------------------------------------------
+------------------------------------------------------
 
 **derrom** is a **D**\elay **E**\mbedded **R**\egressive **R**\educed **O**\rder **M**\odel. 
 It provides a modular package, which is designed to perform computationally efficient regression on high-dimensional time-series data. 
 The model is trained with the supervised paradigm, where a set of existing input-output pairs is used to optimize the model parameters to obtain the desired regression performance.
 
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Library Documentation:
-   
-   estimator
-   dim_reducers
-   scalers
-   transformers
-   optimizers
-   utils
+Library Reference
+-----------------
+
+Can be found here::
+    https://derrom.readthedocs.io/en/latest/
 
 
 What is it good for?:
@@ -70,12 +61,4 @@ Examples:
 A number of examples, which apply derrom to nonlinear solid-state transient dyanamics, are provided here::
     
     https://github.com/stmeinecke/derrom/tree/main/examples
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
