@@ -44,7 +44,11 @@ How does it work?:
 Installation:
 -------------
 
-Clone the repository::
+Use pip::
+
+	pip install derrom
+
+If you want the example notebooks and some experimental modules: clone the repository::
 
     git clone https://github.com/stmeinecke/derrom.git
     
