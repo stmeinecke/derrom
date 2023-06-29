@@ -27,7 +27,7 @@ A good example is the stochastic simulation of a semiconductor lasers' photon fi
 Who is it for?:
 ---------------
 
-The derrom package is intended for research/scientific use. Its focus is on easy experimentation, which is achieved via a modular implementation. E.g, further dimensionality reduction approaches and nonlinear transformations can be quickly integrated via additional moduls.
+The derrom package is intended for research/scientific use. Its focus is on easy experimentation, which is achieved via a modular implementation. For instance, further dimensionality reduction approaches and nonlinear transformations can be quickly integrated via additional moduls.
 
 Note that the code is not optimized for absolute computational speed and minimal memory usage. We assume, that once a well working derrom model is obtained, it would be integrated into an existing simulation code by reimplementing it within the code's framework.
 
@@ -40,6 +40,11 @@ How does it work?:
 
 **derrom** first projects the past :math:`\ell` system states (delay embedding) into a reduced dimensionality (order) latent space. This step is designed retain the dominant patterns of the trajectories and get rid of redundant and irrelevant information. This both mitigates the curse of dimensionality and promotes robust regression. Next, the latent space features are scaled to appropriate magnitudes. Then, the past :math:`\ell` scaled reduced system states are subject to a nonlinear transformation, which yields **derrom**\'s feature vector. Lastly, the regression step is taken via a linear map, i.e., a matrix multiplication.
 
+Citation
+------------------
+
+If you want to use derrom in the scientific context, please do not forget to provide a citation:
+https://doi.org/10.1103/PhysRevB.107.184306
 
 Installation:
 -------------
