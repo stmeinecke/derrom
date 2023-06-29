@@ -17,7 +17,7 @@ is hosted by readthedocs:
 What is it good for?:
 ---------------------
 
-**derrom** was conceptualized to accelerate multi-phyisics simulation code. To achieve this, a trained model replaces the direct simulation of some degree's of freedom, which themselves are not of primary interested, but are required to compute the time evolution of the relevant observables. Moreover, the delay embedding permits to omit the degree's of freedom, which do not couple to the considered observables, altogether, but keep their effect in the trained model.
+**derrom** was conceptualized to accelerate multi-physics simulation code. To achieve this, a trained model replaces the direct simulation of some degree's of freedom, which themselves are not of primary interested, but are required to compute the time evolution of the relevant observables. Moreover, the delay embedding permits to omit the degree's of freedom, which do not couple to the considered observables, altogether, but keep their effect in the trained model.
 
 Note that a sufficient amount of training data must, nonetheless, be generated via the potentially expensive full simulation of the system. However, if relatively few trajectories are sufficient for a well trained model and many more are to be simulated, the **derrom** approach quickly becomes worth the trouble.
 
