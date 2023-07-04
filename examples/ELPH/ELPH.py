@@ -50,8 +50,8 @@ class ELPH(object):
 
 
     def electron_dispersion(self,k,phi=0):
-        help = self.hbar*self.hbar*k*k/2./self.m
-        return help
+        result = self.hbar*self.hbar*k*k/2./self.m
+        return result
     
     def electron_DOS(self,k):
         return k*self.dk/2./np.pi
