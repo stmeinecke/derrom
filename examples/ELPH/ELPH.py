@@ -65,14 +65,14 @@ class ELPH(object):
     
     def phonon_dispersion(self,k,phi,alpha):
         if alpha==0:
-            sau = self.EAprime
+            result = self.EAprime
         if alpha==1:
-            sau = self.ETO
+            result = self.ETO
         if alpha==2:
-            sau=self.ca*k
+            result=self.ca*k
         if alpha==3:
-            sau=self.ca*k
-        return sau
+            result=self.ca*k
+        return result
 
     
     def phonon_coupling(self,k,phi,alpha):
