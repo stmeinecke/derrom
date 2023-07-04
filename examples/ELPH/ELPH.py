@@ -77,19 +77,19 @@ class ELPH(object):
     
     def phonon_coupling(self,k,phi,alpha):
         if alpha==0:
-            sau = np.sqrt(self.Vol*self.hbar*self.hbar/2.0/self.Mr/self.phonon_dispersion(k,phi,0))*self.Do
+            result = np.sqrt(self.Vol*self.hbar*self.hbar/2.0/self.Mr/self.phonon_dispersion(k,phi,0))*self.Do
         if alpha==1:
-            sau = np.sqrt(self.Vol*self.hbar*self.hbar/2.0/self.Mr/self.phonon_dispersion(k,phi,1))*self.Do
+            result = np.sqrt(self.Vol*self.hbar*self.hbar/2.0/self.Mr/self.phonon_dispersion(k,phi,1))*self.Do
         if alpha==2:
-            sau = np.sqrt(self.Vol*self.hbar*self.hbar/2.0/self.Mr/self.phonon_dispersion(k,phi,2))*self.Da*k
+            result = np.sqrt(self.Vol*self.hbar*self.hbar/2.0/self.Mr/self.phonon_dispersion(k,phi,2))*self.Da*k
         if alpha==3:
-            sau = np.sqrt(self.Vol*self.hbar*self.hbar/2.0/self.Mr/self.phonon_dispersion(k,phi,3))*self.Da*k
-        return sau
+            result = np.sqrt(self.Vol*self.hbar*self.hbar/2.0/self.Mr/self.phonon_dispersion(k,phi,3))*self.Da*k
+        return result
     
     
     def phonon_occupation(self,k,phi,alpha,T):
-        help = 1/(np.exp(self.phonon_dispersion(k,phi,alpha)/self.kB/T)-1.)
-        return help
+        result = 1/(np.exp(self.phonon_dispersion(k,phi,alpha)/self.kB/T)-1.)
+        return result
 
 
     def build_boltzmann_mats(self,kmax, n_kmax):
