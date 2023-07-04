@@ -19,7 +19,7 @@ What is it good for?:
 
 **derrom** was conceptualized to accelerate multi-physics simulation code. To achieve this, a trained model replaces the direct simulation of some degree's of freedom, which themselves are not of primary interested, but are required to compute the time evolution of the relevant observables. Moreover, the delay embedding permits to omit the degree's of freedom, which do not couple to the considered observables, altogether, but keep their effect in the trained model.
 
-Note that a sufficient amount of training data must, nonetheless, be generated via the potentially expensive full simulation of the system. However, if relatively few trajectories are sufficient for a well trained model and many more are to be simulated, the **derrom** approach quickly becomes worth the trouble.
+A sufficient amount of training data must, nonetheless, be generated via the potentially expensive full simulation of the system. However, if relatively few trajectories are sufficient for a well trained model and many more are to be simulated, the **derrom** approach quickly becomes worth the trouble.
 
 A good example is the stochastic simulation of a semiconductor lasers' photon field. In that case, one likely must simulate many stochastic realizations to obtain enough samples for good statistics. The underlying charge-carrier dynamics are required for the photon field evolution and are expensive to microscopically simulate, but are not the observable of interest. Instead of resorting to rough analytic approximations, one may fully simulate the system for the first few realizations and then use the generated data to train **derrom** and use it for the remaining realizations.
 
@@ -31,8 +31,7 @@ The derrom package is intended for research/scientific use. Its focus is on easy
 
 Note that the code is not optimized for absolute computational speed and minimal memory usage. We assume, that once a well working derrom model is obtained, it would be integrated into an existing simulation code by reimplementing it within the code's framework.
 
-On a side note: If you are a PhD student or PostDoc, who is running a multi-physics simulation code, which must compute nonlinear transient dynamics, then the derrom package might be an easy way to get a `machine-learning` paper ;).
-
+We expect that dimensionality reduction for complex systems of differential equations is a relevant task in many different branches of physics and of course for are curious for your feedback about your usecases.
 
 
 How does it work?:
