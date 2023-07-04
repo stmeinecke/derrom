@@ -31,7 +31,7 @@ The derrom package is intended for research/scientific use. Its focus is on easy
 
 Note that the code is not optimized for absolute computational speed and minimal memory usage. We assume, that once a well working derrom model is obtained, it would be integrated into an existing simulation code by reimplementing it within the code's framework.
 
-We expect that dimensionality reduction for complex systems of differential equations is a relevant task in many different branches of physics and of course for are curious for your feedback about your usecases.
+We expect that dimensionality reduction for complex systems of differential equations is a relevant task in many different branches of physics and of course we are curious for your feedback about your usecases.
 
 
 How does it work?:
