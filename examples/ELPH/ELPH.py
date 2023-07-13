@@ -42,21 +42,27 @@ class ELPH(object):
         self.in_scattering_matrix_em, self.out_scattering_matrix_em, self.in_scattering_matrix_abs, self.out_scattering_matrix_abs, self.absorption_matrix, self.emission_matrix, self.einer = self.build_boltzmann_mats(self.kmax, self.n_kmax)
     
     def get_k(self,dk,n_k):
+        #calculate momentum
         return (n_k+1.)*dk
   
     
     def get_phi(self,dphi,n_phi):
+        #calculate angle
         return n_phi*dphi
 
 
     def electron_dispersion(self,k,phi=0):
+        #calculate electron dispersion
+        #code is limited to 2d electron gases with isotropic dispersion
         result = self.hbar*self.hbar*k*k/2./self.m
         return result
     
     def electron_DOS(self,k):
+        #calculate electrons density of states
         return k*self.dk/2./np.pi
     
     def get_electron_density(self,state):
+        #calculate electron density
         dens = 0
         for j in range(state.size):
             dens += state[j] * self.electron_DOS(self.get_k(self.dk,j))
@@ -64,6 +70,9 @@ class ELPH(object):
 
     
     def phonon_dispersion(self,k,phi,alpha):
+        #calculate phonon dispersion
+        #alpha = 0,1 refer to optical phonons
+        #alpha = 2,3 refer to acoustic phonons
         if alpha==0:
             result = self.EAprime
         if alpha==1:
@@ -76,6 +85,8 @@ class ELPH(object):
 
     
     def phonon_coupling(self,k,phi,alpha):
+        #calculate the phonon coupling elements
+        #the form corresponds to an effective deformation potential approximation
         if alpha==0:
             result = np.sqrt(self.Vol*self.hbar*self.hbar/2.0/self.Mr/self.phonon_dispersion(k,phi,0))*self.Do
         if alpha==1:
@@ -88,11 +99,15 @@ class ELPH(object):
     
     
     def phonon_occupation(self,k,phi,alpha,T):
+        #calculate equilibrium (t=0) phonon occuation
         result = 1/(np.exp(self.phonon_dispersion(k,phi,alpha)/self.kB/T)-1.)
         return result
 
 
     def build_boltzmann_mats(self,kmax, n_kmax):
+        #calculate electron phonon scattering matrices
+        #the considered form corresponds to a second order Born Markov approximation
+        #the appearing Dirac deltas are rewritten as Kronecker deltas analytically and thus applicable to the discretized momentum grid easily
         dk = self.dk
 
         in_scattering_matrix_em = np.full((n_kmax,n_kmax,4,n_kmax), 0., dtype=np.float64)
