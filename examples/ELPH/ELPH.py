@@ -5,6 +5,9 @@ from scipy.integrate import solve_ivp as scpy_solve_ivp
 
 import math
 
+#This code manifests the minimal example of electron phonon scattering of two dimensional electron and phonon gases
+#as it was developed since 2017 by myself in the group of Prof. Andreas Knorr at TU Berlin. 
+#Important predecessor codes were developed by Torben Winzer from whom I learned a lot about numerical impementation of microscopic scatterings.
 
 class ELPH(object):
     
