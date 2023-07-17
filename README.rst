@@ -39,8 +39,8 @@ How does it work?:
 
 **derrom** first projects the past :math:`\ell` system states (delay embedding) into a reduced dimensionality (order) latent space. This step is designed retain the dominant patterns of the trajectories and get rid of redundant and irrelevant information. This both mitigates the curse of dimensionality and promotes robust regression. Next, the latent space features are scaled to appropriate magnitudes. Then, the past :math:`\ell` scaled reduced system states are subject to a nonlinear transformation, which yields **derrom**\'s feature vector. Lastly, the regression step is taken via a linear map, i.e., a matrix multiplication.
 
-Citation
-------------------
+How to Cite:
+------------
 
 If you want to use derrom in the scientific context, please do not forget to provide a citation:
 https://doi.org/10.1103/PhysRevB.107.184306
