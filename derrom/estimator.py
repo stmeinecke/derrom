@@ -42,7 +42,7 @@ class derrom_estimator(BaseEstimator):
     
     """
   
-    def __init__(self, rdim = 1, DE_l = 1, full_hist=False, intercept = False, dim_reducer = None, scaler = None, NL_transformer = None, optimizer = None):
+    def __init__(self, rdim = 1, DE_l = 1, full_hist=False, intercept = False, training_slices = None, dim_reducer = None, scaler = None, NL_transformer = None, optimizer = None):
         
         
         self.w = None
@@ -55,6 +55,7 @@ class derrom_estimator(BaseEstimator):
         
         self.intercept = intercept
         self.full_hist = full_hist
+        self.training_slices = training_slices
         
         if dim_reducer != None:
             self.dim_reducer = dim_reducer
@@ -104,49 +105,124 @@ class derrom_estimator(BaseEstimator):
             return np.concatenate(DE_vec, axis=0)
     
     
-    def __build_DE_matrix(self, reduced_trajectories):
+#     def __build_DE_matrix(self, reduced_trajectories):
+        
+#         assert self.DE_l > 0
+        
+#         if self.DE_l == 1:
+#             return np.concatenate(reduced_trajectories,axis=0)
+        
+#         else:
+#             DE_matrix = []
+
+#             for r in range(len(reduced_trajectories)):
+
+#                 if(self.full_hist == False):
+#                     nRows = reduced_trajectories[r].shape[0]
+#                     Delta_j = self.DE_l-1
+#                 else:
+#                     nRows = reduced_trajectories[r].shape[0]-(self.DE_l-1)
+#                     Delta_j = 0
+                    
+#                 nCols = self.rdim*self.DE_l
+
+#                 run_DE_matrix = np.zeros((nRows,nCols))
+#                 for j in range(nRows):
+#                     run_DE_matrix[j] = self. __build_DE_vec(reduced_trajectories[r][:,:self.rdim], j-Delta_j, self.DE_l)
+                
+#                 if self.training_slices is not None:
+#                     if isinstance(self.training_slices, int) == True:
+#                         run_DE_matrix = run_DE_matrix[::self.training_slices]
+#                     else:
+#                         run_DE_matrix = run_DE_matrix[self.training_slices]
+                        
+#                 DE_matrix.append(run_DE_matrix)
+
+#             DE_matrix = np.concatenate(DE_matrix, axis=0)
+
+#             return DE_matrix
+
+    def __build_training_DE_matrix(self, trajectories):
+        
+        assert self.DE_l > 0
+        
+        if self.training_slices is None:
+            if self.DE_l == 1:
+                return np.concatenate(trajectories,axis=0)
+            else:
+                training_DE_matrix = []
+                for r in range(len(trajectories)):
+                    training_DE_matrix.append(self.__build_DE_matrix(trajectories[r]))
+                return np.concatenate(training_DE_matrix,axis=0)
+        else:
+            if self.DE_l == 1:
+                if isinstance(self.training_slices, int) == True:
+                    return np.concatenate([t[::self.training_slices] for t in trajectories], axis=0)
+                else:
+                    return np.concatenate([t[self.training_slices] for t in trajectories], axis=0)
+            else:
+                if isinstance(self.training_slices, int) == True:
+                    training_DE_matrix = []
+                    for r in range(len(trajectories)):
+                        training_DE_matrix.append(self.__build_DE_matrix(trajectories[r])[::self.training_slices])
+                    return np.concatenate(training_DE_matrix,axis=0)
+                else:
+                    training_DE_matrix = []
+                    for r in range(len(trajectories)):
+                        training_DE_matrix.append(self.__build_DE_matrix(trajectories[r])[self.training_slices])
+                    return np.concatenate(training_DE_matrix,axis=0)
+                                              
+    
+    
+    def __build_DE_matrix(self, trajectory):
         
         assert self.DE_l > 0
         
         if self.DE_l == 1:
-            return np.concatenate(reduced_trajectories,axis=0)
+            return trajectory
         
         else:
-            DE_matrix = []
+            if(self.full_hist == False):
+                nRows = trajectory.shape[0]
+                Delta_j = self.DE_l-1
+            else:
+                nRows = trajectory.shape[0]-(self.DE_l-1)
+                Delta_j = 0
 
-            for r in range(len(reduced_trajectories)):
+            nCols = self.rdim*self.DE_l
 
-                if(self.full_hist == False):
-                    nRows = reduced_trajectories[r].shape[0]
-                    Delta_j = self.DE_l-1
-                else:
-                    nRows = reduced_trajectories[r].shape[0]-(self.DE_l-1)
-                    Delta_j = 0
-                    
-                nCols = self.rdim*self.DE_l
-
-                run_DE_matrix = np.zeros((nRows,nCols))
-                for j in range(nRows):
-                    run_DE_matrix[j] = self. __build_DE_vec(reduced_trajectories[r][:,:self.rdim], j-Delta_j, self.DE_l)
-
-                DE_matrix.append(run_DE_matrix)
-
-            DE_matrix = np.concatenate(DE_matrix, axis=0)
+            DE_matrix = np.zeros((nRows,nCols))
+            for j in range(nRows):
+                DE_matrix[j] = self. __build_DE_vec(trajectory[:,:self.rdim], j-Delta_j, self.DE_l)
 
             return DE_matrix
     
     
     def __build_target_matrix(self, targets):
         
-        if self.full_hist == False:
-            target_matrix = np.concatenate(targets, axis=0)
+        if self.full_hist== False:
+            if self.training_slices is not None:
+                if isinstance(self.training_slices, int) == True:
+                    target_matrix = np.concatenate([t[::self.training_slices] for t in targets], axis=0)
+                else:
+                    target_matrix = np.concatenate([t[self.training_slices] for t in targets], axis=0)
+            else:
+                target_matrix = np.concatenate(targets, axis=0)
+        
         else:
             assert self.DE_l > 0
             
             target_matrix = []
             
             for r in range(len(targets)):
-                target_matrix.append(targets[r][self.DE_l-1:])
+                
+                if self.training_slices is not None:
+                    if isinstance(self.training_slices, int) == True:
+                        target_matrix.append(targets[r][self.DE_l-1::self.training_slices])
+                    else:
+                        target_matrix.append(targets[r][self.DE_l-1:][self.training_slices])
+                else:
+                    target_matrix.append(targets[r][self.DE_l-1:])
                 
             target_matrix = np.concatenate(target_matrix, axis=0)
         
@@ -225,10 +301,10 @@ class derrom_estimator(BaseEstimator):
            
         #create training data matrices
         if self.reg_mode == 'reg':
-            training_matrix = self.__build_DE_matrix(reduced_trajectories)    
+            training_matrix = self.__build_training_DE_matrix(reduced_trajectories)    
             target_matrix = self.__build_target_matrix(targets)
         else:
-            training_matrix = self.__build_DE_matrix( [reduced_trajectory[:-1] for reduced_trajectory in reduced_trajectories] ) 
+            training_matrix = self.__build_training_DE_matrix( [reduced_trajectory[:-1] for reduced_trajectory in reduced_trajectories] ) 
             target_matrix = self.__build_target_matrix( [reduced_trajectory[1:] for reduced_trajectory in reduced_trajectories] )
         
         
@@ -240,7 +316,7 @@ class derrom_estimator(BaseEstimator):
         #add bias/intercept
         if self.intercept:
             training_matrix = np.concatenate( [ training_matrix, np.ones( (training_matrix.shape[0],1) ) ] , axis=1 )
-
+        
         #calculate weight matrix via optimizer object
         self.w = self.optimizer.solve(training_matrix, target_matrix)
     
@@ -289,9 +365,9 @@ class derrom_estimator(BaseEstimator):
             pred = np.zeros((pred_length,self.n_target_vars))
             
             if self.NL_transform == True:
-                feature_matrix = self.NL_transformer.transform(self.__build_DE_matrix([reduced_trajectory]))
+                feature_matrix = self.NL_transformer.transform(self.__build_DE_matrix(reduced_trajectory))
             else:
-                feature_matrix = self.__build_DE_matrix([reduced_trajectory])
+                feature_matrix = self.__build_DE_matrix(reduced_trajectory)
             
             #add bias/intercept 
             if self.intercept:
