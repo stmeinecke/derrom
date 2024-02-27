@@ -8,7 +8,7 @@ We utilze an auto-regressive derrom model to forecast the nonlinear transient dy
 
     https://doi.org/10.1103/PhysRevB.107.184306
 
-an on the arXiv. The ELPH folder contains the microscopic simulation code, notebooks that generate the training and testing data used in the publication, and notebooks that apply derrom models to multiple tasks. Those include the autoregression tasks, as studied in the publication, as well as some additional regression tasks
+and on the arXiv. The ELPH folder contains the microscopic simulation code, notebooks that generate the training and testing data used in the publication, and notebooks that apply derrom models to multiple tasks. Those include the autoregression tasks, as studied in the publication, as well as some additional regression tasks
 
 
 **PHELPH:** Laser model - photon-electron-phonon dynamics
