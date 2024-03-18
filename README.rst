@@ -20,6 +20,7 @@ Publications
 derrom has been used for the following publications:
 
 	`Data-driven forecasting of nonequilibrium solid-state dynamics <https://doi.org/10.1103/PhysRevB.107.184306>`_
+
 	`Data-Driven Acceleration of Multi-Physics Simulations <https://arxiv.org/abs/2402.16433>`_
 
 You can find the simulation code and notebooks that implement derrom models in the examples folder.
