@@ -57,25 +57,25 @@ class derrom_estimator(BaseEstimator):
         self.full_hist = full_hist
         self.training_slices = training_slices
         
-        if dim_reducer != None:
+        if dim_reducer is not None:
             self.dim_reducer = dim_reducer
             self.reduce_dim = True
         else:
             self.reduce_dim = False
         
-        if scaler != None:
+        if scaler is not None:
             self.scaler = scaler
             self.standardize = True
         else:
             self.standardize = False
             
-        if NL_transformer != None:
+        if NL_transformer is not None:
             self.NL_transformer = NL_transformer
             self.NL_transform = True
         else:
             self.NL_transform = False
             
-        if optimizer != None:
+        if optimizer is not None:
             self.optimizer = optimizer
         else:
             self.optimizer = optimizers.lstsqrs()
@@ -104,43 +104,6 @@ class derrom_estimator(BaseEstimator):
                     DE_vec.append(matrix[row+k])
             return np.concatenate(DE_vec, axis=0)
     
-    
-#     def __build_DE_matrix(self, reduced_trajectories):
-        
-#         assert self.DE_l > 0
-        
-#         if self.DE_l == 1:
-#             return np.concatenate(reduced_trajectories,axis=0)
-        
-#         else:
-#             DE_matrix = []
-
-#             for r in range(len(reduced_trajectories)):
-
-#                 if(self.full_hist == False):
-#                     nRows = reduced_trajectories[r].shape[0]
-#                     Delta_j = self.DE_l-1
-#                 else:
-#                     nRows = reduced_trajectories[r].shape[0]-(self.DE_l-1)
-#                     Delta_j = 0
-                    
-#                 nCols = self.rdim*self.DE_l
-
-#                 run_DE_matrix = np.zeros((nRows,nCols))
-#                 for j in range(nRows):
-#                     run_DE_matrix[j] = self. __build_DE_vec(reduced_trajectories[r][:,:self.rdim], j-Delta_j, self.DE_l)
-                
-#                 if self.training_slices is not None:
-#                     if isinstance(self.training_slices, int) == True:
-#                         run_DE_matrix = run_DE_matrix[::self.training_slices]
-#                     else:
-#                         run_DE_matrix = run_DE_matrix[self.training_slices]
-                        
-#                 DE_matrix.append(run_DE_matrix)
-
-#             DE_matrix = np.concatenate(DE_matrix, axis=0)
-
-#             return DE_matrix
 
     def __build_training_DE_matrix(self, trajectories):
         
@@ -261,29 +224,29 @@ class derrom_estimator(BaseEstimator):
             assert self.__compare_trajectories_targets(trajectories,targets)
         
         
-        if rdim != None:
+        if rdim is not None:
             self.rdim = rdim
         
-        if DE_l != None:
+        if DE_l is not None:
             self.DE_l = DE_l
-        if intercept != None:
+        if intercept is not None:
             self.intercept = intercept
-        if full_hist != None:
+        if full_hist is not None:
             self.full_hist = full_hist
         
-        if dim_reducer != None:
+        if dim_reducer is not None:
             self.dim_reducer = dim_reducer
             self.reduce_dim = True
         
-        if scaler != None:
+        if scaler is not None:
             self.scaler = scaler
             self.standardize = True
             
-        if NL_transformer != None:
+        if NL_transformer is not None:
             self.NL_transformer = NL_transformer
             self.NL_transform = True
             
-        if optimizer != None:
+        if optimizer is not None:
             self.optimizer = optimizer
         
         #apply the dimensionality reduction to get the reduced coefficient matrix with rdim features via the dim_reducer object
