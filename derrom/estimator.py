@@ -200,23 +200,27 @@ class derrom_estimator(BaseEstimator):
         
         Parameters
         ----------
-        trajectories : list
-            A list of the training trajectories, where each element of the list is expected to be a 2D numpy.ndarray that represents an individual trajectories. Time slices must be stored in the rows (first index) and the system state variables in the columns (second index). All trajectories must have the same number of variables (columns), the number of time slices, however, may vary.
-        targets : 'AR', list
-            A list of the training targets, where each element is an numpy.ndarray that corresponds to training trajectory with the identical list index. Each element must have the same number of rows as the corresponding trajectory. If set to 'AR', i.e., autoregression, the targets are automatically generated from the time-shifted trajectories and the last and first time slices are dropped from the training and target data, respectively.
+        trajectories : list, ndarray
+            A list of the training trajectories, where each element of the list is expected to be a 2D numpy.ndarray that represents an individual trajectories. Alternatively, a single trajectory may be provided as a 2D ndarray. Time slices must be stored in the rows (first index) and the system state variables in the columns (second index). All trajectories must have the same number of variables (columns), the number of time slices, however, may vary.
+        targets : 'AR', list, ndarray
+            A list of the training targets, where each element is an numpy.ndarray that corresponds to training trajectory with the identical list index. If only a single trajectory is provided, a single target may be provided as a 2D ndarray. Each element must have the same number of rows as the corresponding trajectory. If set to 'AR', i.e., autoregression, the targets are automatically generated from the time-shifted trajectories and the last and first time slices are dropped from the training and target data, respectively.
 
 
         The remaining parameters are identical to the init method
         
         """
-
+        
+        if not isinstance(trajectories, list):
+            trajectories = [trajectories]
         n_trajectories = len(trajectories)
         
-        if targets == 'AR':
-            self.reg_mode = 'AR'
-        
+        if isinstance(targets, str): #avoid checking an ndarray...
+            if targets == 'AR':
+                self.reg_mode = 'AR'
         else:
             self.reg_mode = 'reg'
+            if not isinstance(targets, list):
+                targets = [targets]
             n_targets = len(targets)
             self.n_target_vars = targets[0][0].size
         
